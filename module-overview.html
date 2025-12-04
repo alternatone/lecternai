@@ -239,6 +239,10 @@
                     <label for="page2-intro-text">Week Introduction</label>
                     <textarea id="page2-intro-text" style="min-height: 150px;" placeholder="Enter introductory text for this week"></textarea>
                 </div>
+                <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="openAddVideoModal()">+ Add Video</button>
+                <div class="video-playlist" id="video-list" style="margin-top: 1rem;">
+                    <!-- Videos will be populated here -->
+                </div>
             </div>
 
             <div class="card">
@@ -251,9 +255,9 @@
 
             <div class="card">
                 <h3>Page 4: Post-Zoom Reflection</h3>
-                <div class="form-group">
-                    <label for="page4-discussion-prompt">Reflection Question</label>
-                    <textarea id="page4-discussion-prompt" style="min-height: 100px;" placeholder="Enter the post-zoom discussion question"></textarea>
+                <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddQuestionModal()">+ Add Question</button>
+                <div id="reflection-questions-list">
+                    <!-- Questions will be populated here -->
                 </div>
             </div>
 
@@ -326,10 +330,57 @@
         </div>
     </div>
 
+    <!-- Add Video Modal -->
+    <div id="add-video-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Video</h3>
+                <button class="modal-close" onclick="closeAddVideoModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="video-title">Video Title</label>
+                <input type="text" id="video-title" placeholder="Enter video title">
+            </div>
+            <div class="form-group">
+                <label for="video-url">Video URL</label>
+                <input type="text" id="video-url" placeholder="YouTube, Vimeo, or direct video URL">
+                <small style="color: #6c757d; margin-top: 0.5rem; display: block;">Supported: YouTube, Vimeo, or direct video file URLs</small>
+            </div>
+            <div class="form-group">
+                <label for="video-duration">Duration (Optional)</label>
+                <input type="text" id="video-duration" placeholder="e.g., 11:23">
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeAddVideoModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addVideo()">Add Video</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Question Modal -->
+    <div id="add-question-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Reflection Question</h3>
+                <button class="modal-close" onclick="closeAddQuestionModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="question-text">Question</label>
+                <textarea id="question-text" placeholder="Enter your reflection question" style="min-height: 120px;"></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeAddQuestionModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addQuestion()">Add Question</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const weeks = [];
         let weeklyReadings = [];
         let furtherStudy = [];
+        let videos = [];
+        let reflectionQuestions = [];
 
         let currentView = 'student';
 
@@ -547,8 +598,12 @@
             // Reset arrays
             weeklyReadings = [];
             furtherStudy = [];
+            videos = [];
+            reflectionQuestions = [];
             renderWeeklyReadings();
             renderFurtherStudy();
+            renderVideos();
+            renderReflectionQuestions();
 
             document.getElementById('create-week-modal').style.display = 'block';
             document.body.classList.add('modal-open');
@@ -562,9 +617,10 @@
             document.getElementById('week-description-input').value = '';
             document.getElementById('page1-prompt').value = '';
             document.getElementById('page2-intro-text').value = '';
-            document.getElementById('page4-discussion-prompt').value = '';
             weeklyReadings = [];
             furtherStudy = [];
+            videos = [];
+            reflectionQuestions = [];
         }
 
         function renderWeeklyReadings() {
@@ -726,6 +782,150 @@
             }
         }
 
+        function renderVideos() {
+            const list = document.getElementById('video-list');
+            list.innerHTML = '';
+            if (videos.length === 0) {
+                list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No videos added yet</p>';
+                return;
+            }
+            videos.forEach(video => {
+                const item = document.createElement('div');
+                item.className = 'playlist-item';
+                item.innerHTML = `
+                    <strong>${video.title}</strong>
+                    <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">${video.duration || 'No duration'}</p>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteVideo(${video.id})">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function openAddVideoModal() {
+            document.getElementById('video-title').value = '';
+            document.getElementById('video-url').value = '';
+            document.getElementById('video-duration').value = '';
+            document.getElementById('add-video-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeAddVideoModal() {
+            document.getElementById('add-video-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function addVideo() {
+            const title = document.getElementById('video-title').value.trim();
+            const url = document.getElementById('video-url').value.trim();
+            const duration = document.getElementById('video-duration').value.trim();
+
+            if (!title || !url) {
+                alert('Please enter both title and URL');
+                return;
+            }
+
+            const newVideo = {
+                id: videos.length + 1,
+                title: title,
+                url: url,
+                duration: duration
+            };
+            videos.push(newVideo);
+            renderVideos();
+            closeAddVideoModal();
+        }
+
+        function editVideo(id) {
+            const video = videos.find(v => v.id === id);
+            if (video) {
+                document.getElementById('video-title').value = video.title;
+                document.getElementById('video-url').value = video.url;
+                document.getElementById('video-duration').value = video.duration || '';
+                openAddVideoModal();
+                // Remove the video silently (will be re-added when saved)
+                videos = videos.filter(v => v.id !== id);
+            }
+        }
+
+        function deleteVideo(id) {
+            if (confirm('Are you sure you want to delete this video?')) {
+                videos = videos.filter(v => v.id !== id);
+                renderVideos();
+            }
+        }
+
+        function renderReflectionQuestions() {
+            const list = document.getElementById('reflection-questions-list');
+            list.innerHTML = '';
+            if (reflectionQuestions.length === 0) {
+                list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No questions added yet</p>';
+                return;
+            }
+            reflectionQuestions.forEach((question, index) => {
+                const item = document.createElement('div');
+                item.style.padding = '1rem';
+                item.style.background = 'var(--background)';
+                item.style.borderRadius = '8px';
+                item.style.marginBottom = '1rem';
+                item.innerHTML = `
+                    <strong>Question ${index + 1}:</strong> ${question.text}
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editQuestion(${question.id})">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteQuestion(${question.id})">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function openAddQuestionModal() {
+            document.getElementById('question-text').value = '';
+            document.getElementById('add-question-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeAddQuestionModal() {
+            document.getElementById('add-question-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function addQuestion() {
+            const text = document.getElementById('question-text').value.trim();
+
+            if (!text) {
+                alert('Please enter a question');
+                return;
+            }
+
+            const newQuestion = {
+                id: reflectionQuestions.length + 1,
+                text: text
+            };
+            reflectionQuestions.push(newQuestion);
+            renderReflectionQuestions();
+            closeAddQuestionModal();
+        }
+
+        function editQuestion(id) {
+            const question = reflectionQuestions.find(q => q.id === id);
+            if (question) {
+                document.getElementById('question-text').value = question.text;
+                openAddQuestionModal();
+                // Remove the question silently (will be re-added when saved)
+                reflectionQuestions = reflectionQuestions.filter(q => q.id !== id);
+            }
+        }
+
+        function deleteQuestion(id) {
+            if (confirm('Are you sure you want to delete this question?')) {
+                reflectionQuestions = reflectionQuestions.filter(q => q.id !== id);
+                renderReflectionQuestions();
+            }
+        }
+
         function saveNewWeek() {
             const title = document.getElementById('week-title-input').value.trim();
             const description = document.getElementById('week-description-input').value.trim();
@@ -769,7 +969,8 @@
                 {
                     title: 'Introduction to the Week',
                     type: 'intro',
-                    content: page2IntroText
+                    content: page2IntroText,
+                    videos: [...videos]
                 },
                 {
                     title: 'Weekly Reading',
@@ -779,7 +980,7 @@
                 {
                     title: 'Post-Zoom Reflection',
                     type: 'discussion',
-                    prompt: page4DiscussionPrompt
+                    questions: [...reflectionQuestions]
                 },
                 {
                     title: 'Further Study',
