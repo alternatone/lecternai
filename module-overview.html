@@ -233,46 +233,62 @@
             </div>
 
             <div class="card">
-                <h3>Page 1: Opening Reflection Question</h3>
-                <div class="form-group">
-                    <label for="page1-prompt">Reflection Question</label>
-                    <textarea id="page1-prompt" style="min-height: 100px;" placeholder="Enter the discussion question or reflection prompt"></textarea>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="margin: 0;">Page 1: Opening Reflection Question</h3>
+                    <button class="btn btn-secondary" onclick="openAddPage1QuestionModal()">+ Add Question</button>
+                </div>
+                <div id="page1-questions-list">
+                    <!-- Questions will be populated here -->
                 </div>
             </div>
 
             <div class="card">
-                <h3>Page 2: Intro to the Week</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="margin: 0;">Page 2: Intro to the Week</h3>
+                    <button class="btn btn-secondary" onclick="openAddVideoModal()">+ Add Video</button>
+                </div>
                 <div class="form-group">
                     <label for="page2-intro-text">Week Introduction</label>
                     <textarea id="page2-intro-text" style="min-height: 150px;" placeholder="Enter introductory text for this week"></textarea>
                 </div>
-                <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="openAddVideoModal()">+ Add Video</button>
                 <div class="video-playlist" id="video-list" style="margin-top: 1rem;">
                     <!-- Videos will be populated here -->
                 </div>
             </div>
 
             <div class="card">
-                <h3>Page 3: Weekly Readings</h3>
-                <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddResourceModal()">+ Add Resource</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="margin: 0;">Page 3: Weekly Readings</h3>
+                    <button class="btn btn-secondary" onclick="openAddResourceModal()">+ Add Resource</button>
+                </div>
                 <div class="resource-list" id="weekly-readings-list">
                     <!-- Resources will be populated here -->
                 </div>
             </div>
 
             <div class="card">
-                <h3>Page 4: Post-Zoom Reflection</h3>
-                <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddQuestionModal()">+ Add Question</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="margin: 0;">Page 4: Post-Zoom Reflection</h3>
+                    <button class="btn btn-secondary" onclick="openAddQuestionModal()">+ Add Question</button>
+                </div>
                 <div id="reflection-questions-list">
                     <!-- Questions will be populated here -->
                 </div>
             </div>
 
             <div class="card">
-                <h3>Page 5: Further Study</h3>
-                <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddStudyResourceModal()">+ Add Resource</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="margin: 0;">Page 5: Further Study</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-secondary" onclick="openAddStudyResourceModal()">+ Add Resource</button>
+                        <button class="btn btn-secondary" onclick="openAddPage5VideoModal()">+ Add Video</button>
+                    </div>
+                </div>
                 <div class="resource-list" id="further-study-list">
                     <!-- Further study resources will be populated here -->
+                </div>
+                <div class="video-playlist" id="page5-video-list" style="margin-top: 1rem;">
+                    <!-- Page 5 videos will be populated here -->
                 </div>
             </div>
 
@@ -387,6 +403,8 @@
         let weeklyReadings = [];
         let furtherStudy = [];
         let videos = [];
+        let page5Videos = [];
+        let page1Questions = [];
         let reflectionQuestions = [];
 
         let currentView = 'student';
@@ -562,8 +580,50 @@
                 timezone: document.getElementById('zoom-timezone-input').value
             };
             localStorage.setItem('zoomInfo', JSON.stringify(zoomInfo));
+            displayZoomInfo();
             closeZoomSetupModal();
             alert('Zoom meeting info saved successfully!');
+        }
+
+        function displayZoomInfo() {
+            const zoomInfo = JSON.parse(localStorage.getItem('zoomInfo') || '{}');
+            const displayDiv = document.getElementById('zoom-info-display');
+
+            // Check if any zoom info exists
+            if (!zoomInfo.url && !zoomInfo.id && !zoomInfo.day) {
+                displayDiv.style.display = 'none';
+                return;
+            }
+
+            // Show the display div and populate the data
+            displayDiv.style.display = 'block';
+
+            const dayTimeElement = document.getElementById('zoom-display-day-time');
+            const idElement = document.getElementById('zoom-display-id');
+            const urlElement = document.getElementById('zoom-display-url');
+
+            // Format day and time
+            if (zoomInfo.day && zoomInfo.time) {
+                const timezone = zoomInfo.timezone ? ` ${zoomInfo.timezone}` : '';
+                dayTimeElement.textContent = `Day & Time: ${zoomInfo.day} at ${zoomInfo.time}${timezone}`;
+            } else {
+                dayTimeElement.textContent = '';
+            }
+
+            // Display meeting ID and passcode
+            if (zoomInfo.id) {
+                const passcode = zoomInfo.passcode ? ` (Passcode: ${zoomInfo.passcode})` : '';
+                idElement.textContent = `Meeting ID: ${zoomInfo.id}${passcode}`;
+            } else {
+                idElement.textContent = '';
+            }
+
+            // Display URL
+            if (zoomInfo.url) {
+                urlElement.innerHTML = `URL: <a href="${zoomInfo.url}" target="_blank" style="color: var(--primary-color);">${zoomInfo.url}</a>`;
+            } else {
+                urlElement.textContent = '';
+            }
         }
 
         // Disable click-outside-to-close for modals to prevent accidental data loss
@@ -603,10 +663,14 @@
             weeklyReadings = [];
             furtherStudy = [];
             videos = [];
+            page5Videos = [];
+            page1Questions = [];
             reflectionQuestions = [];
             renderWeeklyReadings();
             renderFurtherStudy();
             renderVideos();
+            renderPage5Videos();
+            renderPage1Questions();
             renderReflectionQuestions();
 
             document.getElementById('create-week-modal').style.display = 'block';
@@ -619,11 +683,12 @@
             // Clear form
             document.getElementById('week-title-input').value = '';
             document.getElementById('week-description-input').value = '';
-            document.getElementById('page1-prompt').value = '';
             document.getElementById('page2-intro-text').value = '';
             weeklyReadings = [];
             furtherStudy = [];
             videos = [];
+            page5Videos = [];
+            page1Questions = [];
             reflectionQuestions = [];
         }
 
@@ -786,6 +851,55 @@
             }
         }
 
+        function renderPage1Questions() {
+            const list = document.getElementById('page1-questions-list');
+            list.innerHTML = '';
+            if (page1Questions.length === 0) {
+                list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No questions added yet</p>';
+                return;
+            }
+            page1Questions.forEach((question, index) => {
+                const item = document.createElement('div');
+                item.style.padding = '1rem';
+                item.style.background = 'var(--background)';
+                item.style.borderRadius = '8px';
+                item.style.marginBottom = '1rem';
+                item.innerHTML = `
+                    <strong>Question ${index + 1}:</strong> ${question.text}
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editPage1Question(${question.id})">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deletePage1Question(${question.id})">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function openAddPage1QuestionModal() {
+            document.getElementById('question-text').value = '';
+            document.getElementById('add-question-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+            window.editingPage1 = true;
+        }
+
+        function editPage1Question(id) {
+            const question = page1Questions.find(q => q.id === id);
+            if (question) {
+                document.getElementById('question-text').value = question.text;
+                window.editingPage1QuestionId = id;
+                window.editingPage1 = true;
+                document.getElementById('add-question-modal').style.display = 'block';
+                document.body.classList.add('modal-open');
+            }
+        }
+
+        function deletePage1Question(id) {
+            if (confirm('Are you sure you want to delete this question?')) {
+                page1Questions = page1Questions.filter(q => q.id !== id);
+                renderPage1Questions();
+            }
+        }
+
         function renderVideos() {
             const list = document.getElementById('video-list');
             list.innerHTML = '';
@@ -822,6 +936,12 @@
         }
 
         function addVideo() {
+            // Check if this is for Page 5
+            if (window.editingPage5Video) {
+                addPage5Video();
+                return;
+            }
+
             const title = document.getElementById('video-title').value.trim();
             const url = document.getElementById('video-url').value.trim();
             const duration = document.getElementById('video-duration').value.trim();
@@ -831,13 +951,25 @@
                 return;
             }
 
-            const newVideo = {
-                id: videos.length + 1,
-                title: title,
-                url: url,
-                duration: duration
-            };
-            videos.push(newVideo);
+            // Check if we're editing an existing video
+            if (window.editingVideoId) {
+                const video = videos.find(v => v.id === window.editingVideoId);
+                if (video) {
+                    video.title = title;
+                    video.url = url;
+                    video.duration = duration;
+                }
+                window.editingVideoId = null;
+            } else {
+                // Adding new video
+                const newVideo = {
+                    id: videos.length > 0 ? Math.max(...videos.map(v => v.id)) + 1 : 1,
+                    title: title,
+                    url: url,
+                    duration: duration
+                };
+                videos.push(newVideo);
+            }
             renderVideos();
             closeAddVideoModal();
         }
@@ -848,9 +980,9 @@
                 document.getElementById('video-title').value = video.title;
                 document.getElementById('video-url').value = video.url;
                 document.getElementById('video-duration').value = video.duration || '';
+                // Store the ID being edited
+                window.editingVideoId = id;
                 openAddVideoModal();
-                // Remove the video silently (will be re-added when saved)
-                videos = videos.filter(v => v.id !== id);
             }
         }
 
@@ -858,6 +990,90 @@
             if (confirm('Are you sure you want to delete this video?')) {
                 videos = videos.filter(v => v.id !== id);
                 renderVideos();
+            }
+        }
+
+        // Page 5 Video Management Functions
+        function renderPage5Videos() {
+            const list = document.getElementById('page5-video-list');
+            list.innerHTML = '';
+            if (page5Videos.length === 0) {
+                list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No videos added yet</p>';
+                return;
+            }
+            page5Videos.forEach(video => {
+                const item = document.createElement('div');
+                item.className = 'playlist-item';
+                item.innerHTML = `
+                    <strong>${video.title}</strong>
+                    <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">${video.duration || 'No duration'}</p>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editPage5Video(${video.id})">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deletePage5Video(${video.id})">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function openAddPage5VideoModal() {
+            document.getElementById('video-title').value = '';
+            document.getElementById('video-url').value = '';
+            document.getElementById('video-duration').value = '';
+            window.editingPage5Video = true;
+            document.getElementById('add-video-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function addPage5Video() {
+            const title = document.getElementById('video-title').value.trim();
+            const url = document.getElementById('video-url').value.trim();
+            const duration = document.getElementById('video-duration').value.trim();
+
+            if (!title || !url) {
+                alert('Please enter both title and URL');
+                return;
+            }
+
+            // Check if we're editing an existing video
+            if (window.editingPage5VideoId) {
+                const video = page5Videos.find(v => v.id === window.editingPage5VideoId);
+                if (video) {
+                    video.title = title;
+                    video.url = url;
+                    video.duration = duration;
+                }
+                window.editingPage5VideoId = null;
+            } else {
+                // Adding new video
+                const newVideo = {
+                    id: page5Videos.length > 0 ? Math.max(...page5Videos.map(v => v.id)) + 1 : 1,
+                    title: title,
+                    url: url,
+                    duration: duration
+                };
+                page5Videos.push(newVideo);
+            }
+            renderPage5Videos();
+            window.editingPage5Video = false;
+            closeAddVideoModal();
+        }
+
+        function editPage5Video(id) {
+            const video = page5Videos.find(v => v.id === id);
+            if (video) {
+                document.getElementById('video-title').value = video.title;
+                document.getElementById('video-url').value = video.url;
+                document.getElementById('video-duration').value = video.duration || '';
+                window.editingPage5VideoId = id;
+                openAddPage5VideoModal();
+            }
+        }
+
+        function deletePage5Video(id) {
+            if (confirm('Are you sure you want to delete this video?')) {
+                page5Videos = page5Videos.filter(v => v.id !== id);
+                renderPage5Videos();
             }
         }
 
@@ -904,12 +1120,41 @@
                 return;
             }
 
-            const newQuestion = {
-                id: reflectionQuestions.length + 1,
-                text: text
-            };
-            reflectionQuestions.push(newQuestion);
-            renderReflectionQuestions();
+            // Determine if we're working with Page 1 or Page 4 questions
+            if (window.editingPage1) {
+                // Handle Page 1 questions
+                if (window.editingPage1QuestionId) {
+                    const question = page1Questions.find(q => q.id === window.editingPage1QuestionId);
+                    if (question) {
+                        question.text = text;
+                    }
+                    window.editingPage1QuestionId = null;
+                } else {
+                    const newQuestion = {
+                        id: page1Questions.length > 0 ? Math.max(...page1Questions.map(q => q.id)) + 1 : 1,
+                        text: text
+                    };
+                    page1Questions.push(newQuestion);
+                }
+                renderPage1Questions();
+                window.editingPage1 = false;
+            } else {
+                // Handle Page 4 questions
+                if (window.editingQuestionId) {
+                    const question = reflectionQuestions.find(q => q.id === window.editingQuestionId);
+                    if (question) {
+                        question.text = text;
+                    }
+                    window.editingQuestionId = null;
+                } else {
+                    const newQuestion = {
+                        id: reflectionQuestions.length > 0 ? Math.max(...reflectionQuestions.map(q => q.id)) + 1 : 1,
+                        text: text
+                    };
+                    reflectionQuestions.push(newQuestion);
+                }
+                renderReflectionQuestions();
+            }
             closeAddQuestionModal();
         }
 
@@ -917,9 +1162,9 @@
             const question = reflectionQuestions.find(q => q.id === id);
             if (question) {
                 document.getElementById('question-text').value = question.text;
+                // Store the ID being edited
+                window.editingQuestionId = id;
                 openAddQuestionModal();
-                // Remove the question silently (will be re-added when saved)
-                reflectionQuestions = reflectionQuestions.filter(q => q.id !== id);
             }
         }
 
@@ -945,21 +1190,19 @@
             }
 
             // Collect page data for all 5 pages
-            const page1Prompt = document.getElementById('page1-prompt').value.trim();
             const page2IntroText = document.getElementById('page2-intro-text').value.trim();
-            const page4DiscussionPrompt = document.getElementById('page4-discussion-prompt').value.trim();
 
             // Validate required fields
-            if (!page1Prompt) {
-                alert('Please enter an opening reflection question (Page 1)');
+            if (page1Questions.length === 0) {
+                alert('Please add at least one opening reflection question (Page 1)');
                 return;
             }
             if (!page2IntroText) {
                 alert('Please enter introduction text for the week (Page 2)');
                 return;
             }
-            if (!page4DiscussionPrompt) {
-                alert('Please enter a post-zoom reflection question (Page 4)');
+            if (reflectionQuestions.length === 0) {
+                alert('Please add at least one post-zoom reflection question (Page 4)');
                 return;
             }
 
@@ -968,7 +1211,7 @@
                 {
                     title: 'Opening Reflection Question',
                     type: 'discussion',
-                    prompt: page1Prompt
+                    questions: [...page1Questions]
                 },
                 {
                     title: 'Introduction to the Week',
@@ -989,13 +1232,14 @@
                 {
                     title: 'Further Study',
                     type: 'reading',
-                    resources: [...furtherStudy]
+                    resources: [...furtherStudy],
+                    videos: [...page5Videos]
                 }
             ];
 
             // Create new week object
             const newWeek = {
-                id: weeks.length + 1,
+                id: weeks.length > 0 ? Math.max(...weeks.map(w => w.id)) + 1 : 1,
                 title: title,
                 description: description,
                 status: weeks.length === 0 ? 'current' : 'locked',
@@ -1027,6 +1271,7 @@
             loadWeeks();
             setView(savedView);
             loadModuleInfo();
+            displayZoomInfo();
         };
     </script>
 </body>
