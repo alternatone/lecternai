@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week Viewer - LecternAI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">✞</span>
+                <h1>LecternAI</h1>
+            </div>
+            <div class="view-toggle">
+                <button class="active" onclick="setView('student')">Student View</button>
+                <button onclick="setView('teacher')">Teacher View</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="module-overview.html">Module Overview</a>
+            <span>›</span>
+            <span id="breadcrumb-week">Week</span>
+        </div>
+
+        <h2 class="page-title">
+            <span id="page-title">Loading...</span>
+        </h2>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <p style="text-align: center; color: #6c757d; margin-bottom: 2rem;" id="progress-text">Page 1 of 5</p>
+
+        <!-- Page Content Container -->
+        <div id="page-content"></div>
+
+        <!-- Navigation -->
+        <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
+            <button class="btn btn-secondary" id="prev-btn" onclick="previousPage()">← Previous</button>
+            <button class="btn btn-primary" id="next-btn" onclick="nextPage()">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentView = 'student';
+        let currentWeek = null;
+        let currentPage = 1;
+        const totalPages = 5;
+
+        function setView(view) {
+            currentView = view;
+            const buttons = document.querySelectorAll('.view-toggle button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            if (view === 'student') {
+                buttons[0].classList.add('active');
+            } else {
+                buttons[1].classList.add('active');
+            }
+            localStorage.setItem('currentView', view);
+            renderPage();
+        }
+
+        function getWeekIdFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return parseInt(params.get('week'));
+        }
+
+        function getPageFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return parseInt(params.get('page')) || 1;
+        }
+
+        function loadWeekData() {
+            const weekId = getWeekIdFromURL();
+            const weeks = JSON.parse(localStorage.getItem('moduleWeeks') || '[]');
+            currentWeek = weeks.find(w => w.id === weekId);
+
+            if (!currentWeek) {
+                document.getElementById('page-content').innerHTML = '<p style="text-align: center; color: #dc3545; padding: 2rem;">Week not found.</p>';
+                return false;
+            }
+
+            currentPage = getPageFromURL();
+            updateBreadcrumb();
+            return true;
+        }
+
+        function updateBreadcrumb() {
+            document.getElementById('breadcrumb-week').textContent = `Week ${currentWeek.id}: ${currentWeek.title}`;
+        }
+
+        function updateProgress() {
+            const progress = (currentPage / totalPages) * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = `Page ${currentPage} of ${totalPages}`;
+        }
+
+        function renderPage() {
+            if (!currentWeek) return;
+
+            const pageData = currentWeek.pages[currentPage - 1];
+            if (!pageData) {
+                document.getElementById('page-content').innerHTML = '<p style="text-align: center; color: #dc3545;">Page data not found.</p>';
+                return;
+            }
+
+            document.getElementById('page-title').textContent = pageData.title;
+            updateProgress();
+
+            const content = document.getElementById('page-content');
+
+            // Render based on page type
+            if (pageData.type === 'discussion') {
+                renderDiscussionPage(pageData, content);
+            } else if (pageData.type === 'intro') {
+                renderIntroPage(pageData, content);
+            } else if (pageData.type === 'reading') {
+                renderReadingPage(pageData, content);
+            }
+
+            // Update navigation buttons
+            document.getElementById('prev-btn').style.display = currentPage === 1 ? 'none' : 'block';
+            document.getElementById('next-btn').textContent = currentPage === totalPages ? 'Finish →' : 'Next →';
+        }
+
+        function renderDiscussionPage(pageData, container) {
+            const questions = pageData.questions || [];
+            let html = '<div class="card">';
+
+            if (questions.length > 0) {
+                questions.forEach((question, index) => {
+                    html += `
+                        <h3>${questions.length > 1 ? 'Question ' + (index + 1) : pageData.title}</h3>
+                        <p style="margin-top: 1rem; margin-bottom: 1.5rem;">${question.text}</p>
+                        <div class="discussion-section">
+                            <div class="discussion-form">
+                                <textarea id="response-${index}" placeholder="Share your thoughts..." style="min-height: 120px; width: 100%;"></textarea>
+                                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                                    <button class="btn btn-primary" onclick="saveResponse(${index})">Post Response</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    if (index < questions.length - 1) {
+                        html += '<hr style="margin: 2rem 0;">';
+                    }
+                });
+            } else {
+                html += '<p style="color: #6c757d; text-align: center;">No questions available for this discussion.</p>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderIntroPage(pageData, container) {
+            let html = '<div class="card">';
+            html += `<h3>${pageData.title}</h3>`;
+
+            // Show intro text
+            if (pageData.content) {
+                html += `<p style="margin-top: 1rem; white-space: pre-wrap;">${pageData.content}</p>`;
+            }
+
+            // Show videos if any
+            const videos = pageData.videos || [];
+            if (videos.length > 0) {
+                html += '<div class="video-playlist" style="margin-top: 2rem;">';
+                videos.forEach(video => {
+                    const durationText = video.duration ? ` (${video.duration})` : '';
+                    html += `
+                        <div class="playlist-item">
+                            <strong>${video.title}${durationText}</strong>
+                            <div style="margin-top: 0.5rem;">
+                                <a href="${video.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Watch Video</a>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderReadingPage(pageData, container) {
+            const resources = pageData.resources || [];
+            const videos = pageData.videos || [];
+
+            let html = '<div class="card">';
+            html += `<h3>${pageData.title}</h3>`;
+
+            if (resources.length === 0 && videos.length === 0) {
+                html += '<p style="color: #6c757d; text-align: center; padding: 2rem;">No resources available yet.</p>';
+            } else {
+                if (resources.length > 0) {
+                    html += '<div class="resource-list" style="margin-top: 1.5rem;">';
+                    resources.forEach(resource => {
+                        html += `
+                            <div class="resource-item">
+                                <strong>${resource.title}</strong>
+                                ${resource.description ? `<p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>` : ''}
+                                <div style="margin-top: 0.5rem;">
+                                    <a href="${resource.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Access Resource</a>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                if (videos.length > 0) {
+                    html += '<h4 style="margin-top: 2rem;">Videos</h4>';
+                    html += '<div class="video-playlist" style="margin-top: 1rem;">';
+                    videos.forEach(video => {
+                        const durationText = video.duration ? ` (${video.duration})` : '';
+                        html += `
+                            <div class="playlist-item">
+                                <strong>${video.title}${durationText}</strong>
+                                <div style="margin-top: 0.5rem;">
+                                    <a href="${video.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Watch Video</a>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function saveResponse(questionIndex) {
+            const textarea = document.getElementById(`response-${questionIndex}`);
+            const response = textarea.value.trim();
+
+            if (!response) {
+                alert('Please enter a response before posting.');
+                return;
+            }
+
+            // Save to localStorage
+            const key = `week${currentWeek.id}-page${currentPage}-q${questionIndex}-response`;
+            localStorage.setItem(key, response);
+
+            alert('Response saved successfully!');
+            textarea.value = '';
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                window.location.href = `week-viewer.html?week=${currentWeek.id}&page=${currentPage}`;
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                window.location.href = `week-viewer.html?week=${currentWeek.id}&page=${currentPage}`;
+            } else {
+                // Finish - go back to module overview
+                alert('Week completed!');
+                window.location.href = 'module-overview.html';
+            }
+        }
+
+        window.onload = function() {
+            const savedView = localStorage.getItem('currentView') || 'student';
+            setView(savedView);
+            if (loadWeekData()) {
+                renderPage();
+            }
+        };
+    </script>
+</body>
+</html>

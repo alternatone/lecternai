@@ -112,6 +112,18 @@
                 <h3 style="margin: 0;">Module Weeks</h3>
                 <button id="create-week-btn" class="btn btn-primary" style="display: none; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openCreateWeekModal()">+ Create Week</button>
             </div>
+            <div id="draft-week-notice" style="display: none; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: #856404;">Draft Week in Progress</strong>
+                        <p style="margin: 0.5rem 0 0 0; color: #856404; font-size: 0.9rem;">You have an unsaved week draft</p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-secondary" onclick="discardDraft()" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Discard</button>
+                        <button class="btn btn-primary" onclick="resumeDraft()" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Resume</button>
+                    </div>
+                </div>
+            </div>
             <div class="module-list" id="weeks-list">
                 <!-- Weeks will be populated by JavaScript -->
             </div>
@@ -468,7 +480,7 @@
                     // Teacher view: Show Edit Week button for all weeks, plus View Week for unlocked weeks
                     if (week.status !== 'locked') {
                         weekAction.innerHTML = `
-                            <button class="btn btn-secondary" onclick="location.href='week-page1.html'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
+                            <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
                             <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="location.href='teacher-week-edit.html?week=${week.id}'">Edit Week</button>
                         `;
                     } else {
@@ -479,14 +491,14 @@
                     if (week.status === 'complete' || (week.id === 3 && isComplete)) {
                         weekAction.innerHTML = `
                             <button class="status-badge status-complete" style="cursor: default;">Completed</button>
-                            <button class="btn btn-secondary" onclick="location.href='week-page1.html'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
+                            <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
                         `;
                     } else if (week.status === 'current' || (week.id === 3 && hasProgress)) {
                         const statusText = hasProgress && !isComplete ? 'In Progress' : 'Not Started';
                         const statusClass = hasProgress && !isComplete ? 'status-inprogress' : 'status-incomplete';
                         weekAction.innerHTML = `
                             <button class="status-badge ${statusClass}" style="cursor: default;">${statusText}</button>
-                            <button class="btn btn-secondary" onclick="location.href='week-page1.html'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
+                            <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
                         `;
                     } else if (week.status === 'locked') {
                         weekAction.innerHTML = `<button class="status-badge status-incomplete" style="cursor: default;">Locked</button>`;
@@ -1292,6 +1304,29 @@
                 weeks.length = 0; // Clear array
                 weeks.push(...JSON.parse(savedWeeks));
             }
+            checkForDraft();
+        }
+
+        function checkForDraft() {
+            const draft = localStorage.getItem('createWeekDraft');
+            const draftNotice = document.getElementById('draft-week-notice');
+
+            if (draft && currentView === 'teacher') {
+                draftNotice.style.display = 'block';
+            } else {
+                draftNotice.style.display = 'none';
+            }
+        }
+
+        function discardDraft() {
+            if (confirm('Are you sure you want to discard your draft week? This cannot be undone.')) {
+                localStorage.removeItem('createWeekDraft');
+                document.getElementById('draft-week-notice').style.display = 'none';
+            }
+        }
+
+        function resumeDraft() {
+            openCreateWeekModal();
         }
 
         window.onload = function() {
