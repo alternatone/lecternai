@@ -528,12 +528,12 @@
             const participation = document.getElementById('participation-input').value;
             const timeExp = document.getElementById('time-input').value;
 
-            // Update UI
-            document.getElementById('module-description').textContent = description;
+            // Update UI with formatted text
+            document.getElementById('module-description').innerHTML = formatText(description);
             document.getElementById('module-instructor').textContent = instructor;
             document.getElementById('module-duration').textContent = duration;
-            document.getElementById('participation-requirements').textContent = participation;
-            document.getElementById('time-expectations').textContent = timeExp;
+            document.getElementById('participation-requirements').innerHTML = formatText(participation);
+            document.getElementById('time-expectations').innerHTML = formatText(timeExp);
 
             // Save to localStorage
             const moduleInfo = {
@@ -645,7 +645,7 @@
             const moduleInfo = JSON.parse(localStorage.getItem('moduleInfo') || '{}');
 
             if (moduleInfo.description) {
-                document.getElementById('module-description').textContent = moduleInfo.description;
+                document.getElementById('module-description').innerHTML = formatText(moduleInfo.description);
             }
             if (moduleInfo.instructor) {
                 document.getElementById('module-instructor').textContent = moduleInfo.instructor;
@@ -654,10 +654,10 @@
                 document.getElementById('module-duration').textContent = moduleInfo.duration;
             }
             if (moduleInfo.participation) {
-                document.getElementById('participation-requirements').textContent = moduleInfo.participation;
+                document.getElementById('participation-requirements').innerHTML = formatText(moduleInfo.participation);
             }
             if (moduleInfo.timeExpectations) {
-                document.getElementById('time-expectations').textContent = moduleInfo.timeExpectations;
+                document.getElementById('time-expectations').innerHTML = formatText(moduleInfo.timeExpectations);
             }
 
             // Show additional info if any of the fields are filled
@@ -1337,6 +1337,50 @@
                 clearTimeout(timeout);
                 timeout = setTimeout(later, wait);
             };
+        }
+
+        // Format text with basic markdown support (line breaks, bullet points)
+        function formatText(text) {
+            if (!text) return '';
+
+            // Escape HTML to prevent XSS
+            const escaped = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            // Convert line breaks to <br>
+            let formatted = escaped.replace(/\n/g, '<br>');
+
+            // Convert markdown-style bullets to HTML list items
+            // Match lines starting with *, -, or •
+            const lines = formatted.split('<br>');
+            let inList = false;
+            let result = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                const isBullet = /^[\*\-\•]\s/.test(line);
+
+                if (isBullet) {
+                    if (!inList) {
+                        result.push('<ul style="margin: 0.5rem 0; padding-left: 1.5rem;">');
+                        inList = true;
+                    }
+                    // Remove the bullet character and add as list item
+                    const content = line.replace(/^[\*\-\•]\s/, '');
+                    result.push(`<li>${content}</li>`);
+                } else {
+                    if (inList) {
+                        result.push('</ul>');
+                        inList = false;
+                    }
+                    result.push(line + '<br>');
+                }
+            }
+
+            if (inList) {
+                result.push('</ul>');
+            }
+
+            return result.join('');
         }
 
         function autoSaveModuleInfo() {
