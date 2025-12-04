@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 3 - Videos & Discussion</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">✞</span>
+                <h1>LecternAI</h1>
+            </div>
+            <div class="view-toggle">
+                <button class="active" onclick="setView('student')">Student View</button>
+                <button onclick="setView('teacher')">Teacher View</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="module-overview.html">Biblical Preaching</a>
+            <span>›</span>
+            <span>Week 3: Crafting the Sermon</span>
+        </div>
+
+        <h2 class="page-title">
+            <span>Videos & Discussion</span>
+        </h2>
+
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 60%"></div>
+        </div>
+        <p style="text-align: center; color: #6c757d; margin-bottom: 2rem;">Page 4 of 5</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem; margin-top: 2rem;">
+            <div class="video-player" id="video-player">
+                <iframe
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </div>
+
+            <div style="display: flex; flex-direction: column; max-height: 500px; overflow-y: auto; background: var(--card-background); border-radius: 12px; padding: 1rem;">
+                <div class="playlist-item active" onclick="loadVideo('https://www.youtube.com/embed/dQw4w9WgXcQ', 0, 'youtube')">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <strong>Video 1: The Sermon's Big Idea</strong>
+                        <span style="font-size: 0.9rem; color: #6c757d; white-space: nowrap; margin-left: 0.5rem;">11:23</span>
+                    </div>
+                </div>
+                <div class="playlist-item" onclick="loadVideo('https://player.vimeo.com/video/76979871', 1, 'vimeo')">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <strong>Video 2: Structure and Flow</strong>
+                        <span style="font-size: 0.9rem; color: #6c757d; white-space: nowrap; margin-left: 0.5rem;">10:47</span>
+                    </div>
+                </div>
+                <div class="playlist-item" onclick="loadVideo('https://www.youtube.com/embed/dQw4w9WgXcQ', 2, 'youtube')">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <strong>Video 3: Introduction and Conclusion</strong>
+                        <span style="font-size: 0.9rem; color: #6c757d; white-space: nowrap; margin-left: 0.5rem;">12:15</span>
+                    </div>
+                </div>
+                <div class="playlist-item" onclick="loadVideo('https://www.youtube.com/embed/dQw4w9WgXcQ', 3, 'youtube')">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <strong>Video 4: Illustrations That Connect</strong>
+                        <span style="font-size: 0.9rem; color: #6c757d; white-space: nowrap; margin-left: 0.5rem;">11:02</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-nav">
+            <a href="week-page2.html" class="btn btn-secondary">← Previous</a>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="saveAndExit()" class="btn btn-secondary">Save & Exit</button>
+                <a href="week-page6.html" class="btn btn-primary" onclick="markPageComplete()">Continue →</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="decorative-cross">✞</div>
+
+    <script>
+        function setView(view) {
+            const buttons = document.querySelectorAll('.view-toggle button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            if (view === 'student') {
+                buttons[0].classList.add('active');
+                localStorage.setItem('currentView', 'student');
+            } else {
+                buttons[1].classList.add('active');
+                localStorage.setItem('currentView', 'teacher');
+            }
+        }
+
+        function loadVideo(url, index, platform) {
+            const player = document.getElementById('video-player');
+
+            // Support both YouTube and Vimeo embeds
+            if (platform === 'vimeo') {
+                player.innerHTML = `<iframe
+                    src="${url}"
+                    frameborder="0"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowfullscreen>
+                </iframe>`;
+            } else {
+                // YouTube or default
+                player.innerHTML = `<iframe
+                    src="${url}"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>`;
+            }
+
+            // Update active playlist item
+            const items = document.querySelectorAll('.playlist-item');
+            items.forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        function postComment() {
+            const textarea = document.getElementById('new-comment');
+            const commentText = textarea.value.trim();
+
+            if (commentText) {
+                const commentsList = document.getElementById('comments-list');
+                const newComment = document.createElement('div');
+                newComment.className = 'comment';
+                newComment.innerHTML = `
+                    <div class="comment-header">
+                        <span class="comment-author">You</span>
+                        <span class="comment-time">Just now</span>
+                    </div>
+                    <div class="comment-body">${commentText}</div>
+                    <button class="reply-btn" onclick="toggleReply(this)">↩ Reply</button>
+                    <div class="comment-reply"></div>
+                `;
+                commentsList.insertBefore(newComment, commentsList.firstChild);
+                textarea.value = '';
+            }
+        }
+
+        function toggleReply(button) {
+            alert('Reply functionality would be implemented here.');
+        }
+
+        function saveProgress() {
+            const progress = {
+                week: 'week3',
+                page: 'page3',
+                completed: false,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('week3-progress', JSON.stringify(progress));
+        }
+
+        function markPageComplete() {
+            const progress = {
+                week: 'week3',
+                page: 'page3',
+                completed: true,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('week3-progress', JSON.stringify(progress));
+        }
+
+        function saveAndExit() {
+            saveProgress();
+            alert('Your progress has been saved. You can return to this module anytime.');
+            window.location.href = 'module-overview.html';
+        }
+
+        window.onload = function() {
+            const savedView = localStorage.getItem('currentView') || 'student';
+            setView(savedView);
+
+            // Auto-save progress every 30 seconds
+            setInterval(saveProgress, 30000);
+        };
+    </script>
+</body>
+</html>

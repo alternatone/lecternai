@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblical Preaching - Module Overview</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-close {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #6c757d;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .modal-close:hover {
+            color: var(--primary-color);
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">✞</span>
+                <h1>LecternAI</h1>
+            </div>
+            <div class="view-toggle">
+                <button class="active" onclick="setView('student')">Student View</button>
+                <button onclick="setView('teacher')">Teacher View</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <span id="breadcrumb-module-name">Module</span>
+        </div>
+
+        <h2 class="page-title">
+            <span id="module-title">Module Overview</span>
+        </h2>
+
+        <div class="card">
+            <p id="module-description"></p>
+
+            <div style="margin-top: 1.5rem;">
+                <p><strong>Instructor:</strong> <span id="module-instructor"></span></p>
+                <p><strong>Duration:</strong> <span id="module-duration"></span></p>
+            </div>
+
+            <div id="additional-info" style="margin-top: 1.5rem; display: none;">
+                <p style="margin-top: 1rem;"><strong>Participation Requirements:</strong></p>
+                <p id="participation-requirements" style="margin-top: 0.5rem;"></p>
+
+                <p style="margin-top: 1rem;"><strong>Time Expectations:</strong></p>
+                <p id="time-expectations" style="margin-top: 0.5rem;"></p>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+                <button id="edit-description-btn" class="btn btn-secondary" style="display: none; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openEditDescriptionModal()">Edit Module Info</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0;">Module Weeks</h3>
+                <button id="create-week-btn" class="btn btn-primary" style="display: none; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openCreateWeekModal()">+ Create Week</button>
+            </div>
+            <div class="module-list" id="weeks-list">
+                <!-- Weeks will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <a href="index.html" class="btn btn-secondary">← Back to My Modules</a>
+        </div>
+    </div>
+
+    <div class="decorative-cross">✞</div>
+
+    <!-- Edit Description Modal -->
+    <div id="edit-description-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Module Information</h3>
+                <button class="modal-close" onclick="closeEditDescriptionModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="description-input">Module Overview</label>
+                <textarea id="description-input" style="min-height: 150px;" placeholder="Provide a comprehensive overview of this module"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="instructor-input">Instructor</label>
+                <input type="text" id="instructor-input">
+            </div>
+            <div class="form-group">
+                <label for="duration-input">Duration</label>
+                <input type="text" id="duration-input" placeholder="e.g., 8 Weeks">
+            </div>
+            <div class="form-group">
+                <label for="participation-input">Participation Requirements</label>
+                <textarea id="participation-input" style="min-height: 80px;" placeholder="What is expected of students"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="time-input">Time Expectations</label>
+                <textarea id="time-input" style="min-height: 80px;" placeholder="Estimated time commitment"></textarea>
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-secondary" onclick="openZoomSetupModal()" style="width: 100%;">Zoom Meeting Setup</button>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeEditDescriptionModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveDescription()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zoom Meeting Setup Modal -->
+    <div id="zoom-setup-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Zoom Meeting Setup</h3>
+                <button class="modal-close" onclick="closeZoomSetupModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="zoom-url-input">Zoom Meeting URL</label>
+                <input type="text" id="zoom-url-input" placeholder="https://zoom.us/j/...">
+            </div>
+            <div class="form-group">
+                <label for="zoom-id-input">Meeting ID</label>
+                <input type="text" id="zoom-id-input" placeholder="123 456 7890">
+            </div>
+            <div class="form-group">
+                <label for="zoom-passcode-input">Passcode</label>
+                <input type="text" id="zoom-passcode-input" placeholder="Optional">
+            </div>
+            <div class="form-group">
+                <label for="zoom-day-input">Weekly Meeting Day</label>
+                <select id="zoom-day-input">
+                    <option value="">Select a day</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="zoom-time-input">Meeting Time</label>
+                <input type="time" id="zoom-time-input">
+            </div>
+            <div class="form-group">
+                <label for="zoom-timezone-input">Timezone</label>
+                <select id="zoom-timezone-input">
+                    <option value="EST">Eastern (EST/EDT)</option>
+                    <option value="CST">Central (CST/CDT)</option>
+                    <option value="MST">Mountain (MST/MDT)</option>
+                    <option value="PST">Pacific (PST/PDT)</option>
+                    <option value="UTC">UTC</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeZoomSetupModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveZoomSetup()">Save Zoom Info</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Week Modal -->
+    <div id="create-week-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3>Create New Week</h3>
+                <button class="modal-close" onclick="closeCreateWeekModal()">&times;</button>
+            </div>
+
+            <div class="form-group">
+                <label for="week-title-input">Week Title</label>
+                <input type="text" id="week-title-input" placeholder="e.g., The Call to Preach">
+            </div>
+
+            <div class="form-group">
+                <label for="week-description-input">Week Description</label>
+                <textarea id="week-description-input" style="min-height: 80px;" placeholder="Brief overview of this week's content"></textarea>
+            </div>
+
+            <div style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+                <h4 style="margin-bottom: 1.5rem;">Week Structure (5 Pages)</h4>
+
+                <!-- Page 1: Opening Reflection -->
+                <div class="form-group">
+                    <label for="page1-prompt"><strong>Page 1: Opening Reflection Question</strong> (Threaded Discussion)</label>
+                    <textarea id="page1-prompt" style="min-height: 100px;" placeholder="Enter the discussion question or reflection prompt"></textarea>
+                </div>
+
+                <!-- Page 2: Intro to the Week -->
+                <div class="form-group">
+                    <label for="page2-intro-text"><strong>Page 2: Introduction to the Week</strong> (Text + Video)</label>
+                    <textarea id="page2-intro-text" style="min-height: 100px;" placeholder="Enter introductory text for this week"></textarea>
+                    <input type="text" id="page2-video-url" style="margin-top: 0.5rem;" placeholder="Video URL (YouTube or Vimeo, e.g., https://www.youtube.com/watch?v=...)">
+                    <textarea id="page2-video-description" style="min-height: 60px; margin-top: 0.5rem;" placeholder="Optional: Video description or context"></textarea>
+                </div>
+
+                <!-- Page 3: Weekly Reading -->
+                <div class="form-group">
+                    <label for="page3-content"><strong>Page 3: Weekly Reading</strong> (Reading Content/Resources)</label>
+                    <textarea id="page3-content" style="min-height: 120px;" placeholder="Enter reading content, article links, or required materials"></textarea>
+                </div>
+
+                <!-- Page 4: Post-Zoom Reflection -->
+                <div class="form-group">
+                    <label for="page4-discussion-prompt"><strong>Page 4: Post-Zoom Reflection</strong> (Threaded Discussion)</label>
+                    <textarea id="page4-discussion-prompt" style="min-height: 100px;" placeholder="Enter the post-zoom discussion question"></textarea>
+                </div>
+
+                <!-- Page 5: Further Study -->
+                <div class="form-group">
+                    <label for="page5-resources"><strong>Page 5: Further Study</strong> (Reading/Resources)</label>
+                    <textarea id="page5-resources" style="min-height: 120px;" placeholder="Enter recommended books, articles, or other resources"></textarea>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeCreateWeekModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveWeek()">Create Week</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const weeks = [];
+
+        let currentView = 'student';
+
+        function setView(view) {
+            currentView = view;
+            const buttons = document.querySelectorAll('.view-toggle button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            if (view === 'student') {
+                buttons[0].classList.add('active');
+                localStorage.setItem('currentView', 'student');
+                document.getElementById('edit-description-btn').style.display = 'none';
+                document.getElementById('create-week-btn').style.display = 'none';
+            } else {
+                buttons[1].classList.add('active');
+                localStorage.setItem('currentView', 'teacher');
+                document.getElementById('edit-description-btn').style.display = 'inline-block';
+                document.getElementById('create-week-btn').style.display = 'inline-block';
+            }
+
+            renderWeeks();
+        }
+
+        function renderWeeks() {
+            const weeksList = document.getElementById('weeks-list');
+            weeksList.innerHTML = '';
+
+            if (weeks.length === 0) {
+                weeksList.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">No weeks created yet.</p>';
+                return;
+            }
+
+            weeks.forEach((week, index) => {
+                // Hide locked weeks from students
+                if (currentView === 'student' && week.status === 'locked') {
+                    return;
+                }
+
+                const weekItem = document.createElement('div');
+                weekItem.className = 'module-item';
+
+                const weekInfo = document.createElement('div');
+                weekInfo.innerHTML = `
+                    <strong>Week ${week.id}: ${week.title}</strong>
+                    <p style="margin-top: 0.5rem; color: #6c757d;">${week.description}</p>
+                `;
+
+                const weekAction = document.createElement('div');
+
+                // Check progress from localStorage
+                const progress = JSON.parse(localStorage.getItem('week3-progress') || '{}');
+                const isComplete = localStorage.getItem('week3-completed') === 'true';
+                const hasProgress = progress.week === 'week3' && progress.page;
+
+                weekAction.style.display = 'flex';
+                weekAction.style.alignItems = 'center';
+                weekAction.style.gap = '1rem';
+
+                if (currentView === 'teacher') {
+                    // Teacher view: Show Edit Week button for all weeks, plus View Week for unlocked weeks
+                    if (week.status !== 'locked') {
+                        weekAction.innerHTML = `
+                            <button class="btn btn-secondary" onclick="location.href='week-page1.html'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
+                            <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="location.href='teacher-week-edit.html?week=${week.id}'">Edit Week</button>
+                        `;
+                    } else {
+                        weekAction.innerHTML = `<button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="location.href='teacher-week-edit.html?week=${week.id}'">Edit Week</button>`;
+                    }
+                } else {
+                    // Student view: Show status and View Week button
+                    if (week.status === 'complete' || (week.id === 3 && isComplete)) {
+                        weekAction.innerHTML = `
+                            <button class="status-badge status-complete" style="cursor: default;">Completed</button>
+                            <button class="btn btn-secondary" onclick="location.href='week-page1.html'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
+                        `;
+                    } else if (week.status === 'current' || (week.id === 3 && hasProgress)) {
+                        const statusText = hasProgress && !isComplete ? 'In Progress' : 'Not Started';
+                        const statusClass = hasProgress && !isComplete ? 'status-inprogress' : 'status-incomplete';
+                        weekAction.innerHTML = `
+                            <button class="status-badge ${statusClass}" style="cursor: default;">${statusText}</button>
+                            <button class="btn btn-secondary" onclick="location.href='week-page1.html'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
+                        `;
+                    } else if (week.status === 'locked') {
+                        weekAction.innerHTML = `<button class="status-badge status-incomplete" style="cursor: default;">Locked</button>`;
+                    }
+                }
+
+                weekItem.appendChild(weekInfo);
+                weekItem.appendChild(weekAction);
+                weeksList.appendChild(weekItem);
+            });
+        }
+
+        function openEditDescriptionModal() {
+            // Load from localStorage if available
+            const moduleInfo = JSON.parse(localStorage.getItem('moduleInfo') || '{}');
+
+            document.getElementById('description-input').value = moduleInfo.description || document.getElementById('module-description').textContent;
+            document.getElementById('instructor-input').value = moduleInfo.instructor || document.getElementById('module-instructor').textContent;
+            document.getElementById('duration-input').value = moduleInfo.duration || document.getElementById('module-duration').textContent;
+            document.getElementById('participation-input').value = moduleInfo.participation || document.getElementById('participation-requirements').textContent;
+            document.getElementById('time-input').value = moduleInfo.timeExpectations || document.getElementById('time-expectations').textContent;
+            document.getElementById('edit-description-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeEditDescriptionModal() {
+            document.getElementById('edit-description-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function saveDescription() {
+            const description = document.getElementById('description-input').value;
+            const instructor = document.getElementById('instructor-input').value;
+            const duration = document.getElementById('duration-input').value;
+            const participation = document.getElementById('participation-input').value;
+            const timeExp = document.getElementById('time-input').value;
+
+            // Update UI
+            document.getElementById('module-description').textContent = description;
+            document.getElementById('module-instructor').textContent = instructor;
+            document.getElementById('module-duration').textContent = duration;
+            document.getElementById('participation-requirements').textContent = participation;
+            document.getElementById('time-expectations').textContent = timeExp;
+
+            // Save to localStorage
+            const moduleInfo = {
+                description: description,
+                instructor: instructor,
+                duration: duration,
+                participation: participation,
+                timeExpectations: timeExp
+            };
+            localStorage.setItem('moduleInfo', JSON.stringify(moduleInfo));
+
+            // Show additional info if any of the fields are filled
+            if (participation || timeExp) {
+                document.getElementById('additional-info').style.display = 'block';
+            } else {
+                document.getElementById('additional-info').style.display = 'none';
+            }
+
+            closeEditDescriptionModal();
+        }
+
+        function openZoomSetupModal() {
+            // Load saved zoom info from localStorage
+            const zoomInfo = JSON.parse(localStorage.getItem('zoomInfo') || '{}');
+            document.getElementById('zoom-url-input').value = zoomInfo.url || '';
+            document.getElementById('zoom-id-input').value = zoomInfo.id || '';
+            document.getElementById('zoom-passcode-input').value = zoomInfo.passcode || '';
+            document.getElementById('zoom-day-input').value = zoomInfo.day || '';
+            document.getElementById('zoom-time-input').value = zoomInfo.time || '';
+            document.getElementById('zoom-timezone-input').value = zoomInfo.timezone || 'EST';
+
+            document.getElementById('zoom-setup-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeZoomSetupModal() {
+            document.getElementById('zoom-setup-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function saveZoomSetup() {
+            const zoomInfo = {
+                url: document.getElementById('zoom-url-input').value,
+                id: document.getElementById('zoom-id-input').value,
+                passcode: document.getElementById('zoom-passcode-input').value,
+                day: document.getElementById('zoom-day-input').value,
+                time: document.getElementById('zoom-time-input').value,
+                timezone: document.getElementById('zoom-timezone-input').value
+            };
+            localStorage.setItem('zoomInfo', JSON.stringify(zoomInfo));
+            closeZoomSetupModal();
+            alert('Zoom meeting info saved successfully!');
+        }
+
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    document.body.classList.remove('modal-open');
+                }
+            });
+        }
+
+        function loadModuleInfo() {
+            const moduleInfo = JSON.parse(localStorage.getItem('moduleInfo') || '{}');
+
+            if (moduleInfo.description) {
+                document.getElementById('module-description').textContent = moduleInfo.description;
+            }
+            if (moduleInfo.instructor) {
+                document.getElementById('module-instructor').textContent = moduleInfo.instructor;
+            }
+            if (moduleInfo.duration) {
+                document.getElementById('module-duration').textContent = moduleInfo.duration;
+            }
+            if (moduleInfo.participation) {
+                document.getElementById('participation-requirements').textContent = moduleInfo.participation;
+            }
+            if (moduleInfo.timeExpectations) {
+                document.getElementById('time-expectations').textContent = moduleInfo.timeExpectations;
+            }
+
+            // Show additional info if any of the fields are filled
+            if (moduleInfo.participation || moduleInfo.timeExpectations) {
+                document.getElementById('additional-info').style.display = 'block';
+            }
+        }
+
+        function openCreateWeekModal() {
+            document.getElementById('create-week-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeCreateWeekModal() {
+            document.getElementById('create-week-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+            // Clear form
+            document.getElementById('week-title-input').value = '';
+            document.getElementById('week-description-input').value = '';
+            document.getElementById('page1-prompt').value = '';
+            document.getElementById('page2-intro-text').value = '';
+            document.getElementById('page2-video-url').value = '';
+            document.getElementById('page2-video-description').value = '';
+            document.getElementById('page3-content').value = '';
+            document.getElementById('page4-discussion-prompt').value = '';
+            document.getElementById('page5-resources').value = '';
+        }
+
+        function saveWeek() {
+            const title = document.getElementById('week-title-input').value.trim();
+            const description = document.getElementById('week-description-input').value.trim();
+
+            if (!title) {
+                alert('Please enter a week title');
+                return;
+            }
+
+            if (!description) {
+                alert('Please enter a week description');
+                return;
+            }
+
+            // Collect page data for all 5 pages
+            const page1Prompt = document.getElementById('page1-prompt').value.trim();
+            const page2IntroText = document.getElementById('page2-intro-text').value.trim();
+            const page2VideoUrl = document.getElementById('page2-video-url').value.trim();
+            const page2VideoDesc = document.getElementById('page2-video-description').value.trim();
+            const page3Content = document.getElementById('page3-content').value.trim();
+            const page4DiscussionPrompt = document.getElementById('page4-discussion-prompt').value.trim();
+            const page5Resources = document.getElementById('page5-resources').value.trim();
+
+            // Validate required fields
+            if (!page1Prompt) {
+                alert('Please enter an opening reflection question (Page 1)');
+                return;
+            }
+            if (!page2IntroText) {
+                alert('Please enter introduction text for the week (Page 2)');
+                return;
+            }
+            if (!page3Content) {
+                alert('Please enter weekly reading content (Page 3)');
+                return;
+            }
+            if (!page4DiscussionPrompt) {
+                alert('Please enter a post-zoom reflection question (Page 4)');
+                return;
+            }
+            if (!page5Resources) {
+                alert('Please enter further study resources (Page 5)');
+                return;
+            }
+
+            // Create page data array with fixed 5-page structure
+            const pages = [
+                {
+                    title: 'Opening Reflection Question',
+                    type: 'discussion',
+                    prompt: page1Prompt
+                },
+                {
+                    title: 'Introduction to the Week',
+                    type: 'intro',
+                    content: page2IntroText,
+                    videoUrl: page2VideoUrl,
+                    videoDescription: page2VideoDesc
+                },
+                {
+                    title: 'Weekly Reading',
+                    type: 'reading',
+                    content: page3Content
+                },
+                {
+                    title: 'Post-Zoom Reflection',
+                    type: 'discussion',
+                    prompt: page4DiscussionPrompt
+                },
+                {
+                    title: 'Further Study',
+                    type: 'reading',
+                    content: page5Resources
+                }
+            ];
+
+            // Create new week object
+            const newWeek = {
+                id: weeks.length + 1,
+                title: title,
+                description: description,
+                status: weeks.length === 0 ? 'current' : 'locked',
+                pages: pages
+            };
+
+            weeks.push(newWeek);
+
+            // Save to localStorage
+            localStorage.setItem('moduleWeeks', JSON.stringify(weeks));
+
+            // Close modal and refresh
+            closeCreateWeekModal();
+            renderWeeks();
+
+            alert(`Week ${newWeek.id}: ${title} created successfully!`);
+        }
+
+        function loadWeeks() {
+            const savedWeeks = localStorage.getItem('moduleWeeks');
+            if (savedWeeks) {
+                weeks.length = 0; // Clear array
+                weeks.push(...JSON.parse(savedWeeks));
+            }
+        }
+
+        window.onload = function() {
+            const savedView = localStorage.getItem('currentView') || 'student';
+            loadWeeks();
+            setView(savedView);
+            loadModuleInfo();
+        };
+    </script>
+</body>
+</html>

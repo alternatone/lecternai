@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 3 - Post-Zoom Reflection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">✞</span>
+                <h1>LecternAI</h1>
+            </div>
+            <div class="view-toggle">
+                <button class="active" onclick="setView('student')">Student View</button>
+                <button onclick="setView('teacher')">Teacher View</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="module-overview.html">Biblical Preaching</a>
+            <span>›</span>
+            <span>Week 3: Crafting the Sermon</span>
+        </div>
+
+        <h2 class="page-title">
+            <span>Post-Zoom Reflection</span>
+        </h2>
+
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 85%"></div>
+        </div>
+        <p style="text-align: center; color: #6c757d; margin-bottom: 2rem;">Page 6 of 7</p>
+
+        <div class="card">
+            <h3>Reflect on Your Learning</h3>
+            <p style="margin-top: 1rem;">
+                Now that you've completed the videos and participated in the live Zoom discussion, take time to reflect on what you've learned about crafting sermons.
+            </p>
+        </div>
+
+        <div class="card">
+            <div class="essay-form">
+                <div class="form-group">
+                    <label for="essay-question-1">
+                        <strong>Question 1: Key Insights</strong><br>
+                        What are the three most important insights you gained from this week about sermon structure and preparation?
+                    </label>
+                    <textarea
+                        id="essay-question-1"
+                        placeholder="Type your response here... (Minimum 200 words recommended)"
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="essay-question-2">
+                        <strong>Question 2: Application</strong><br>
+                        Describe a specific change you plan to implement in your next sermon preparation based on this week's teaching.
+                    </label>
+                    <textarea
+                        id="essay-question-2"
+                        placeholder="Type your response here... (Minimum 150 words recommended)"
+                    ></textarea>
+                </div>
+
+                <p style="color: #6c757d; font-size: 0.9rem; margin-top: 1rem;">
+                    <em>Your reflections will be reviewed by Dr. Daniels and may inform future discussions.</em>
+                </p>
+            </div>
+        </div>
+
+        <div class="module-nav">
+            <a href="week-page4.html" class="btn btn-secondary">← Previous</a>
+            <a href="week-page6.html" class="btn btn-primary">Save & Continue →</a>
+        </div>
+    </div>
+
+    <div class="decorative-cross">✞</div>
+
+    <script>
+        function setView(view) {
+            const buttons = document.querySelectorAll('.view-toggle button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            if (view === 'student') {
+                buttons[0].classList.add('active');
+                localStorage.setItem('currentView', 'student');
+            } else {
+                buttons[1].classList.add('active');
+                localStorage.setItem('currentView', 'teacher');
+            }
+        }
+
+        window.onload = function() {
+            const savedView = localStorage.getItem('currentView') || 'student';
+            setView(savedView);
+
+            // Load saved responses
+            ['essay-question-1', 'essay-question-2'].forEach(id => {
+                const saved = localStorage.getItem('week3-' + id);
+                if (saved) {
+                    document.getElementById(id).value = saved;
+                }
+            });
+
+            // Auto-save responses
+            ['essay-question-1', 'essay-question-2'].forEach(id => {
+                document.getElementById(id).addEventListener('input', function() {
+                    localStorage.setItem('week3-' + id, this.value);
+                });
+            });
+        };
+    </script>
+</body>
+</html>

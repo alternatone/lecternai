@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 3 - Post-Session Reflection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">✞</span>
+                <h1>LecternAI</h1>
+            </div>
+            <div class="view-toggle">
+                <button class="active" onclick="setView('student')">Student View</button>
+                <button onclick="setView('teacher')">Teacher View</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="course-overview.html">Biblical Preaching</a>
+            <span>›</span>
+            <span>Module 3: Crafting the Sermon</span>
+        </div>
+
+        <h2 class="page-title">
+            <span>✍️</span>
+            <span>Post-Session Reflection</span>
+        </h2>
+
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 86%"></div>
+        </div>
+        <p style="text-align: center; color: #6c757d; margin-bottom: 2rem;">Page 6 of 7</p>
+
+        <div class="card">
+            <h3>Reflect on Your Learning</h3>
+            <p style="margin-top: 1rem;">
+                Now that you've completed the video lectures and participated in the live Zoom discussion, take time to reflect on what you've learned about crafting sermons. This reflection will help solidify your understanding and prepare you to apply these principles in your own preaching ministry.
+            </p>
+        </div>
+
+        <div class="card">
+            <div class="essay-form">
+                <div class="form-group">
+                    <label for="essay-question-1">
+                        <strong>Question 1: Key Insights</strong><br>
+                        What are the three most important insights you gained from this module about sermon structure and preparation? How do these insights challenge or affirm your current preaching practice?
+                    </label>
+                    <textarea
+                        id="essay-question-1"
+                        placeholder="Type your response here... (Minimum 200 words recommended)"
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="essay-question-2">
+                        <strong>Question 2: Application</strong><br>
+                        Describe a specific change you plan to implement in your next sermon preparation based on this week's teaching. What challenges do you anticipate, and how will you address them?
+                    </label>
+                    <textarea
+                        id="essay-question-2"
+                        placeholder="Type your response here... (Minimum 150 words recommended)"
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="essay-question-3">
+                        <strong>Question 3: Theological Reflection</strong><br>
+                        Dr. Daniels emphasized that sermon structure should serve the text's message, not override it. Reflect on a time when you've seen structure either serve or hinder the proclamation of Scripture. What did you learn from that experience?
+                    </label>
+                    <textarea
+                        id="essay-question-3"
+                        placeholder="Type your response here... (Minimum 150 words recommended)"
+                    ></textarea>
+                </div>
+
+                <p style="color: #6c757d; font-size: 0.9rem; margin-top: 1rem;">
+                    💡 <em>Your reflections will be reviewed by Dr. Daniels and may inform future course discussions. Be thoughtful and specific in your responses.</em>
+                </p>
+            </div>
+        </div>
+
+        <div class="card" style="background: linear-gradient(135deg, #e3f2fd 0%, #fff 100%); border-left: 4px solid #2196f3;">
+            <h3>📊 Optional: Rate This Module</h3>
+            <p style="margin-top: 1rem;">Help us improve future modules by rating different aspects of this week's learning experience:</p>
+
+            <div style="margin-top: 1.5rem;">
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="font-weight: 500; margin-bottom: 0.5rem;">Video Lecture Quality</p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="rating-star" onclick="rate(this, 1)">★</button>
+                        <button class="rating-star" onclick="rate(this, 2)">★</button>
+                        <button class="rating-star" onclick="rate(this, 3)">★</button>
+                        <button class="rating-star" onclick="rate(this, 4)">★</button>
+                        <button class="rating-star" onclick="rate(this, 5)">★</button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="font-weight: 500; margin-bottom: 0.5rem;">Discussion Engagement</p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="rating-star" onclick="rate(this, 1)">★</button>
+                        <button class="rating-star" onclick="rate(this, 2)">★</button>
+                        <button class="rating-star" onclick="rate(this, 3)">★</button>
+                        <button class="rating-star" onclick="rate(this, 4)">★</button>
+                        <button class="rating-star" onclick="rate(this, 5)">★</button>
+                    </div>
+                </div>
+
+                <div>
+                    <p style="font-weight: 500; margin-bottom: 0.5rem;">Practical Applicability</p>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="rating-star" onclick="rate(this, 1)">★</button>
+                        <button class="rating-star" onclick="rate(this, 2)">★</button>
+                        <button class="rating-star" onclick="rate(this, 3)">★</button>
+                        <button class="rating-star" onclick="rate(this, 4)">★</button>
+                        <button class="rating-star" onclick="rate(this, 5)">★</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-nav">
+            <a href="module-page5.html" class="btn btn-secondary">← Previous</a>
+            <a href="module-page7.html" class="btn btn-primary">Save & Continue →</a>
+        </div>
+    </div>
+
+    <div class="decorative-cross">✞</div>
+
+    <style>
+        .rating-star {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .rating-star:hover,
+        .rating-star.active {
+            color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+    </style>
+
+    <script>
+        function setView(view) {
+            const buttons = document.querySelectorAll('.view-toggle button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            if (view === 'student') {
+                buttons[0].classList.add('active');
+                localStorage.setItem('currentView', 'student');
+            } else {
+                buttons[1].classList.add('active');
+                localStorage.setItem('currentView', 'teacher');
+            }
+        }
+
+        function rate(element, rating) {
+            const stars = element.parentElement.querySelectorAll('.rating-star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        window.onload = function() {
+            const savedView = localStorage.getItem('currentView') || 'student';
+            setView(savedView);
+
+            // Load saved responses
+            ['essay-question-1', 'essay-question-2', 'essay-question-3'].forEach(id => {
+                const saved = localStorage.getItem('module3-' + id);
+                if (saved) {
+                    document.getElementById(id).value = saved;
+                }
+            });
+
+            // Auto-save responses
+            ['essay-question-1', 'essay-question-2', 'essay-question-3'].forEach(id => {
+                document.getElementById(id).addEventListener('input', function() {
+                    localStorage.setItem('module3-' + id, this.value);
+                });
+            });
+        };
+    </script>
+</body>
+</html>

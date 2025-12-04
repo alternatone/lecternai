@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 3 - Further Study</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">✞</span>
+                <h1>LecternAI</h1>
+            </div>
+            <div class="view-toggle">
+                <button class="active" onclick="setView('student')">Student View</button>
+                <button onclick="setView('teacher')">Teacher View</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="module-overview.html">Biblical Preaching</a>
+            <span>›</span>
+            <span>Week 3: Crafting the Sermon</span>
+        </div>
+
+        <h2 class="page-title">
+            <span>Further Study</span>
+        </h2>
+
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 100%"></div>
+        </div>
+        <p style="text-align: center; color: #6c757d; margin-bottom: 2rem;">Page 6 of 6 - Week Complete!</p>
+
+        <div class="card">
+            <h3>Recommended Books</h3>
+            <div class="resource-list">
+                <div class="resource-item">
+                    <h4>Between Two Worlds: The Challenge of Preaching Today</h4>
+                    <p style="margin: 0.5rem 0; color: #6c757d;">John R.W. Stott</p>
+                    <p>A classic exploration of faithful biblical preaching that bridges the ancient text and contemporary context with theological depth and practical wisdom.</p>
+                    <a href="https://www.amazon.com" target="_blank" rel="noopener" style="margin-top: 0.5rem; display: inline-block;">View on Amazon →</a>
+                </div>
+
+                <div class="resource-item">
+                    <h4>Christ-Centered Preaching: Redeeming the Expository Sermon</h4>
+                    <p style="margin: 0.5rem 0; color: #6c757d;">Bryan Chapell</p>
+                    <p>Essential reading on how to craft sermons that consistently point to Christ while remaining faithful to the biblical text's original meaning and intent.</p>
+                    <a href="https://www.amazon.com" target="_blank" rel="noopener" style="margin-top: 0.5rem; display: inline-block;">View on Amazon →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Podcasts & Audio Resources</h3>
+            <div class="resource-list">
+                <div class="resource-item">
+                    <h4>Preaching Today</h4>
+                    <p style="margin: 0.5rem 0;">Weekly podcast featuring sermons and preaching insights from contemporary Christian leaders across denominational traditions.</p>
+                    <a href="https://www.preachingtoday.com/skills/podcast/" target="_blank" rel="noopener">Listen on Preaching Today →</a>
+                </div>
+
+                <div class="resource-item">
+                    <h4>The Preacher's Workshop</h4>
+                    <p style="margin: 0.5rem 0;">Practical discussions on sermon preparation, exegesis, and homiletical technique from experienced pastors and scholars.</p>
+                    <a href="https://www.spotify.com" target="_blank" rel="noopener">Listen on Spotify →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Websites & Online Tools</h3>
+            <div class="resource-list">
+                <div class="resource-item">
+                    <h4>Working Preacher</h4>
+                    <p style="margin: 0.5rem 0;">Free lectionary-based preaching resources from Luther Seminary, including commentaries, videos, and articles for each Sunday.</p>
+                    <a href="https://www.workingpreacher.org" target="_blank" rel="noopener">Visit Website →</a>
+                </div>
+
+                <div class="resource-item">
+                    <h4>The Gospel Coalition - Preaching & Teaching</h4>
+                    <p style="margin: 0.5rem 0;">Articles, videos, and resources on biblical preaching from a Reformed evangelical perspective.</p>
+                    <a href="https://www.thegospelcoalition.org/topics/preaching-teaching/" target="_blank" rel="noopener">Visit Website →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="background: linear-gradient(135deg, #e8f5e9 0%, #fff 100%); border-left: 4px solid #28a745;">
+            <h3>Week 3 Complete!</h3>
+            <p style="margin-top: 1rem;">
+                Congratulations on completing this week on sermon crafting. Review the resources above to continue your learning journey.
+            </p>
+        </div>
+
+        <div class="module-nav">
+            <a href="week-page6.html" class="btn btn-secondary">← Previous</a>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="saveAndExit()" class="btn btn-secondary">Save & Exit</button>
+                <a href="module-overview.html" class="btn btn-primary" onclick="markWeekComplete()">Return to Module Overview →</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="decorative-cross">✞</div>
+
+    <script>
+        function setView(view) {
+            const buttons = document.querySelectorAll('.view-toggle button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            if (view === 'student') {
+                buttons[0].classList.add('active');
+                localStorage.setItem('currentView', 'student');
+            } else {
+                buttons[1].classList.add('active');
+                localStorage.setItem('currentView', 'teacher');
+            }
+        }
+
+        function saveProgress() {
+            const progress = {
+                week: 'week3',
+                page: 'page7',
+                completed: false,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('week3-progress', JSON.stringify(progress));
+        }
+
+        function markWeekComplete() {
+            const progress = {
+                week: 'week3',
+                page: 'page7',
+                completed: true,
+                weekComplete: true,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('week3-progress', JSON.stringify(progress));
+            localStorage.setItem('week3-completed', 'true');
+        }
+
+        function saveAndExit() {
+            saveProgress();
+            alert('Your progress has been saved. You can return to this module anytime.');
+            window.location.href = 'module-overview.html';
+        }
+
+        window.onload = function() {
+            const savedView = localStorage.getItem('currentView') || 'student';
+            setView(savedView);
+
+            // Auto-save progress every 30 seconds
+            setInterval(saveProgress, 30000);
+        };
+    </script>
+</body>
+</html>

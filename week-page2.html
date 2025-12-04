@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 3 - Weekly Readings</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">✞</span>
+                <h1>LecternAI</h1>
+            </div>
+            <div class="view-toggle">
+                <button class="active" onclick="setView('student')">Student View</button>
+                <button onclick="setView('teacher')">Teacher View</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="module-overview.html">Biblical Preaching</a>
+            <span>›</span>
+            <span>Week 3: Crafting the Sermon</span>
+        </div>
+
+        <h2 class="page-title">
+            <span>Weekly Readings</span>
+        </h2>
+
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 40%"></div>
+        </div>
+        <p style="text-align: center; color: #6c757d; margin-bottom: 2rem;">Page 3 of 5</p>
+
+        <div class="card">
+            <h3>Weekly Readings</h3>
+
+        <div class="card">
+            <h3>Required Reading</h3>
+            <div class="resource-list">
+                <div class="resource-item">
+                    <h4>The Elements of Sermon Structure</h4>
+                    <p style="margin: 0.5rem 0;">A foundational overview of sermon organization and flow</p>
+                    <a href="#" target="_blank">Read Article (PDF, 8 pages) →</a>
+                </div>
+
+                <div class="resource-item">
+                    <h4>Biblical Preaching: An Introduction</h4>
+                    <p style="margin: 0.5rem 0;">Chapters 5-7 on exegesis and application</p>
+                    <a href="#" target="_blank">Access eBook Chapter →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Supplemental Audio</h3>
+            <div class="resource-list">
+                <div class="resource-item">
+                    <h4>Podcast: The Preacher's Kitchen</h4>
+                    <p style="margin: 0.5rem 0;">Episode 42: "From Text to Sermon - A Practical Guide"</p>
+                    <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank">Listen on Spotify (28 minutes) →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="module-nav">
+            <a href="week-page1-5.html" class="btn btn-secondary">← Previous</a>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="saveAndExit()" class="btn btn-secondary">Save & Exit</button>
+                <a href="week-page3.html" class="btn btn-primary" onclick="markPageComplete()">Continue to Videos →</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="decorative-cross">✞</div>
+
+    <script>
+        function setView(view) {
+            const buttons = document.querySelectorAll('.view-toggle button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            if (view === 'student') {
+                buttons[0].classList.add('active');
+                localStorage.setItem('currentView', 'student');
+            } else {
+                buttons[1].classList.add('active');
+                localStorage.setItem('currentView', 'teacher');
+            }
+        }
+
+        function saveProgress() {
+            const progress = {
+                week: 'week3',
+                page: 'page2',
+                completed: false,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('week3-progress', JSON.stringify(progress));
+        }
+
+        function markPageComplete() {
+            const progress = {
+                week: 'week3',
+                page: 'page2',
+                completed: true,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('week3-progress', JSON.stringify(progress));
+        }
+
+        function saveAndExit() {
+            saveProgress();
+            alert('Your progress has been saved. You can return to this module anytime.');
+            window.location.href = 'module-overview.html';
+        }
+
+        window.onload = function() {
+            const savedView = localStorage.getItem('currentView') || 'student';
+            setView(savedView);
+
+            // Auto-save progress every 30 seconds
+            setInterval(saveProgress, 30000);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Week - Teacher View</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-close {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #6c757d;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .modal-close:hover {
+            color: var(--primary-color);
+        }
+
+        .resource-item-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        #preview-mode {
+            display: none;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">✞</span>
+                <h1>LecternAI</h1>
+            </div>
+            <div class="view-toggle">
+                <button onclick="setView('student')">Student View</button>
+                <button class="active" onclick="setView('teacher')">Teacher View</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container" id="edit-mode">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="module-overview.html">Biblical Preaching</a>
+            <span>›</span>
+            <span>Edit Week 3</span>
+        </div>
+
+        <h2 class="page-title">
+            <span>Edit Week: Crafting the Sermon</span>
+        </h2>
+
+        <div class="card">
+            <div class="form-group">
+                <label for="week-title">Week Title</label>
+                <input type="text" id="week-title" value="Crafting the Sermon">
+            </div>
+
+            <div class="form-group">
+                <label for="week-description">Week Description</label>
+                <textarea id="week-description">Sermon structure, rhetoric, and homiletical principles</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="unlock-date">Unlock Date</label>
+                <input type="date" id="unlock-date" value="2025-12-09">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Page 1: Opening Reflection Question</h3>
+            <div class="form-group">
+                <label for="pre-question">Reflection Question</label>
+                <textarea id="pre-question">Describe your current approach to preparing a sermon. What aspects of sermon preparation come naturally to you, and what areas do you find most challenging? How do you hope this week will strengthen your preaching ministry?</textarea>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Page 2: Intro to the Week</h3>
+            <div class="form-group">
+                <label for="week-intro">Week Introduction</label>
+                <textarea id="week-intro" style="min-height: 200px;">This week we'll explore the art and craft of sermon construction. You'll learn how to develop a clear "big idea," structure your message effectively, and use illustrations that illuminate rather than overshadow Scripture. Through video content and discussion, we'll examine various homiletical approaches and help you develop your own voice as a preacher.</textarea>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Page 3: Weekly Readings</h3>
+            <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddResourceModal()">+ Add Resource</button>
+
+            <div class="resource-list" id="weekly-readings-list">
+                <!-- Resources will be populated here -->
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Page 4: Videos</h3>
+            <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddVideoModal()">+ Add Video</button>
+
+            <div class="video-playlist" id="video-list">
+                <!-- Videos will be populated here -->
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Page 5: Closing Reflection Questions</h3>
+            <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddStudyResourceModal()">+ Add Resource</button>
+
+            <div class="resource-list" id="further-study-list">
+                <!-- Further study resources will be populated here -->
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <a href="module-overview.html" class="btn btn-secondary">Return to Module</a>
+            <button class="btn btn-primary" onclick="saveWeek()">Save Week</button>
+            <button class="btn btn-primary" style="margin-left: auto;" onclick="previewAsStudent()">Preview as Student</button>
+        </div>
+    </div>
+
+    <!-- Preview Mode -->
+    <div class="container" id="preview-mode">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="module-overview.html">Biblical Preaching</a>
+            <span>›</span>
+            <span>Week 3: Crafting the Sermon</span>
+        </div>
+
+        <h2 class="page-title">
+            <span class="icon">👁</span>
+            <span>Preview: Crafting the Sermon (Student View)</span>
+        </h2>
+
+        <div class="card" style="background: linear-gradient(135deg, #fff9e6 0%, #fff 100%); border-left: 4px solid var(--secondary-color);">
+            <p><strong>Preview Mode:</strong> You are viewing this week as a student would see it. Content and functionality reflect the student experience.</p>
+        </div>
+
+        <div id="student-preview-content">
+            <!-- Student preview content will be generated here -->
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <button class="btn btn-primary" onclick="returnToEdit()">Return to Edit Week</button>
+        </div>
+    </div>
+
+    <div class="decorative-cross">✞</div>
+
+    <!-- Add Resource Modal -->
+    <div id="add-resource-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Resource</h3>
+                <button class="modal-close" onclick="closeAddResourceModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="resource-title">Resource Title</label>
+                <input type="text" id="resource-title" placeholder="Enter resource title">
+            </div>
+            <div class="form-group">
+                <label for="resource-url">URL</label>
+                <input type="text" id="resource-url" placeholder="https://example.com">
+            </div>
+            <div class="form-group">
+                <label for="resource-description">Description (Optional)</label>
+                <textarea id="resource-description" placeholder="Brief description of the resource"></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeAddResourceModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addResource()">Add Resource</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Video Modal -->
+    <div id="add-video-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Video</h3>
+                <button class="modal-close" onclick="closeAddVideoModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="video-title">Video Title</label>
+                <input type="text" id="video-title" placeholder="Enter video title">
+            </div>
+            <div class="form-group">
+                <label for="video-url">Video URL</label>
+                <input type="text" id="video-url" placeholder="YouTube, Vimeo, or direct video URL">
+                <small style="color: #6c757d; margin-top: 0.5rem; display: block;">Supported: YouTube, Vimeo, or direct video file URLs</small>
+            </div>
+            <div class="form-group">
+                <label for="video-duration">Duration (Optional)</label>
+                <input type="text" id="video-duration" placeholder="e.g., 11:23">
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeAddVideoModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addVideo()">Add Video</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Question Modal -->
+    <div id="add-question-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Reflection Question</h3>
+                <button class="modal-close" onclick="closeAddQuestionModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="question-text">Question</label>
+                <textarea id="question-text" placeholder="Enter your reflection question" style="min-height: 120px;"></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeAddQuestionModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addQuestion()">Add Question</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Resource Modal -->
+    <div id="edit-resource-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Resource</h3>
+                <button class="modal-close" onclick="closeEditResourceModal()">&times;</button>
+            </div>
+            <input type="hidden" id="edit-resource-id">
+            <input type="hidden" id="edit-resource-type">
+            <div class="form-group">
+                <label for="edit-resource-title">Resource Title</label>
+                <input type="text" id="edit-resource-title">
+            </div>
+            <div class="form-group">
+                <label for="edit-resource-url">URL</label>
+                <input type="text" id="edit-resource-url">
+            </div>
+            <div class="form-group">
+                <label for="edit-resource-description">Description (Optional)</label>
+                <textarea id="edit-resource-description"></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeEditResourceModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveResourceEdit()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let weeklyReadings = [
+            { id: 1, title: "The Elements of Sermon Structure", url: "#", description: "A foundational overview of sermon organization and flow" },
+            { id: 2, title: "Biblical Preaching: An Introduction", url: "#", description: "Chapters 5-7 on exegesis and application" }
+        ];
+
+        let videos = [
+            { id: 1, title: "Video 1: The Sermon's Big Idea", url: "https://www.youtube.com/embed/dQw4w9WgXcQ", duration: "11:23" },
+            { id: 2, title: "Video 2: Structure and Flow", url: "https://www.youtube.com/embed/dQw4w9WgXcQ", duration: "10:47" }
+        ];
+
+        let reflectionQuestions = [
+            { id: 1, text: "What are the three most important insights you gained from this week about sermon structure and preparation?" },
+            { id: 2, text: "Describe a specific change you plan to implement in your next sermon preparation based on this week's teaching." }
+        ];
+
+        let furtherStudy = [
+            { id: 1, title: "Between Two Worlds: The Challenge of Preaching Today", url: "#", description: "John R.W. Stott" },
+            { id: 2, title: "Christ-Centered Preaching", url: "#", description: "Bryan Chapell" }
+        ];
+
+        function setView(view) {
+            if (view === 'student') {
+                localStorage.setItem('currentView', 'student');
+                window.location.href = 'index.html';
+            }
+        }
+
+        function renderWeeklyReadings() {
+            const list = document.getElementById('weekly-readings-list');
+            list.innerHTML = '';
+            weeklyReadings.forEach(resource => {
+                const item = document.createElement('div');
+                item.className = 'resource-item';
+                item.innerHTML = `
+                    <strong>${resource.title}</strong>
+                    <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>
+                    <div class="resource-item-actions">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function renderVideos() {
+            const list = document.getElementById('video-list');
+            list.innerHTML = '';
+            videos.forEach(video => {
+                const item = document.createElement('div');
+                item.className = 'playlist-item';
+                item.innerHTML = `
+                    <strong>${video.title}</strong>
+                    <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">${video.duration} • Dr. Michael Daniels</p>
+                    <div class="resource-item-actions">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteVideo(${video.id})">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function renderReflectionQuestions() {
+            const list = document.getElementById('reflection-questions-list');
+            list.innerHTML = '';
+            reflectionQuestions.forEach((question, index) => {
+                const item = document.createElement('div');
+                item.style.padding = '1rem';
+                item.style.background = 'var(--background)';
+                item.style.borderRadius = '8px';
+                item.style.marginBottom = '1rem';
+                item.innerHTML = `
+                    <strong>Question ${index + 1}:</strong> ${question.text}
+                    <div class="resource-item-actions">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editQuestion(${question.id})">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteQuestion(${question.id})">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function renderFurtherStudy() {
+            const list = document.getElementById('further-study-list');
+            list.innerHTML = '';
+            furtherStudy.forEach(resource => {
+                const item = document.createElement('div');
+                item.className = 'resource-item';
+                item.innerHTML = `
+                    <strong>${resource.title}</strong>
+                    <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>
+                    <div class="resource-item-actions">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        // Modal functions
+        function openAddResourceModal() {
+            document.getElementById('resource-title').value = '';
+            document.getElementById('resource-url').value = '';
+            document.getElementById('resource-description').value = '';
+            document.getElementById('add-resource-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeAddResourceModal() {
+            document.getElementById('add-resource-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function addResource() {
+            const title = document.getElementById('resource-title').value;
+            const url = document.getElementById('resource-url').value;
+            const description = document.getElementById('resource-description').value;
+
+            if (title && url) {
+                // Check if we're adding to Further Study or Weekly Readings
+                if (window.tempAddFunction === 'study') {
+                    const newResource = {
+                        id: furtherStudy.length + 1,
+                        title: title,
+                        url: url,
+                        description: description || 'No description provided'
+                    };
+                    furtherStudy.push(newResource);
+                    renderFurtherStudy();
+                    window.tempAddFunction = null;
+                } else {
+                    const newResource = {
+                        id: weeklyReadings.length + 1,
+                        title: title,
+                        url: url,
+                        description: description || 'No description provided'
+                    };
+                    weeklyReadings.push(newResource);
+                    renderWeeklyReadings();
+                }
+                closeAddResourceModal();
+            }
+        }
+
+        function openAddVideoModal() {
+            document.getElementById('video-title').value = '';
+            document.getElementById('video-url').value = '';
+            document.getElementById('video-duration').value = '';
+            document.getElementById('add-video-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeAddVideoModal() {
+            document.getElementById('add-video-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function addVideo() {
+            const title = document.getElementById('video-title').value;
+            const url = document.getElementById('video-url').value;
+            const duration = document.getElementById('video-duration').value;
+
+            if (title && url) {
+                const newVideo = {
+                    id: videos.length + 1,
+                    title: title,
+                    url: url,
+                    duration: duration || '00:00'
+                };
+                videos.push(newVideo);
+                renderVideos();
+                closeAddVideoModal();
+            }
+        }
+
+        function openAddQuestionModal() {
+            document.getElementById('question-text').value = '';
+            document.getElementById('add-question-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeAddQuestionModal() {
+            document.getElementById('add-question-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function addQuestion() {
+            const text = document.getElementById('question-text').value;
+
+            if (text) {
+                const newQuestion = {
+                    id: reflectionQuestions.length + 1,
+                    text: text
+                };
+                reflectionQuestions.push(newQuestion);
+                renderReflectionQuestions();
+                closeAddQuestionModal();
+            }
+        }
+
+        function openAddStudyResourceModal() {
+            document.getElementById('resource-title').value = '';
+            document.getElementById('resource-url').value = '';
+            document.getElementById('resource-description').value = '';
+            document.getElementById('add-resource-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+            // Temporarily change the add function
+            window.tempAddFunction = 'study';
+        }
+
+        function editResource(id, type) {
+            const list = type === 'reading' ? weeklyReadings : furtherStudy;
+            const resource = list.find(r => r.id === id);
+            if (resource) {
+                document.getElementById('edit-resource-id').value = id;
+                document.getElementById('edit-resource-type').value = type;
+                document.getElementById('edit-resource-title').value = resource.title;
+                document.getElementById('edit-resource-url').value = resource.url;
+                document.getElementById('edit-resource-description').value = resource.description;
+                document.getElementById('edit-resource-modal').style.display = 'block';
+                document.body.classList.add('modal-open');
+            }
+        }
+
+        function closeEditResourceModal() {
+            document.getElementById('edit-resource-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function saveResourceEdit() {
+            const id = parseInt(document.getElementById('edit-resource-id').value);
+            const type = document.getElementById('edit-resource-type').value;
+            const title = document.getElementById('edit-resource-title').value;
+            const url = document.getElementById('edit-resource-url').value;
+            const description = document.getElementById('edit-resource-description').value;
+
+            const list = type === 'reading' ? weeklyReadings : furtherStudy;
+            const resource = list.find(r => r.id === id);
+            if (resource) {
+                resource.title = title;
+                resource.url = url;
+                resource.description = description;
+
+                if (type === 'reading') {
+                    renderWeeklyReadings();
+                } else {
+                    renderFurtherStudy();
+                }
+
+                closeEditResourceModal();
+            }
+        }
+
+        function deleteResource(id, type) {
+            if (confirm('Are you sure you want to delete this resource?')) {
+                if (type === 'reading') {
+                    weeklyReadings = weeklyReadings.filter(r => r.id !== id);
+                    renderWeeklyReadings();
+                } else {
+                    furtherStudy = furtherStudy.filter(r => r.id !== id);
+                    renderFurtherStudy();
+                }
+            }
+        }
+
+        function deleteVideo(id) {
+            if (confirm('Are you sure you want to delete this video?')) {
+                videos = videos.filter(v => v.id !== id);
+                renderVideos();
+            }
+        }
+
+        function editVideo(id) {
+            const video = videos.find(v => v.id === id);
+            if (video) {
+                document.getElementById('video-title').value = video.title;
+                document.getElementById('video-url').value = video.url;
+                document.getElementById('video-duration').value = video.duration;
+                openAddVideoModal();
+                // Remove the video silently (will be re-added when saved)
+                videos = videos.filter(v => v.id !== id);
+            }
+        }
+
+        function deleteQuestion(id) {
+            if (confirm('Are you sure you want to delete this question?')) {
+                reflectionQuestions = reflectionQuestions.filter(q => q.id !== id);
+                renderReflectionQuestions();
+            }
+        }
+
+        function editQuestion(id) {
+            const question = reflectionQuestions.find(q => q.id === id);
+            if (question) {
+                document.getElementById('question-text').value = question.text;
+                openAddQuestionModal();
+                // Remove the question silently (will be re-added when saved)
+                reflectionQuestions = reflectionQuestions.filter(q => q.id !== id);
+            }
+        }
+
+        function saveWeek() {
+            alert('Week content saved successfully!');
+        }
+
+        function previewAsStudent() {
+            document.getElementById('edit-mode').style.display = 'none';
+            document.getElementById('preview-mode').style.display = 'block';
+
+            // Generate student preview content
+            const previewContent = document.getElementById('student-preview-content');
+            previewContent.innerHTML = `
+                <div class="card">
+                    <h3>Opening Reflection</h3>
+                    <p>${document.getElementById('pre-question').value}</p>
+                </div>
+                <div class="card">
+                    <h3>Weekly Readings</h3>
+                    <div class="resource-list">
+                        ${weeklyReadings.map(r => `
+                            <div class="resource-item">
+                                <strong>${r.title}</strong>
+                                <p style="color: #6c757d; margin-top: 0.25rem;">${r.description}</p>
+                                <a href="${r.url}" target="_blank">View Resource →</a>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Videos</h3>
+                    <p>Students would see ${videos.length} videos here with playback capabilities.</p>
+                </div>
+            `;
+        }
+
+        function returnToEdit() {
+            document.getElementById('edit-mode').style.display = 'block';
+            document.getElementById('preview-mode').style.display = 'none';
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // Get week number from URL
+        function getWeekNumber() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('week') || '3';
+        }
+
+        // Load week-specific content
+        function loadWeekContent() {
+            const weekNum = getWeekNumber();
+
+            // Week-specific data
+            const weekData = {
+                '1': {
+                    title: 'The Call to Preach',
+                    description: 'Understanding the sacred vocation of preaching in the Christian tradition',
+                    openingPrompt: 'What first drew you to consider the call to preach? Reflect on your journey and motivation.'
+                },
+                '2': {
+                    title: 'Scripture as Foundation',
+                    description: 'Exegetical methods and biblical interpretation for preaching',
+                    openingPrompt: 'How do you currently approach biblical interpretation? What methods do you use?'
+                },
+                '3': {
+                    title: 'Crafting the Sermon',
+                    description: 'Sermon structure, rhetoric, and homiletical principles',
+                    openingPrompt: 'Describe your current approach to preparing a sermon. What aspects come naturally and what areas are challenging?'
+                },
+                '4': {
+                    title: 'Preaching Christ',
+                    description: 'Christological interpretation and Gospel proclamation',
+                    openingPrompt: 'How do you incorporate Christological themes in your preaching?'
+                },
+                '5': {
+                    title: 'Engaging the Congregation',
+                    description: 'Contextual preaching and connecting with diverse audiences',
+                    openingPrompt: 'What strategies do you use to connect with your congregation?'
+                },
+                '6': {
+                    title: 'Prophetic Witness',
+                    description: 'Preaching justice, mercy, and social transformation',
+                    openingPrompt: 'How do you approach preaching on social justice topics?'
+                },
+                '7': {
+                    title: 'Delivery and Presence',
+                    description: 'Voice, body language, and authentic communication',
+                    openingPrompt: 'What aspects of sermon delivery do you find most challenging?'
+                },
+                '8': {
+                    title: 'Sustaining the Preacher',
+                    description: 'Spiritual formation and lifelong learning in homiletics',
+                    openingPrompt: 'How do you maintain your spiritual health as a preacher?'
+                }
+            };
+
+            const data = weekData[weekNum] || weekData['3'];
+
+            // Update page with week-specific content
+            document.querySelector('.breadcrumb span:last-child').textContent = `Edit Week ${weekNum}`;
+            document.querySelector('.page-title span').textContent = `Edit Week: ${data.title}`;
+            document.getElementById('week-title').value = data.title;
+            document.getElementById('week-description').value = data.description;
+            document.getElementById('opening-prompt').value = data.openingPrompt;
+
+            // Store week number for later use
+            window.currentWeekNumber = weekNum;
+        }
+
+        // Initialize
+        window.onload = function() {
+            loadWeekContent();
+            renderWeeklyReadings();
+            renderVideos();
+            renderReflectionQuestions();
+            renderFurtherStudy();
+        };
+    </script>
+</body>
+</html>

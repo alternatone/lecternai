@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 3 - Opening Reflection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">✞</span>
+                <h1>LecternAI</h1>
+            </div>
+            <div class="view-toggle">
+                <button class="active" onclick="setView('student')">Student View</button>
+                <button onclick="setView('teacher')">Teacher View</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <a href="module-overview.html">Biblical Preaching</a>
+            <span>›</span>
+            <span>Week 3: Crafting the Sermon</span>
+        </div>
+
+        <h2 class="page-title">
+            <span>Opening Reflection</span>
+        </h2>
+
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 14%"></div>
+        </div>
+        <p style="text-align: center; color: #6c757d; margin-bottom: 2rem;">Page 1 of 5</p>
+
+        <div class="card">
+            <h3>Opening Reflection</h3>
+            <p style="margin-top: 1rem; margin-bottom: 1.5rem;">
+                Describe your current approach to preparing a sermon. What aspects of sermon preparation come naturally to you, and what areas do you find most challenging?
+            </p>
+
+            <div class="discussion-section">
+                <div class="discussion-form">
+                    <textarea id="new-post" placeholder="Share your thoughts..." style="min-height: 120px; width: 100%;"></textarea>
+                    <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="submitPost()">Post Reflection</button>
+                    </div>
+                </div>
+
+                <div id="posts-list" style="margin-top: 2rem;">
+                    <!-- Posts will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="module-nav">
+            <a href="module-overview.html" class="btn btn-secondary">← Back to Module</a>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="saveAndExit()" class="btn btn-secondary">Save & Exit</button>
+                <a href="week-page1-5.html" class="btn btn-primary" onclick="markPageComplete()">Save & Continue →</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="decorative-cross">✞</div>
+
+    <script>
+        function setView(view) {
+            const buttons = document.querySelectorAll('.view-toggle button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            if (view === 'student') {
+                buttons[0].classList.add('active');
+                localStorage.setItem('currentView', 'student');
+            } else {
+                buttons[1].classList.add('active');
+                localStorage.setItem('currentView', 'teacher');
+            }
+        }
+
+        let posts = [];
+
+        function loadPosts() {
+            const saved = localStorage.getItem('week3-discussion-posts');
+            if (saved) {
+                posts = JSON.parse(saved);
+            }
+            renderPosts();
+        }
+
+        function savePosts() {
+            localStorage.setItem('week3-discussion-posts', JSON.stringify(posts));
+        }
+
+        function submitPost() {
+            const textarea = document.getElementById('new-post');
+            const content = textarea.value.trim();
+
+            if (!content) {
+                alert('Please enter your reflection before posting.');
+                return;
+            }
+
+            const post = {
+                id: Date.now(),
+                content: content,
+                author: 'You',
+                timestamp: new Date().toLocaleString(),
+                replies: []
+            };
+
+            posts.unshift(post);
+            savePosts();
+            textarea.value = '';
+            renderPosts();
+        }
+
+        function submitReply(postId) {
+            const textarea = document.getElementById(`reply-${postId}`);
+            const content = textarea.value.trim();
+
+            if (!content) {
+                alert('Please enter a reply before posting.');
+                return;
+            }
+
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.replies.push({
+                    id: Date.now(),
+                    content: content,
+                    author: 'You',
+                    timestamp: new Date().toLocaleString()
+                });
+                savePosts();
+                textarea.value = '';
+                renderPosts();
+            }
+        }
+
+        function toggleReplyForm(postId) {
+            const form = document.getElementById(`reply-form-${postId}`);
+            if (form.style.display === 'none' || !form.style.display) {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+
+        function renderPosts() {
+            const container = document.getElementById('posts-list');
+
+            if (posts.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d; text-align: center;">No reflections posted yet. Be the first to share!</p>';
+                return;
+            }
+
+            container.innerHTML = posts.map(post => `
+                <div class="discussion-post" style="margin-bottom: 1.5rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                        <strong style="color: var(--primary-color);">${post.author}</strong>
+                        <span style="font-size: 0.875rem; color: #6c757d;">${post.timestamp}</span>
+                    </div>
+                    <p style="margin: 0.5rem 0 1rem 0; line-height: 1.6;">${post.content}</p>
+                    <button onclick="toggleReplyForm(${post.id})" class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.875rem;">Reply</button>
+
+                    <div id="reply-form-${post.id}" style="display: none; margin-top: 1rem; padding: 1rem; background: white; border-radius: 4px;">
+                        <textarea id="reply-${post.id}" placeholder="Write your reply..." style="min-height: 80px; width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; font-family: 'Lora', Georgia, serif;"></textarea>
+                        <button onclick="submitReply(${post.id})" class="btn btn-primary" style="margin-top: 0.5rem; padding: 0.4rem 1rem; font-size: 0.875rem;">Post Reply</button>
+                    </div>
+
+                    ${post.replies.length > 0 ? `
+                        <div style="margin-top: 1rem; margin-left: 2rem; border-left: 3px solid var(--secondary-color); padding-left: 1rem;">
+                            ${post.replies.map(reply => `
+                                <div style="margin-bottom: 1rem; padding: 1rem; background: white; border-radius: 4px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                        <strong style="color: var(--primary-color); font-size: 0.9rem;">${reply.author}</strong>
+                                        <span style="font-size: 0.8rem; color: #6c757d;">${reply.timestamp}</span>
+                                    </div>
+                                    <p style="margin: 0; font-size: 0.95rem; line-height: 1.6;">${reply.content}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function saveProgress() {
+            const progress = {
+                week: 'week3',
+                page: 'page1',
+                completed: false,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('week3-progress', JSON.stringify(progress));
+        }
+
+        function markPageComplete() {
+            const progress = {
+                week: 'week3',
+                page: 'page1',
+                completed: true,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('week3-progress', JSON.stringify(progress));
+        }
+
+        function saveAndExit() {
+            saveProgress();
+            alert('Your progress has been saved. You can return to this module anytime.');
+            window.location.href = 'module-overview.html';
+        }
+
+        function checkIfCompleted() {
+            const completed = localStorage.getItem('week3-completed');
+            if (completed === 'true') {
+                // Show read-only banner
+                const banner = document.createElement('div');
+                banner.style.cssText = 'padding: 1rem; background: #e3f2fd; border-left: 4px solid #2196F3; margin-bottom: 2rem; border-radius: 4px;';
+                banner.innerHTML = '<strong>Review Mode:</strong> You have already completed this week. You can review content but cannot make new posts.';
+
+                const container = document.querySelector('.container');
+                const breadcrumb = document.querySelector('.breadcrumb');
+                breadcrumb.insertAdjacentElement('afterend', banner);
+
+                // Disable posting
+                document.getElementById('new-post').disabled = true;
+                document.getElementById('new-post').placeholder = 'Posting disabled - Week already completed';
+                const postButton = document.querySelector('button[onclick="submitPost()"]');
+                if (postButton) postButton.disabled = true;
+
+                // Hide reply buttons
+                const replyButtons = document.querySelectorAll('button[onclick^="toggleReplyForm"]');
+                replyButtons.forEach(btn => btn.style.display = 'none');
+            }
+        }
+
+        // Universal scroll fix - ensure scrolling works
+        function ensureScrollingEnabled() {
+            const hasVisibleModal = Array.from(document.querySelectorAll('.modal')).some(
+                modal => modal.style.display === 'block'
+            );
+
+            if (!hasVisibleModal) {
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.position = '';
+            }
+        }
+
+        window.onload = function() {
+            const savedView = localStorage.getItem('currentView') || 'student';
+            setView(savedView);
+            loadPosts();
+            checkIfCompleted();
+            ensureScrollingEnabled();
+
+            // Auto-save progress every 30 seconds
+            setInterval(saveProgress, 30000);
+
+            // Check scroll state every 2 seconds as failsafe
+            setInterval(ensureScrollingEnabled, 2000);
+        };
+    </script>
+</body>
+</html>
