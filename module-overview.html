@@ -508,6 +508,10 @@
             document.getElementById('duration-input').value = moduleInfo.duration || document.getElementById('module-duration').textContent;
             document.getElementById('participation-input').value = moduleInfo.participation || document.getElementById('participation-requirements').textContent;
             document.getElementById('time-input').value = moduleInfo.timeExpectations || document.getElementById('time-expectations').textContent;
+
+            // Load any unsaved draft
+            loadModuleInfoDraft();
+
             document.getElementById('edit-description-modal').style.display = 'block';
             document.body.classList.add('modal-open');
         }
@@ -541,6 +545,9 @@
             };
             localStorage.setItem('moduleInfo', JSON.stringify(moduleInfo));
 
+            // Clear the draft since we successfully saved
+            localStorage.removeItem('moduleInfoDraft');
+
             // Show additional info if any of the fields are filled
             if (participation || timeExp) {
                 document.getElementById('additional-info').style.display = 'block';
@@ -549,6 +556,7 @@
             }
 
             closeEditDescriptionModal();
+            alert('Module information saved successfully!');
         }
 
         function openZoomSetupModal() {
@@ -673,6 +681,9 @@
             renderPage1Questions();
             renderReflectionQuestions();
 
+            // Load any draft
+            loadCreateWeekDraft();
+
             document.getElementById('create-week-modal').style.display = 'block';
             document.body.classList.add('modal-open');
         }
@@ -697,6 +708,7 @@
             list.innerHTML = '';
             if (weeklyReadings.length === 0) {
                 list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No resources added yet</p>';
+                autoSaveCreateWeekDraft();
                 return;
             }
             weeklyReadings.forEach(resource => {
@@ -712,6 +724,7 @@
                 `;
                 list.appendChild(item);
             });
+            autoSaveCreateWeekDraft();
         }
 
         function renderFurtherStudy() {
@@ -719,6 +732,7 @@
             list.innerHTML = '';
             if (furtherStudy.length === 0) {
                 list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No resources added yet</p>';
+                autoSaveCreateWeekDraft();
                 return;
             }
             furtherStudy.forEach(resource => {
@@ -734,6 +748,7 @@
                 `;
                 list.appendChild(item);
             });
+            autoSaveCreateWeekDraft();
         }
 
         function openAddResourceModal() {
@@ -856,6 +871,7 @@
             list.innerHTML = '';
             if (page1Questions.length === 0) {
                 list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No questions added yet</p>';
+                autoSaveCreateWeekDraft();
                 return;
             }
             page1Questions.forEach((question, index) => {
@@ -873,6 +889,7 @@
                 `;
                 list.appendChild(item);
             });
+            autoSaveCreateWeekDraft();
         }
 
         function openAddPage1QuestionModal() {
@@ -905,6 +922,7 @@
             list.innerHTML = '';
             if (videos.length === 0) {
                 list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No videos added yet</p>';
+                autoSaveCreateWeekDraft();
                 return;
             }
             videos.forEach(video => {
@@ -920,6 +938,7 @@
                 `;
                 list.appendChild(item);
             });
+            autoSaveCreateWeekDraft();
         }
 
         function openAddVideoModal() {
@@ -999,6 +1018,7 @@
             list.innerHTML = '';
             if (page5Videos.length === 0) {
                 list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No videos added yet</p>';
+                autoSaveCreateWeekDraft();
                 return;
             }
             page5Videos.forEach(video => {
@@ -1014,6 +1034,7 @@
                 `;
                 list.appendChild(item);
             });
+            autoSaveCreateWeekDraft();
         }
 
         function openAddPage5VideoModal() {
@@ -1082,6 +1103,7 @@
             list.innerHTML = '';
             if (reflectionQuestions.length === 0) {
                 list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No questions added yet</p>';
+                autoSaveCreateWeekDraft();
                 return;
             }
             reflectionQuestions.forEach((question, index) => {
@@ -1099,6 +1121,7 @@
                 `;
                 list.appendChild(item);
             });
+            autoSaveCreateWeekDraft();
         }
 
         function openAddQuestionModal() {
@@ -1251,6 +1274,9 @@
             // Save to localStorage
             localStorage.setItem('moduleWeeks', JSON.stringify(weeks));
 
+            // Clear the draft since we successfully saved
+            localStorage.removeItem('createWeekDraft');
+
             // Close modal and refresh
             closeCreateWeekModal();
             renderWeeks();
@@ -1272,7 +1298,115 @@
             setView(savedView);
             loadModuleInfo();
             displayZoomInfo();
+            setupAutoSave();
         };
+
+        // Auto-save functionality to prevent data loss
+        function setupAutoSave() {
+            // Auto-save for Edit Module Info modal
+            const moduleFields = ['description-input', 'instructor-input', 'duration-input', 'participation-input', 'time-input'];
+            moduleFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('input', debounce(function() {
+                        autoSaveModuleInfo();
+                    }, 1000));
+                }
+            });
+
+            // Auto-save for Create Week modal
+            const weekFields = ['week-title-input', 'week-description-input', 'page2-intro-text'];
+            weekFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('input', debounce(function() {
+                        autoSaveCreateWeekDraft();
+                    }, 1000));
+                }
+            });
+        }
+
+        // Debounce function to limit how often auto-save runs
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function autoSaveModuleInfo() {
+            const moduleInfo = {
+                description: document.getElementById('description-input').value,
+                instructor: document.getElementById('instructor-input').value,
+                duration: document.getElementById('duration-input').value,
+                participation: document.getElementById('participation-input').value,
+                timeExpectations: document.getElementById('time-input').value,
+                lastAutoSave: new Date().toISOString()
+            };
+            localStorage.setItem('moduleInfoDraft', JSON.stringify(moduleInfo));
+            console.log('Module info auto-saved');
+        }
+
+        function autoSaveCreateWeekDraft() {
+            const weekDraft = {
+                title: document.getElementById('week-title-input').value,
+                description: document.getElementById('week-description-input').value,
+                page2IntroText: document.getElementById('page2-intro-text').value,
+                weeklyReadings: [...weeklyReadings],
+                furtherStudy: [...furtherStudy],
+                videos: [...videos],
+                page5Videos: [...page5Videos],
+                page1Questions: [...page1Questions],
+                reflectionQuestions: [...reflectionQuestions],
+                lastAutoSave: new Date().toISOString()
+            };
+            localStorage.setItem('createWeekDraft', JSON.stringify(weekDraft));
+            console.log('Create week draft auto-saved');
+        }
+
+        function loadCreateWeekDraft() {
+            const draft = JSON.parse(localStorage.getItem('createWeekDraft') || 'null');
+            if (draft) {
+                if (confirm('A draft was found. Would you like to restore it?')) {
+                    document.getElementById('week-title-input').value = draft.title || '';
+                    document.getElementById('week-description-input').value = draft.description || '';
+                    document.getElementById('page2-intro-text').value = draft.page2IntroText || '';
+                    weeklyReadings = draft.weeklyReadings || [];
+                    furtherStudy = draft.furtherStudy || [];
+                    videos = draft.videos || [];
+                    page5Videos = draft.page5Videos || [];
+                    page1Questions = draft.page1Questions || [];
+                    reflectionQuestions = draft.reflectionQuestions || [];
+
+                    // Re-render all lists
+                    renderWeeklyReadings();
+                    renderFurtherStudy();
+                    renderVideos();
+                    renderPage5Videos();
+                    renderPage1Questions();
+                    renderReflectionQuestions();
+                } else {
+                    // User declined, clear the draft
+                    localStorage.removeItem('createWeekDraft');
+                }
+            }
+        }
+
+        function loadModuleInfoDraft() {
+            const draft = JSON.parse(localStorage.getItem('moduleInfoDraft') || 'null');
+            if (draft) {
+                document.getElementById('description-input').value = draft.description || '';
+                document.getElementById('instructor-input').value = draft.instructor || '';
+                document.getElementById('duration-input').value = draft.duration || '';
+                document.getElementById('participation-input').value = draft.participation || '';
+                document.getElementById('time-input').value = draft.timeExpectations || '';
+            }
+        }
     </script>
 </body>
 </html>
