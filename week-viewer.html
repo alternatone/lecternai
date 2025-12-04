@@ -54,6 +54,48 @@
         let currentPage = 1;
         const totalPages = 5;
 
+        // Format text with basic markdown support (line breaks, bullet points)
+        function formatText(text) {
+            if (!text) return '';
+
+            // Escape HTML to prevent XSS
+            const escaped = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            // Convert line breaks to <br>
+            let formatted = escaped.replace(/\n/g, '<br>');
+
+            // Convert markdown-style bullets to HTML list items
+            const lines = formatted.split('<br>');
+            let inList = false;
+            let result = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                const isBullet = /^[\*\-\•]\s/.test(line);
+
+                if (isBullet) {
+                    if (!inList) {
+                        result.push('<ul style="margin: 0.5rem 0; padding-left: 1.5rem;">');
+                        inList = true;
+                    }
+                    const content = line.replace(/^[\*\-\•]\s/, '');
+                    result.push(`<li>${content}</li>`);
+                } else {
+                    if (inList) {
+                        result.push('</ul>');
+                        inList = false;
+                    }
+                    result.push(line + '<br>');
+                }
+            }
+
+            if (inList) {
+                result.push('</ul>');
+            }
+
+            return result.join('');
+        }
+
         function setView(view) {
             currentView = view;
             const buttons = document.querySelectorAll('.view-toggle button');
@@ -166,7 +208,7 @@
 
             // Show intro text
             if (pageData.content) {
-                html += `<p style="margin-top: 1rem; white-space: pre-wrap;">${pageData.content}</p>`;
+                html += `<div style="margin-top: 1rem;">${formatText(pageData.content)}</div>`;
             }
 
             // Show videos if any
