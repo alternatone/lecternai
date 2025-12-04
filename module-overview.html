@@ -133,7 +133,7 @@
             </div>
             <div class="form-group">
                 <label for="description-input">Module Overview</label>
-                <textarea id="description-input" style="min-height: 150px;" placeholder="Provide a comprehensive overview of this module"></textarea>
+                <textarea id="description-input" style="min-height: 150px;"></textarea>
             </div>
             <div class="form-group">
                 <label for="instructor-input">Instructor</label>
@@ -141,15 +141,15 @@
             </div>
             <div class="form-group">
                 <label for="duration-input">Duration</label>
-                <input type="text" id="duration-input" placeholder="e.g., 8 Weeks">
+                <input type="text" id="duration-input">
             </div>
             <div class="form-group">
                 <label for="participation-input">Participation Requirements</label>
-                <textarea id="participation-input" style="min-height: 80px;" placeholder="What is expected of students"></textarea>
+                <textarea id="participation-input" style="min-height: 80px;"></textarea>
             </div>
             <div class="form-group">
                 <label for="time-input">Time Expectations</label>
-                <textarea id="time-input" style="min-height: 80px;" placeholder="Estimated time commitment"></textarea>
+                <textarea id="time-input" style="min-height: 80px;"></textarea>
             </div>
             <div class="form-group">
                 <button type="button" class="btn btn-secondary" onclick="openZoomSetupModal()" style="width: 100%;">Zoom Meeting Setup</button>
@@ -170,15 +170,15 @@
             </div>
             <div class="form-group">
                 <label for="zoom-url-input">Zoom Meeting URL</label>
-                <input type="text" id="zoom-url-input" placeholder="https://zoom.us/j/...">
+                <input type="text" id="zoom-url-input">
             </div>
             <div class="form-group">
                 <label for="zoom-id-input">Meeting ID</label>
-                <input type="text" id="zoom-id-input" placeholder="123 456 7890">
+                <input type="text" id="zoom-id-input">
             </div>
             <div class="form-group">
                 <label for="zoom-passcode-input">Passcode</label>
-                <input type="text" id="zoom-passcode-input" placeholder="Optional">
+                <input type="text" id="zoom-passcode-input">
             </div>
             <div class="form-group">
                 <label for="zoom-day-input">Weekly Meeting Day</label>
@@ -224,12 +224,12 @@
 
             <div class="form-group">
                 <label for="week-title-input">Week Title</label>
-                <input type="text" id="week-title-input" placeholder="e.g., The Call to Preach">
+                <input type="text" id="week-title-input">
             </div>
 
             <div class="form-group">
                 <label for="week-description-input">Week Description</label>
-                <textarea id="week-description-input" style="min-height: 80px;" placeholder="Brief overview of this week's content"></textarea>
+                <textarea id="week-description-input" style="min-height: 80px;"></textarea>
             </div>
 
             <div class="card">
@@ -249,7 +249,7 @@
                 </div>
                 <div class="form-group">
                     <label for="page2-intro-text">Week Introduction</label>
-                    <textarea id="page2-intro-text" style="min-height: 150px;" placeholder="Enter introductory text for this week"></textarea>
+                    <textarea id="page2-intro-text" style="min-height: 150px;"></textarea>
                 </div>
                 <div class="video-playlist" id="video-list" style="margin-top: 1rem;">
                     <!-- Videos will be populated here -->
@@ -308,15 +308,15 @@
             </div>
             <div class="form-group">
                 <label for="resource-title">Resource Title</label>
-                <input type="text" id="resource-title" placeholder="Enter resource title">
+                <input type="text" id="resource-title">
             </div>
             <div class="form-group">
                 <label for="resource-url">URL</label>
-                <input type="text" id="resource-url" placeholder="https://example.com">
+                <input type="text" id="resource-url">
             </div>
             <div class="form-group">
                 <label for="resource-description">Description (Optional)</label>
-                <textarea id="resource-description" placeholder="Brief description of the resource"></textarea>
+                <textarea id="resource-description"></textarea>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeAddResourceModal()">Cancel</button>
@@ -362,16 +362,16 @@
             </div>
             <div class="form-group">
                 <label for="video-title">Video Title</label>
-                <input type="text" id="video-title" placeholder="Enter video title">
+                <input type="text" id="video-title">
             </div>
             <div class="form-group">
                 <label for="video-url">Video URL</label>
-                <input type="text" id="video-url" placeholder="YouTube, Vimeo, or direct video URL">
+                <input type="text" id="video-url">
                 <small style="color: #6c757d; margin-top: 0.5rem; display: block;">Supported: YouTube, Vimeo, or direct video file URLs</small>
             </div>
             <div class="form-group">
                 <label for="video-duration">Duration (Optional)</label>
-                <input type="text" id="video-duration" placeholder="e.g., 11:23">
+                <input type="text" id="video-duration">
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeAddVideoModal()">Cancel</button>
@@ -389,7 +389,7 @@
             </div>
             <div class="form-group">
                 <label for="question-text">Question</label>
-                <textarea id="question-text" placeholder="Enter your reflection question" style="min-height: 120px;"></textarea>
+                <textarea id="question-text" style="min-height: 120px;"></textarea>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeAddQuestionModal()">Cancel</button>
@@ -928,9 +928,10 @@
             videos.forEach(video => {
                 const item = document.createElement('div');
                 item.className = 'playlist-item';
+                const durationHtml = video.duration ? `<p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">Duration: ${video.duration}</p>` : '';
                 item.innerHTML = `
                     <strong>${video.title}</strong>
-                    <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">${video.duration || 'No duration'}</p>
+                    ${durationHtml}
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteVideo(${video.id})">Delete</button>
@@ -1024,9 +1025,10 @@
             page5Videos.forEach(video => {
                 const item = document.createElement('div');
                 item.className = 'playlist-item';
+                const durationHtml = video.duration ? `<p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">Duration: ${video.duration}</p>` : '';
                 item.innerHTML = `
                     <strong>${video.title}</strong>
-                    <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">${video.duration || 'No duration'}</p>
+                    ${durationHtml}
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editPage5Video(${video.id})">Edit</button>
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deletePage5Video(${video.id})">Delete</button>
