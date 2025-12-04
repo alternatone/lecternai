@@ -209,7 +209,7 @@
 
     <!-- Create Week Modal -->
     <div id="create-week-modal" class="modal">
-        <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
                 <h3>Create New Week</h3>
                 <button class="modal-close" onclick="closeCreateWeekModal()">&times;</button>
@@ -225,51 +225,111 @@
                 <textarea id="week-description-input" style="min-height: 80px;" placeholder="Brief overview of this week's content"></textarea>
             </div>
 
-            <div style="margin-top: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 8px;">
-                <h4 style="margin-bottom: 1.5rem;">Week Structure (5 Pages)</h4>
-
-                <!-- Page 1: Opening Reflection -->
+            <div class="card">
+                <h3>Page 1: Opening Reflection Question</h3>
                 <div class="form-group">
-                    <label for="page1-prompt"><strong>Page 1: Opening Reflection Question</strong> (Threaded Discussion)</label>
+                    <label for="page1-prompt">Reflection Question</label>
                     <textarea id="page1-prompt" style="min-height: 100px;" placeholder="Enter the discussion question or reflection prompt"></textarea>
                 </div>
+            </div>
 
-                <!-- Page 2: Intro to the Week -->
+            <div class="card">
+                <h3>Page 2: Intro to the Week</h3>
                 <div class="form-group">
-                    <label for="page2-intro-text"><strong>Page 2: Introduction to the Week</strong> (Text + Video)</label>
-                    <textarea id="page2-intro-text" style="min-height: 100px;" placeholder="Enter introductory text for this week"></textarea>
-                    <input type="text" id="page2-video-url" style="margin-top: 0.5rem;" placeholder="Video URL (YouTube or Vimeo, e.g., https://www.youtube.com/watch?v=...)">
-                    <textarea id="page2-video-description" style="min-height: 60px; margin-top: 0.5rem;" placeholder="Optional: Video description or context"></textarea>
+                    <label for="page2-intro-text">Week Introduction</label>
+                    <textarea id="page2-intro-text" style="min-height: 150px;" placeholder="Enter introductory text for this week"></textarea>
                 </div>
+            </div>
 
-                <!-- Page 3: Weekly Reading -->
-                <div class="form-group">
-                    <label for="page3-content"><strong>Page 3: Weekly Reading</strong> (Reading Content/Resources)</label>
-                    <textarea id="page3-content" style="min-height: 120px;" placeholder="Enter reading content, article links, or required materials"></textarea>
+            <div class="card">
+                <h3>Page 3: Weekly Readings</h3>
+                <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddResourceModal()">+ Add Resource</button>
+                <div class="resource-list" id="weekly-readings-list">
+                    <!-- Resources will be populated here -->
                 </div>
+            </div>
 
-                <!-- Page 4: Post-Zoom Reflection -->
+            <div class="card">
+                <h3>Page 4: Post-Zoom Reflection</h3>
                 <div class="form-group">
-                    <label for="page4-discussion-prompt"><strong>Page 4: Post-Zoom Reflection</strong> (Threaded Discussion)</label>
+                    <label for="page4-discussion-prompt">Reflection Question</label>
                     <textarea id="page4-discussion-prompt" style="min-height: 100px;" placeholder="Enter the post-zoom discussion question"></textarea>
                 </div>
+            </div>
 
-                <!-- Page 5: Further Study -->
-                <div class="form-group">
-                    <label for="page5-resources"><strong>Page 5: Further Study</strong> (Reading/Resources)</label>
-                    <textarea id="page5-resources" style="min-height: 120px;" placeholder="Enter recommended books, articles, or other resources"></textarea>
+            <div class="card">
+                <h3>Page 5: Further Study</h3>
+                <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddStudyResourceModal()">+ Add Resource</button>
+                <div class="resource-list" id="further-study-list">
+                    <!-- Further study resources will be populated here -->
                 </div>
             </div>
 
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeCreateWeekModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveWeek()">Create Week</button>
+                <button class="btn btn-primary" onclick="saveNewWeek()">Create Week</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Resource Modal -->
+    <div id="add-resource-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Resource</h3>
+                <button class="modal-close" onclick="closeAddResourceModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="resource-title">Resource Title</label>
+                <input type="text" id="resource-title" placeholder="Enter resource title">
+            </div>
+            <div class="form-group">
+                <label for="resource-url">URL</label>
+                <input type="text" id="resource-url" placeholder="https://example.com">
+            </div>
+            <div class="form-group">
+                <label for="resource-description">Description (Optional)</label>
+                <textarea id="resource-description" placeholder="Brief description of the resource"></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeAddResourceModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="addResource()">Add Resource</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Resource Modal -->
+    <div id="edit-resource-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Resource</h3>
+                <button class="modal-close" onclick="closeEditResourceModal()">&times;</button>
+            </div>
+            <input type="hidden" id="edit-resource-id">
+            <input type="hidden" id="edit-resource-type">
+            <div class="form-group">
+                <label for="edit-resource-title">Resource Title</label>
+                <input type="text" id="edit-resource-title">
+            </div>
+            <div class="form-group">
+                <label for="edit-resource-url">URL</label>
+                <input type="text" id="edit-resource-url">
+            </div>
+            <div class="form-group">
+                <label for="edit-resource-description">Description (Optional)</label>
+                <textarea id="edit-resource-description"></textarea>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeEditResourceModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveResourceEdit()">Save Changes</button>
             </div>
         </div>
     </div>
 
     <script>
         const weeks = [];
+        let weeklyReadings = [];
+        let furtherStudy = [];
 
         let currentView = 'student';
 
@@ -484,6 +544,12 @@
         }
 
         function openCreateWeekModal() {
+            // Reset arrays
+            weeklyReadings = [];
+            furtherStudy = [];
+            renderWeeklyReadings();
+            renderFurtherStudy();
+
             document.getElementById('create-week-modal').style.display = 'block';
             document.body.classList.add('modal-open');
         }
@@ -496,14 +562,171 @@
             document.getElementById('week-description-input').value = '';
             document.getElementById('page1-prompt').value = '';
             document.getElementById('page2-intro-text').value = '';
-            document.getElementById('page2-video-url').value = '';
-            document.getElementById('page2-video-description').value = '';
-            document.getElementById('page3-content').value = '';
             document.getElementById('page4-discussion-prompt').value = '';
-            document.getElementById('page5-resources').value = '';
+            weeklyReadings = [];
+            furtherStudy = [];
         }
 
-        function saveWeek() {
+        function renderWeeklyReadings() {
+            const list = document.getElementById('weekly-readings-list');
+            list.innerHTML = '';
+            if (weeklyReadings.length === 0) {
+                list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No resources added yet</p>';
+                return;
+            }
+            weeklyReadings.forEach(resource => {
+                const item = document.createElement('div');
+                item.className = 'resource-item';
+                item.innerHTML = `
+                    <strong>${resource.title}</strong>
+                    <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description || 'No description'}</p>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function renderFurtherStudy() {
+            const list = document.getElementById('further-study-list');
+            list.innerHTML = '';
+            if (furtherStudy.length === 0) {
+                list.innerHTML = '<p style="color: #6c757d; text-align: center; padding: 1rem;">No resources added yet</p>';
+                return;
+            }
+            furtherStudy.forEach(resource => {
+                const item = document.createElement('div');
+                item.className = 'resource-item';
+                item.innerHTML = `
+                    <strong>${resource.title}</strong>
+                    <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description || 'No description'}</p>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function openAddResourceModal() {
+            document.getElementById('resource-title').value = '';
+            document.getElementById('resource-url').value = '';
+            document.getElementById('resource-description').value = '';
+            document.getElementById('add-resource-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+            window.tempAddFunction = 'reading';
+        }
+
+        function openAddStudyResourceModal() {
+            document.getElementById('resource-title').value = '';
+            document.getElementById('resource-url').value = '';
+            document.getElementById('resource-description').value = '';
+            document.getElementById('add-resource-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+            window.tempAddFunction = 'study';
+        }
+
+        function closeAddResourceModal() {
+            document.getElementById('add-resource-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function addResource() {
+            const title = document.getElementById('resource-title').value.trim();
+            const url = document.getElementById('resource-url').value.trim();
+            const description = document.getElementById('resource-description').value.trim();
+
+            if (!title || !url) {
+                alert('Please enter both title and URL');
+                return;
+            }
+
+            if (window.tempAddFunction === 'study') {
+                const newResource = {
+                    id: furtherStudy.length + 1,
+                    title: title,
+                    url: url,
+                    description: description
+                };
+                furtherStudy.push(newResource);
+                renderFurtherStudy();
+            } else {
+                const newResource = {
+                    id: weeklyReadings.length + 1,
+                    title: title,
+                    url: url,
+                    description: description
+                };
+                weeklyReadings.push(newResource);
+                renderWeeklyReadings();
+            }
+            closeAddResourceModal();
+        }
+
+        function editResource(id, type) {
+            const list = type === 'reading' ? weeklyReadings : furtherStudy;
+            const resource = list.find(r => r.id === id);
+            if (resource) {
+                document.getElementById('edit-resource-id').value = id;
+                document.getElementById('edit-resource-type').value = type;
+                document.getElementById('edit-resource-title').value = resource.title;
+                document.getElementById('edit-resource-url').value = resource.url;
+                document.getElementById('edit-resource-description').value = resource.description || '';
+                document.getElementById('edit-resource-modal').style.display = 'block';
+                document.body.classList.add('modal-open');
+            }
+        }
+
+        function closeEditResourceModal() {
+            document.getElementById('edit-resource-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function saveResourceEdit() {
+            const id = parseInt(document.getElementById('edit-resource-id').value);
+            const type = document.getElementById('edit-resource-type').value;
+            const title = document.getElementById('edit-resource-title').value.trim();
+            const url = document.getElementById('edit-resource-url').value.trim();
+            const description = document.getElementById('edit-resource-description').value.trim();
+
+            if (!title || !url) {
+                alert('Please enter both title and URL');
+                return;
+            }
+
+            const list = type === 'reading' ? weeklyReadings : furtherStudy;
+            const resource = list.find(r => r.id === id);
+            if (resource) {
+                resource.title = title;
+                resource.url = url;
+                resource.description = description;
+
+                if (type === 'reading') {
+                    renderWeeklyReadings();
+                } else {
+                    renderFurtherStudy();
+                }
+
+                closeEditResourceModal();
+            }
+        }
+
+        function deleteResource(id, type) {
+            if (confirm('Are you sure you want to delete this resource?')) {
+                if (type === 'reading') {
+                    weeklyReadings = weeklyReadings.filter(r => r.id !== id);
+                    renderWeeklyReadings();
+                } else {
+                    furtherStudy = furtherStudy.filter(r => r.id !== id);
+                    renderFurtherStudy();
+                }
+            }
+        }
+
+        function saveNewWeek() {
             const title = document.getElementById('week-title-input').value.trim();
             const description = document.getElementById('week-description-input').value.trim();
 
@@ -520,11 +743,7 @@
             // Collect page data for all 5 pages
             const page1Prompt = document.getElementById('page1-prompt').value.trim();
             const page2IntroText = document.getElementById('page2-intro-text').value.trim();
-            const page2VideoUrl = document.getElementById('page2-video-url').value.trim();
-            const page2VideoDesc = document.getElementById('page2-video-description').value.trim();
-            const page3Content = document.getElementById('page3-content').value.trim();
             const page4DiscussionPrompt = document.getElementById('page4-discussion-prompt').value.trim();
-            const page5Resources = document.getElementById('page5-resources').value.trim();
 
             // Validate required fields
             if (!page1Prompt) {
@@ -535,16 +754,8 @@
                 alert('Please enter introduction text for the week (Page 2)');
                 return;
             }
-            if (!page3Content) {
-                alert('Please enter weekly reading content (Page 3)');
-                return;
-            }
             if (!page4DiscussionPrompt) {
                 alert('Please enter a post-zoom reflection question (Page 4)');
-                return;
-            }
-            if (!page5Resources) {
-                alert('Please enter further study resources (Page 5)');
                 return;
             }
 
@@ -558,14 +769,12 @@
                 {
                     title: 'Introduction to the Week',
                     type: 'intro',
-                    content: page2IntroText,
-                    videoUrl: page2VideoUrl,
-                    videoDescription: page2VideoDesc
+                    content: page2IntroText
                 },
                 {
                     title: 'Weekly Reading',
                     type: 'reading',
-                    content: page3Content
+                    resources: [...weeklyReadings]
                 },
                 {
                     title: 'Post-Zoom Reflection',
@@ -575,7 +784,7 @@
                 {
                     title: 'Further Study',
                     type: 'reading',
-                    content: page5Resources
+                    resources: [...furtherStudy]
                 }
             ];
 
