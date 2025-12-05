@@ -362,9 +362,12 @@
                 currentPage++;
                 window.location.href = `week-viewer.html?week=${currentWeek.id}&page=${currentPage}`;
             } else {
-                // Finish - mark week as completed and go back to module overview
-                dataService.completeWeek(currentWeek.id);
-                alert('Week completed!');
+                // Finish - mark week as completed for students, just navigate for teachers
+                const currentView = dataService.getCurrentView();
+                if (currentView === 'student') {
+                    dataService.completeWeek(currentWeek.id);
+                    alert('Week completed!');
+                }
                 window.location.href = 'module-overview.html';
             }
         }

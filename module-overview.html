@@ -523,15 +523,11 @@
                 weekAction.style.gap = '1rem';
 
                 if (currentView === 'teacher') {
-                    // Teacher view: Show Edit Week button for all weeks, plus Preview Week for unlocked weeks
-                    if (week.status !== 'locked') {
-                        weekAction.innerHTML = `
-                            <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Preview Week</button>
-                            <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="location.href='teacher-week-edit.html?week=${week.id}'">Edit Week</button>
-                        `;
-                    } else {
-                        weekAction.innerHTML = `<button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="location.href='teacher-week-edit.html?week=${week.id}'">Edit Week</button>`;
-                    }
+                    // Teacher view: Show Preview Week and Edit Week buttons for all weeks (no status badges)
+                    weekAction.innerHTML = `
+                        <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Preview Week</button>
+                        <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="location.href='teacher-week-edit.html?week=${week.id}'">Edit Week</button>
+                    `;
                 } else {
                     // Student view: Show status and View Week button
                     if (week.status === 'complete' || isComplete) {
@@ -1019,9 +1015,12 @@
 
         function openAddPage1QuestionModal() {
             document.getElementById('question-text').value = '';
+            window.editingPage1 = true;
+            window.editingPage1QuestionId = null;
+            document.getElementById('question-modal-title').textContent = 'Add Question';
+            document.getElementById('question-modal-submit-btn').textContent = 'Add Question';
             document.getElementById('add-question-modal').style.display = 'block';
             document.body.classList.add('modal-open');
-            window.editingPage1 = true;
         }
 
         function editPage1Question(id) {
@@ -1266,6 +1265,8 @@
 
         function openAddQuestionModal() {
             document.getElementById('question-text').value = '';
+            window.editingPage1 = false;
+            window.editingQuestionId = null;
             document.getElementById('question-modal-title').textContent = 'Add Question';
             document.getElementById('question-modal-submit-btn').textContent = 'Add Question';
             document.getElementById('add-question-modal').style.display = 'block';
