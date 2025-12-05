@@ -558,6 +558,23 @@
             };
             localStorage.setItem('moduleInfo', JSON.stringify(moduleInfo));
 
+            // Also update in modules array if we have a currentModuleId
+            const currentModuleId = localStorage.getItem('currentModuleId');
+            if (currentModuleId) {
+                const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+                const moduleIndex = modules.findIndex(m => m.id === parseInt(currentModuleId));
+
+                if (moduleIndex !== -1) {
+                    modules[moduleIndex].description = description;
+                    modules[moduleIndex].instructor = instructor;
+                    modules[moduleIndex].duration = duration;
+                    modules[moduleIndex].participation = participation;
+                    modules[moduleIndex].timeExpectations = timeExp;
+                    modules[moduleIndex].isDraft = false; // Mark as no longer draft
+                    localStorage.setItem('modules', JSON.stringify(modules));
+                }
+            }
+
             // Clear the draft since we successfully saved
             localStorage.removeItem('moduleInfoDraft');
 
@@ -655,7 +672,33 @@
         }
 
         function loadModuleInfo() {
-            const moduleInfo = JSON.parse(localStorage.getItem('moduleInfo') || '{}');
+            // Check if we're loading from a specific module
+            const currentModuleId = localStorage.getItem('currentModuleId');
+            let moduleInfo = {};
+
+            if (currentModuleId) {
+                const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+                const currentModule = modules.find(m => m.id === parseInt(currentModuleId));
+
+                if (currentModule) {
+                    moduleInfo = {
+                        description: currentModule.description || '',
+                        instructor: currentModule.instructor || '',
+                        duration: currentModule.duration || '',
+                        participation: currentModule.participation || '',
+                        timeExpectations: currentModule.timeExpectations || ''
+                    };
+
+                    // Update page title
+                    const titleElement = document.querySelector('.breadcrumb span:last-child');
+                    if (titleElement) {
+                        titleElement.textContent = currentModule.title || 'Module Overview';
+                    }
+                }
+            } else {
+                // Fallback to old moduleInfo storage
+                moduleInfo = JSON.parse(localStorage.getItem('moduleInfo') || '{}');
+            }
 
             if (moduleInfo.description) {
                 document.getElementById('module-description').innerHTML = formatText(moduleInfo.description);

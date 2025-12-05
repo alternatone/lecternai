@@ -32,7 +32,7 @@
         </div>
 
         <div id="teacher-view" style="display: none;">
-            <div class="course-grid">
+            <div class="course-grid" id="modules-grid">
                 <div class="course-card">
                     <div class="course-header">
                         <h3>Create New Module</h3>
@@ -41,7 +41,7 @@
                     <div class="course-body">
                         <p>Design module structure, add weeks, and upload content for your students.</p>
                         <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
-                            <button class="btn btn-primary" onclick="createNewModule()">+ Create Module</button>
+                            <button class="btn btn-primary" onclick="openCreateModuleModal()">+ Create Module</button>
                         </div>
                     </div>
                 </div>
@@ -49,9 +49,41 @@
         </div>
     </div>
 
+    <!-- Create Module Modal -->
+    <div id="create-module-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>Create New Module</h3>
+                <button class="modal-close" onclick="closeCreateModuleModal()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label for="module-title-input">Module Title</label>
+                <input type="text" id="module-title-input">
+            </div>
+            <div class="form-group">
+                <label for="module-description-input">Module Description</label>
+                <textarea id="module-description-input" style="min-height: 120px;"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="module-instructor-input">Instructor</label>
+                <input type="text" id="module-instructor-input">
+            </div>
+            <div class="form-group">
+                <label for="module-duration-input">Duration</label>
+                <input type="text" id="module-duration-input">
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" onclick="closeCreateModuleModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveModule()">Save Module</button>
+            </div>
+        </div>
+    </div>
+
     <div class="decorative-cross">✞</div>
 
     <script>
+        let modules = [];
+
         function setView(view) {
             const studentView = document.getElementById('student-view');
             const teacherView = document.getElementById('teacher-view');
@@ -72,16 +104,116 @@
                 viewTitle.textContent = 'Modules I Teach';
                 buttons[1].classList.add('active');
                 localStorage.setItem('currentView', 'teacher');
+                renderModules();
             }
         }
 
-        function createNewModule() {
-            // Navigate to module overview page where teacher can edit module info
+        function openCreateModuleModal() {
+            // Clear form
+            document.getElementById('module-title-input').value = '';
+            document.getElementById('module-description-input').value = '';
+            document.getElementById('module-instructor-input').value = '';
+            document.getElementById('module-duration-input').value = '';
+
+            document.getElementById('create-module-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+
+        function closeCreateModuleModal() {
+            document.getElementById('create-module-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        function saveModule() {
+            const title = document.getElementById('module-title-input').value.trim();
+            const description = document.getElementById('module-description-input').value.trim();
+            const instructor = document.getElementById('module-instructor-input').value.trim();
+            const duration = document.getElementById('module-duration-input').value.trim();
+
+            if (!title) {
+                alert('Please enter a module title');
+                return;
+            }
+
+            // Create new module object
+            const newModule = {
+                id: modules.length > 0 ? Math.max(...modules.map(m => m.id)) + 1 : 1,
+                title: title,
+                description: description,
+                instructor: instructor,
+                duration: duration,
+                createdAt: new Date().toISOString(),
+                isDraft: true
+            };
+
+            modules.push(newModule);
+
+            // Save to localStorage
+            localStorage.setItem('modules', JSON.stringify(modules));
+
+            // Store the current module ID for module-overview.html
+            localStorage.setItem('currentModuleId', newModule.id);
+
+            closeCreateModuleModal();
+
+            // Navigate to module overview page
             location.href = 'module-overview.html';
+        }
+
+        function renderModules() {
+            const grid = document.getElementById('modules-grid');
+
+            // Keep the "Create New Module" card and add saved modules before it
+            const createCard = grid.querySelector('.course-card');
+            grid.innerHTML = '';
+
+            modules.forEach(module => {
+                const moduleCard = document.createElement('div');
+                moduleCard.className = 'course-card';
+                moduleCard.style.background = 'rgba(255, 255, 255, 0.7)'; // Lighter color for drafts
+                moduleCard.style.cursor = 'pointer';
+                moduleCard.onclick = function() {
+                    localStorage.setItem('currentModuleId', module.id);
+                    location.href = 'module-overview.html';
+                };
+
+                const statusBadge = module.isDraft ? '<span class="status-badge status-incomplete" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">Draft</span>' : '';
+
+                moduleCard.innerHTML = `
+                    <div class="course-header">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <h3>${module.title}</h3>
+                                ${statusBadge}
+                            </div>
+                        </div>
+                        ${module.description ? `<p style="opacity: 0.8; margin-top: 0.5rem;">${module.description}</p>` : ''}
+                    </div>
+                    <div class="course-body">
+                        <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem;">
+                            ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
+                            ${module.duration ? `<span><strong>Duration:</strong> ${module.duration}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(moduleCard);
+            });
+
+            // Add the "Create New Module" card at the end
+            grid.appendChild(createCard);
+        }
+
+        function loadModules() {
+            const savedModules = localStorage.getItem('modules');
+            if (savedModules) {
+                modules = JSON.parse(savedModules);
+            }
         }
 
         // Restore view preference
         window.onload = function() {
+            loadModules();
             const savedView = localStorage.getItem('currentView') || 'student';
             setView(savedView);
         };
