@@ -1,10 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=EB+Garamond:wght@400;600;700&family=Inter:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Benton+Sans:wght@400;600&display=swap');
 
 :root {
-    --primary-color: #a21f35;
-    --primary-dark: #8a1a2d;
-    --secondary-color: #ffc222;
-    --text-dark: #2c3e50;
+    /* Aquinas Primary Colors */
+    --primary-color: #BB292F;  /* Red PMS 201 */
+    --primary-dark: #76232F;   /* Dark Red PMS 7630 */
+    --secondary-color: #FFB81C; /* Gold PMS 1235 */
+    --black: #231F20;           /* Black PMS Process Black */
+
+    /* Aquinas Secondary Colors */
+    --olive: #89985A;          /* Olive PMS 5747 */
+    --teal: #009387;           /* Teal PMS 7713 */
+    --gray: #848383;           /* Gray PMS 424 */
+
+    /* Application Colors */
+    --text-dark: #231F20;
     --text-light: #ffffff;
     --background: #f8f9fa;
     --card-background: #ffffff;
@@ -20,7 +29,7 @@
 }
 
 body {
-    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    font-family: 'Adobe Garamond Pro', Garamond, Georgia, 'Times New Roman', serif;
     background-color: var(--background);
     color: var(--text-dark);
     line-height: 1.8;
@@ -28,8 +37,8 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'EB Garamond', Georgia, 'Times New Roman', serif;
-    font-weight: 700;
+    font-family: 'Benton Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-weight: 600;
     letter-spacing: 0.3px;
 }
 
@@ -63,9 +72,9 @@ header {
 }
 
 .logo h1 {
-    font-family: 'EB Garamond', Georgia, 'Times New Roman', serif;
+    font-family: 'Benton Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     font-size: 1.8rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: 0.3px;
 }
 
@@ -84,7 +93,7 @@ header {
     color: var(--text-light);
     cursor: pointer;
     border-radius: 6px;
-    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-family: 'Benton Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     font-weight: 400;
     font-size: 0.95rem;
     transition: all 0.3s ease;
@@ -126,8 +135,8 @@ header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #6c757d;
-    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    color: var(--gray);
+    font-family: 'Benton Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     font-size: 0.95rem;
 }
 
@@ -228,7 +237,7 @@ header {
     padding: 0.75rem 1.5rem;
     border: none;
     border-radius: 8px;
-    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-family: 'Benton Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     font-weight: 400;
     font-size: 0.9rem;
     cursor: pointer;
@@ -254,7 +263,7 @@ header {
 }
 
 .btn-secondary:hover {
-    background: #e6af1e;
+    background: #E6A915;
     transform: translateY(-2px);
     box-shadow: var(--shadow);
 }
@@ -567,33 +576,31 @@ header {
     font-size: 0.9rem;
     font-weight: 400;
     border: none;
-    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-family: 'Benton Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
 }
 
 .status-complete {
-    background: #28a745;
+    background: var(--teal);
     color: var(--text-light);
 }
 
 .status-incomplete {
-    background: #ffc107;
+    background: var(--secondary-color);
     color: var(--text-dark);
 }
 
 .status-inprogress {
-    background: #ffc107;
-    color: var(--text-dark);
+    background: var(--olive);
+    color: var(--text-light);
 }
 
 .decorative-cross {
-    opacity: 0.1;
     position: fixed;
-    font-size: 20rem;
-    color: var(--primary-color);
     right: -5rem;
     bottom: -5rem;
     z-index: -1;
     pointer-events: none;
+    filter: opacity(0.05);
 }
 
 /* Scroll freeze prevention */

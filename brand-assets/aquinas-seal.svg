@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Outer circle -->
+  <circle cx="60" cy="60" r="58" fill="none" stroke="#BB292F" stroke-width="2"/>
+
+  <!-- Inner circle -->
+  <circle cx="60" cy="60" r="50" fill="none" stroke="#BB292F" stroke-width="1"/>
+
+  <!-- Shield shape -->
+  <path d="M 60 25 L 45 30 L 45 55 Q 45 70 60 80 Q 75 70 75 55 L 75 30 Z" fill="#BB292F"/>
+
+  <!-- Cross on shield -->
+  <rect x="57" y="35" width="6" height="30" fill="#FFB81C"/>
+  <rect x="47" y="47" width="26" height="6" fill="#FFB81C"/>
+
+  <!-- Text: AQUINAS INSTITUTE -->
+  <path d="M 30 95" fill="none" stroke="none"/>
+  <text x="60" y="15" font-family="serif" font-size="8" fill="#231F20" text-anchor="middle" font-weight="bold">AQUINAS INSTITUTE</text>
+
+  <!-- Text: OF THEOLOGY -->
+  <text x="60" y="100" font-family="serif" font-size="7" fill="#231F20" text-anchor="middle">OF THEOLOGY</text>
+
+  <!-- Text: EST. 1925 -->
+  <text x="60" y="110" font-family="serif" font-size="6" fill="#231F20" text-anchor="middle">EST. 1925</text>
+</svg>
