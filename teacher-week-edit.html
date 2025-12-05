@@ -120,14 +120,16 @@
         </div>
 
         <div class="card">
-            <h3>Page 2: Intro to the Week</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0;">Page 2: Intro to the Week</h3>
+                <button class="btn btn-secondary" onclick="openAddVideoModal()">+ Add Video</button>
+            </div>
             <div class="form-group">
                 <label for="week-intro">Week Introduction</label>
                 <textarea id="week-intro" style="min-height: 200px;"></textarea>
             </div>
             <div class="form-group">
                 <label>Videos</label>
-                <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddVideoModal()">+ Add Video</button>
                 <div class="video-playlist" id="video-list">
                     <!-- Videos will be populated here -->
                 </div>
@@ -135,8 +137,10 @@
         </div>
 
         <div class="card">
-            <h3>Page 3: Weekly Readings</h3>
-            <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddResourceModal()">+ Add Resource</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0;">Page 3: Weekly Readings</h3>
+                <button class="btn btn-secondary" onclick="openAddResourceModal()">+ Add Resource</button>
+            </div>
 
             <div class="resource-list" id="weekly-readings-list">
                 <!-- Resources will be populated here -->
@@ -144,8 +148,10 @@
         </div>
 
         <div class="card">
-            <h3>Page 4: Post-Zoom Reflection Questions</h3>
-            <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddQuestionModal()">+ Add Question</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0;">Page 4: Post-Zoom Reflection Questions</h3>
+                <button class="btn btn-secondary" onclick="openAddQuestionModal()">+ Add Question</button>
+            </div>
 
             <div id="reflection-questions-list">
                 <!-- Reflection questions will be populated here -->
@@ -153,8 +159,10 @@
         </div>
 
         <div class="card">
-            <h3>Page 5: Further Study</h3>
-            <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddStudyResourceModal()">+ Add Resource</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0;">Page 5: Further Study</h3>
+                <button class="btn btn-secondary" onclick="openAddStudyResourceModal()">+ Add Resource</button>
+            </div>
 
             <div class="resource-list" id="further-study-list">
                 <!-- Further study resources will be populated here -->
