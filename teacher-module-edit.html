@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Module - Teacher View</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="js/db-schema.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/data-service.js"></script>
 </head>
 <body>
     <header>
@@ -155,11 +158,11 @@
 
             if (view === 'student') {
                 buttons[0].classList.add('active');
-                localStorage.setItem('currentView', 'student');
+                dataService.setCurrentView('student');
                 window.location.href = 'index.html';
             } else {
                 buttons[1].classList.add('active');
-                localStorage.setItem('currentView', 'teacher');
+                dataService.setCurrentView('teacher');
             }
         }
 
@@ -168,12 +171,12 @@
         }
 
         function viewAsStudent() {
-            localStorage.setItem('currentView', 'student');
+            dataService.setCurrentView('student');
             window.location.href = 'module-page1.html';
         }
 
         window.onload = function() {
-            const savedView = localStorage.getItem('currentView') || 'student';
+            const savedView = dataService.getCurrentView() || 'student';
             if (savedView === 'student') {
                 window.location.href = 'index.html';
             }

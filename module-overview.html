@@ -1490,7 +1490,7 @@
         }
 
         window.onload = function() {
-            const savedView = localStorage.getItem('currentView') || 'student';
+            const savedView = dataService.getCurrentView() || 'student';
             loadWeeks();
             setView(savedView);
             loadModuleInfo();
@@ -1589,7 +1589,7 @@
                 timeExpectations: document.getElementById('time-input').value,
                 lastAutoSave: new Date().toISOString()
             };
-            localStorage.setItem('moduleInfoDraft', JSON.stringify(moduleInfo));
+            dataService.saveDraft('moduleInfo', moduleInfo);
             console.log('Module info auto-saved');
         }
 
@@ -1606,12 +1606,12 @@
                 reflectionQuestions: [...reflectionQuestions],
                 lastAutoSave: new Date().toISOString()
             };
-            localStorage.setItem('createWeekDraft', JSON.stringify(weekDraft));
+            dataService.saveDraft('createWeek', weekDraft);
             console.log('Create week draft auto-saved');
         }
 
         function loadCreateWeekDraft() {
-            const draft = JSON.parse(localStorage.getItem('createWeekDraft') || 'null');
+            const draft = dataService.getDraft('createWeek');
             if (draft) {
                 if (confirm('A draft was found. Would you like to restore it?')) {
                     document.getElementById('week-title-input').value = draft.title || '';
@@ -1633,13 +1633,13 @@
                     renderReflectionQuestions();
                 } else {
                     // User declined, clear the draft
-                    localStorage.removeItem('createWeekDraft');
+                    dataService.deleteDraft('createWeek');
                 }
             }
         }
 
         function loadModuleInfoDraft() {
-            const draft = JSON.parse(localStorage.getItem('moduleInfoDraft') || 'null');
+            const draft = dataService.getDraft('moduleInfo');
             if (draft) {
                 document.getElementById('description-input').value = draft.description || '';
                 document.getElementById('instructor-input').value = draft.instructor || '';
@@ -1651,33 +1651,24 @@
 
         function saveModuleProgress() {
             // Save all module info and weeks to ensure everything is persisted
-            const currentModuleId = localStorage.getItem('currentModuleId');
+            const currentModuleId = dataService.getCurrentModuleId();
 
             if (!currentModuleId) {
                 alert('No module selected');
                 return;
             }
 
-            // Module info is already auto-saved, but we can sync to modules array
-            const modules = JSON.parse(localStorage.getItem('modules') || '[]');
-            const moduleIndex = modules.findIndex(m => m.id === parseInt(currentModuleId));
+            const currentModule = dataService.getModule(currentModuleId);
 
-            if (moduleIndex !== -1) {
-                // Get current module info from localStorage
-                const moduleInfo = JSON.parse(localStorage.getItem('moduleInfo') || '{}');
+            if (currentModule) {
+                // Module data is already saved via DataService in saveDescription()
+                // This function is mainly for manual "Save Progress" button if needed
+                const hasContent = currentModule.description || weeks.length > 0;
 
-                modules[moduleIndex].description = moduleInfo.description || '';
-                modules[moduleIndex].instructor = moduleInfo.instructor || '';
-                modules[moduleIndex].duration = moduleInfo.duration || '';
-                modules[moduleIndex].participation = moduleInfo.participation || '';
-                modules[moduleIndex].timeExpectations = moduleInfo.timeExpectations || '';
-
-                // Mark as no longer draft if it has content
-                if (moduleInfo.description || weeks.length > 0) {
-                    modules[moduleIndex].isDraft = false;
+                if (hasContent && currentModule.status === 'draft') {
+                    dataService.updateModule(currentModuleId, { status: 'published' });
                 }
 
-                localStorage.setItem('modules', JSON.stringify(modules));
                 alert('Module progress saved successfully!');
             } else {
                 alert('Module not found');
