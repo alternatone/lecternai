@@ -29,7 +29,7 @@
 }
 
 body {
-    font-family: 'Adobe Garamond Pro', Garamond, Georgia, 'Times New Roman', serif;
+    font-family: 'Benton Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     background-color: var(--background);
     color: var(--text-dark);
     line-height: 1.8;
@@ -37,7 +37,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Benton Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-family: 'Adobe Garamond Pro', Garamond, Georgia, 'Times New Roman', serif;
     font-weight: 600;
     letter-spacing: 0.3px;
 }
@@ -72,7 +72,7 @@ header {
 }
 
 .logo h1 {
-    font-family: 'Benton Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-family: 'Adobe Garamond Pro', Garamond, Georgia, 'Times New Roman', serif;
     font-size: 1.8rem;
     font-weight: 600;
     letter-spacing: 0.3px;
