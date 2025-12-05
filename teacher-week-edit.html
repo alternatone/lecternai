@@ -125,6 +125,13 @@
                 <label for="week-intro">Week Introduction</label>
                 <textarea id="week-intro" style="min-height: 200px;"></textarea>
             </div>
+            <div class="form-group">
+                <label>Videos</label>
+                <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddVideoModal()">+ Add Video</button>
+                <div class="video-playlist" id="video-list">
+                    <!-- Videos will be populated here -->
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -137,11 +144,11 @@
         </div>
 
         <div class="card">
-            <h3>Page 4: Videos</h3>
-            <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddVideoModal()">+ Add Video</button>
+            <h3>Page 4: Post-Zoom Reflection Questions</h3>
+            <button class="btn btn-secondary" style="margin-bottom: 1rem;" onclick="openAddQuestionModal()">+ Add Question</button>
 
-            <div class="video-playlist" id="video-list">
-                <!-- Videos will be populated here -->
+            <div id="reflection-questions-list">
+                <!-- Reflection questions will be populated here -->
             </div>
         </div>
 
