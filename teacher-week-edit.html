@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Week - Teacher View</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="js/db-schema.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/data-service.js"></script>
     <style>
         .modal {
             display: none;
@@ -578,14 +581,16 @@
 
         function saveWeek() {
             const weekNum = getWeekNumber();
-            const currentModuleId = localStorage.getItem('currentModuleId');
-            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
-            const weeks = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const currentModuleId = dataService.getCurrentModuleId();
 
-            // Find the week being edited
-            const weekIndex = weeks.findIndex(w => w.id === parseInt(weekNum));
+            if (!currentModuleId) {
+                alert('No module selected. Please navigate from the Module Overview page.');
+                return;
+            }
 
-            if (weekIndex === -1) {
+            const week = dataService.getWeek(currentModuleId, parseInt(weekNum));
+
+            if (!week) {
                 alert('Week not found. Please create the week first from the Module Overview page.');
                 return;
             }
@@ -627,14 +632,15 @@
                 }
             ];
 
-            // Update the week object
-            weeks[weekIndex].title = title || weeks[weekIndex].title;
-            weeks[weekIndex].description = description || weeks[weekIndex].description;
-            weeks[weekIndex].unlockDate = unlockDate;
-            weeks[weekIndex].pages = pages;
+            // Update the week using DataService
+            const updates = {
+                title: title || week.title,
+                description: description || week.description,
+                unlockDate: unlockDate,
+                pages: pages
+            };
 
-            // Save back to localStorage
-            localStorage.setItem(storageKey, JSON.stringify(weeks));
+            dataService.updateWeek(currentModuleId, parseInt(weekNum), updates);
 
             alert('Week content saved successfully!');
         }
@@ -783,11 +789,9 @@
             // Store week number for later use
             window.currentWeekNumber = weekNum;
 
-            // Load existing week data from localStorage
-            const currentModuleId = localStorage.getItem('currentModuleId');
-            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
-            const weeks = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            const week = weeks.find(w => w.id === parseInt(weekNum));
+            // Load existing week data using DataService
+            const currentModuleId = dataService.getCurrentModuleId();
+            const week = currentModuleId ? dataService.getWeek(currentModuleId, parseInt(weekNum)) : null;
 
             if (week) {
                 // Populate form fields with existing data

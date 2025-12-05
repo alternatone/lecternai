@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LecternAI - Seminary Learning Platform</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="js/db-schema.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/data-service.js"></script>
     <style>
         .modal {
             display: none;
@@ -92,7 +95,7 @@
 
         <div id="teacher-view" style="display: none;">
             <div class="course-grid" id="modules-grid">
-                <div class="course-card">
+                <div class="course-card" id="create-module-card">
                     <div class="course-header">
                         <h3>Create New Module</h3>
                         <p style="opacity: 0.8;">Start building a new learning experience</p>
@@ -205,13 +208,13 @@
                 teacherView.style.display = 'none';
                 viewTitle.textContent = 'My Modules';
                 buttons[0].classList.add('active');
-                localStorage.setItem('currentView', 'student');
+                dataService.setCurrentView('student');
             } else {
                 studentView.style.display = 'none';
                 teacherView.style.display = 'block';
                 viewTitle.textContent = 'Modules I Teach';
                 buttons[1].classList.add('active');
-                localStorage.setItem('currentView', 'teacher');
+                dataService.setCurrentView('teacher');
                 renderModules();
             }
         }
@@ -253,47 +256,49 @@
                 return;
             }
 
-            // Create new module object
-            const newModule = {
-                id: modules.length > 0 ? Math.max(...modules.map(m => m.id)) + 1 : 1,
+            // Validate module data
+            const moduleData = {
                 title: title,
                 description: description,
                 instructor: instructor,
                 duration: duration,
                 participation: participation,
                 timeExpectations: timeExpectations,
-                createdAt: new Date().toISOString(),
-                isDraft: true
+                status: 'draft'
             };
 
-            modules.push(newModule);
+            const validation = Validator.validateModule(moduleData);
+            if (!validation.valid) {
+                alert('Validation errors:\n' + validation.errors.join('\n'));
+                return;
+            }
 
-            // Save to localStorage
-            localStorage.setItem('modules', JSON.stringify(modules));
+            // Create new module using DataService
+            const newModule = dataService.createModule(moduleData);
 
-            // Store the current module ID for module-overview.html
-            localStorage.setItem('currentModuleId', newModule.id);
+            // Set as current module
+            dataService.setCurrentModuleId(newModule.id);
 
-            // Save module info to moduleInfo storage
-            const moduleInfo = {
-                description: description,
-                instructor: instructor,
-                duration: duration,
-                participation: participation,
-                timeExpectations: timeExpectations
-            };
-            localStorage.setItem('moduleInfo', JSON.stringify(moduleInfo));
-
-            // Save zoom info scoped to the new module
+            // Save zoom info using DataService
             const zoomInfo = {
                 url: document.getElementById('module-zoom-url-input').value.trim(),
-                id: document.getElementById('module-zoom-id-input').value.trim(),
+                meetingId: document.getElementById('module-zoom-id-input').value.trim(),
                 passcode: document.getElementById('module-zoom-passcode-input').value.trim(),
-                day: document.getElementById('module-zoom-day-input').value,
-                time: document.getElementById('module-zoom-time-input').value,
-                timezone: document.getElementById('module-zoom-timezone-input').value
+                schedule: {
+                    day: document.getElementById('module-zoom-day-input').value,
+                    time: document.getElementById('module-zoom-time-input').value,
+                    timezone: document.getElementById('module-zoom-timezone-input').value
+                }
             };
-            localStorage.setItem(`module_${newModule.id}_zoom`, JSON.stringify(zoomInfo));
+
+            if (zoomInfo.url || zoomInfo.meetingId) {
+                const zoomValidation = Validator.validateZoomInfo(zoomInfo);
+                if (!zoomValidation.valid) {
+                    alert('Zoom validation errors:\n' + zoomValidation.errors.join('\n'));
+                    return;
+                }
+                dataService.updateZoomInfo(newModule.id, zoomInfo);
+            }
 
             closeCreateModuleModal();
 
@@ -305,19 +310,22 @@
             const grid = document.getElementById('modules-grid');
 
             // Keep the "Create New Module" card and add saved modules before it
-            const createCard = grid.querySelector('.course-card');
+            const createCard = document.getElementById('create-module-card');
             grid.innerHTML = '';
+
+            // Get modules from DataService
+            modules = dataService.getModules();
 
             modules.forEach(module => {
                 const moduleCard = document.createElement('div');
                 moduleCard.className = 'course-card';
                 moduleCard.style.position = 'relative';
                 // Lighter opacity for draft modules
-                if (module.isDraft) {
+                if (module.status === 'draft') {
                     moduleCard.style.opacity = '0.85';
                 }
 
-                const statusBadge = module.isDraft ? '<span class="status-badge status-incomplete" style="position: absolute; top: 1rem; right: 1rem; font-size: 0.8rem; padding: 0.25rem 0.5rem;">Draft</span>' : '';
+                const statusBadge = module.status === 'draft' ? '<span class="status-badge status-incomplete" style="position: absolute; top: 1rem; right: 1rem; font-size: 0.8rem; padding: 0.25rem 0.5rem;">Draft</span>' : '';
 
                 moduleCard.innerHTML = `
                     ${statusBadge}
@@ -345,26 +353,14 @@
         }
 
         function editModule(moduleId) {
-            localStorage.setItem('currentModuleId', moduleId);
+            dataService.setCurrentModuleId(moduleId);
             location.href = 'module-overview.html';
         }
 
         function deleteModule(moduleId) {
             if (confirm('Are you sure you want to delete this module? This action cannot be undone.')) {
-                // Remove module from array
-                modules = modules.filter(m => m.id !== moduleId);
-
-                // Save updated modules array
-                localStorage.setItem('modules', JSON.stringify(modules));
-
-                // Clear module-specific data
-                localStorage.removeItem(`module_${moduleId}_weeks`);
-                localStorage.removeItem(`module_${moduleId}_zoom`);
-
-                // If this was the current module, clear that reference
-                if (localStorage.getItem('currentModuleId') == moduleId) {
-                    localStorage.removeItem('currentModuleId');
-                }
+                // Delete module using DataService (handles all related data)
+                dataService.deleteModule(moduleId);
 
                 // Re-render modules
                 renderModules();
@@ -372,16 +368,14 @@
         }
 
         function loadModules() {
-            const savedModules = localStorage.getItem('modules');
-            if (savedModules) {
-                modules = JSON.parse(savedModules);
-            }
+            // Load modules from DataService
+            modules = dataService.getModules();
         }
 
         // Restore view preference
         window.onload = function() {
             loadModules();
-            const savedView = localStorage.getItem('currentView') || 'student';
+            const savedView = dataService.getCurrentView() || 'student';
             setView(savedView);
         };
     </script>

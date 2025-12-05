@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Module Overview - LecternAI</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="js/db-schema.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/data-service.js"></script>
     <style>
         .modal {
             display: none;
@@ -468,13 +471,13 @@
 
             if (view === 'student') {
                 buttons[0].classList.add('active');
-                localStorage.setItem('currentView', 'student');
+                dataService.setCurrentView('student');
                 document.getElementById('edit-description-btn').style.display = 'none';
                 document.getElementById('create-week-btn').style.display = 'none';
                 document.getElementById('save-module-btn').style.display = 'none';
             } else {
                 buttons[1].classList.add('active');
-                localStorage.setItem('currentView', 'teacher');
+                dataService.setCurrentView('teacher');
                 document.getElementById('edit-description-btn').style.display = 'inline-block';
                 document.getElementById('create-week-btn').style.display = 'inline-block';
                 document.getElementById('save-module-btn').style.display = 'inline-block';
@@ -510,9 +513,9 @@
 
                 const weekAction = document.createElement('div');
 
-                // Check progress from localStorage (dynamic based on week ID)
-                const progress = JSON.parse(localStorage.getItem(`week${week.id}-progress`) || '{}');
-                const isComplete = localStorage.getItem(`week${week.id}-completed`) === 'true';
+                // Check progress using DataService (dynamic based on week ID)
+                const progress = dataService.getProgress(week.id) || {};
+                const isComplete = dataService.isWeekCompleted(week.id);
                 const hasProgress = progress.week === `week${week.id}` && progress.page;
 
                 weekAction.style.display = 'flex';
@@ -555,8 +558,9 @@
         }
 
         function openEditDescriptionModal() {
-            // Load from localStorage if available
-            const moduleInfo = JSON.parse(localStorage.getItem('moduleInfo') || '{}');
+            // Load module info using DataService
+            const currentModuleId = dataService.getCurrentModuleId();
+            const moduleInfo = currentModuleId ? dataService.getModule(currentModuleId) : {};
 
             document.getElementById('description-input').value = moduleInfo.description || document.getElementById('module-description').textContent;
             document.getElementById('instructor-input').value = moduleInfo.instructor || document.getElementById('module-instructor').textContent;
@@ -564,16 +568,14 @@
             document.getElementById('participation-input').value = moduleInfo.participation || document.getElementById('participation-requirements').textContent;
             document.getElementById('time-input').value = moduleInfo.timeExpectations || document.getElementById('time-expectations').textContent;
 
-            // Load zoom info scoped to current module
-            const currentModuleId = localStorage.getItem('currentModuleId');
-            const zoomStorageKey = currentModuleId ? `module_${currentModuleId}_zoom` : 'zoomInfo';
-            const zoomInfo = JSON.parse(localStorage.getItem(zoomStorageKey) || '{}');
+            // Load zoom info using DataService
+            const zoomInfo = currentModuleId ? dataService.getZoomInfo(currentModuleId) : {};
             document.getElementById('zoom-url-input').value = zoomInfo.url || '';
-            document.getElementById('zoom-id-input').value = zoomInfo.id || '';
+            document.getElementById('zoom-id-input').value = zoomInfo.meetingId || '';
             document.getElementById('zoom-passcode-input').value = zoomInfo.passcode || '';
-            document.getElementById('zoom-day-input').value = zoomInfo.day || '';
-            document.getElementById('zoom-time-input').value = zoomInfo.time || '';
-            document.getElementById('zoom-timezone-input').value = zoomInfo.timezone || 'EST';
+            document.getElementById('zoom-day-input').value = (zoomInfo.schedule && zoomInfo.schedule.day) || '';
+            document.getElementById('zoom-time-input').value = (zoomInfo.schedule && zoomInfo.schedule.time) || '';
+            document.getElementById('zoom-timezone-input').value = (zoomInfo.schedule && zoomInfo.schedule.timezone) || 'EST';
 
             // Load any unsaved draft
             loadModuleInfoDraft();
@@ -601,47 +603,45 @@
             document.getElementById('participation-requirements').innerHTML = formatText(participation);
             document.getElementById('time-expectations').innerHTML = formatText(timeExp);
 
-            // Save to localStorage
-            const moduleInfo = {
-                description: description,
-                instructor: instructor,
-                duration: duration,
-                participation: participation,
-                timeExpectations: timeExp
-            };
-            localStorage.setItem('moduleInfo', JSON.stringify(moduleInfo));
-
-            // Save zoom info scoped to current module
-            const currentModuleId = localStorage.getItem('currentModuleId');
-            const zoomStorageKey = currentModuleId ? `module_${currentModuleId}_zoom` : 'zoomInfo';
-            const zoomInfo = {
-                url: document.getElementById('zoom-url-input').value,
-                id: document.getElementById('zoom-id-input').value,
-                passcode: document.getElementById('zoom-passcode-input').value,
-                day: document.getElementById('zoom-day-input').value,
-                time: document.getElementById('zoom-time-input').value,
-                timezone: document.getElementById('zoom-timezone-input').value
-            };
-            localStorage.setItem(zoomStorageKey, JSON.stringify(zoomInfo));
-
-            // Also update in modules array if we have a currentModuleId
+            // Get current module and update using DataService
+            const currentModuleId = dataService.getCurrentModuleId();
             if (currentModuleId) {
-                const modules = JSON.parse(localStorage.getItem('modules') || '[]');
-                const moduleIndex = modules.findIndex(m => m.id === parseInt(currentModuleId));
+                const updates = {
+                    description: description,
+                    instructor: instructor,
+                    duration: duration,
+                    participation: participation,
+                    timeExpectations: timeExp,
+                    status: 'published' // Mark as no longer draft
+                };
+                dataService.updateModule(currentModuleId, updates);
 
-                if (moduleIndex !== -1) {
-                    modules[moduleIndex].description = description;
-                    modules[moduleIndex].instructor = instructor;
-                    modules[moduleIndex].duration = duration;
-                    modules[moduleIndex].participation = participation;
-                    modules[moduleIndex].timeExpectations = timeExp;
-                    modules[moduleIndex].isDraft = false; // Mark as no longer draft
-                    localStorage.setItem('modules', JSON.stringify(modules));
+                // Save zoom info using DataService
+                const zoomInfo = {
+                    url: document.getElementById('zoom-url-input').value,
+                    meetingId: document.getElementById('zoom-id-input').value,
+                    passcode: document.getElementById('zoom-passcode-input').value,
+                    schedule: {
+                        day: document.getElementById('zoom-day-input').value,
+                        time: document.getElementById('zoom-time-input').value,
+                        timezone: document.getElementById('zoom-timezone-input').value
+                    }
+                };
+
+                // Validate zoom info if provided
+                if (zoomInfo.url || zoomInfo.meetingId) {
+                    const validation = Validator.validateZoomInfo(zoomInfo);
+                    if (!validation.valid) {
+                        alert('Zoom validation errors:\n' + validation.errors.join('\n'));
+                        return;
+                    }
                 }
+
+                dataService.updateZoomInfo(currentModuleId, zoomInfo);
             }
 
             // Clear the draft since we successfully saved
-            localStorage.removeItem('moduleInfoDraft');
+            dataService.deleteDraft('moduleInfo');
 
             // Show additional info if any of the fields are filled
             if (participation || timeExp) {
@@ -692,14 +692,13 @@
         }
 
         function displayZoomInfo() {
-            // Load zoom info scoped to current module
-            const currentModuleId = localStorage.getItem('currentModuleId');
-            const zoomStorageKey = currentModuleId ? `module_${currentModuleId}_zoom` : 'zoomInfo';
-            const zoomInfo = JSON.parse(localStorage.getItem(zoomStorageKey) || '{}');
+            // Load zoom info using DataService
+            const currentModuleId = dataService.getCurrentModuleId();
+            const zoomInfo = currentModuleId ? dataService.getZoomInfo(currentModuleId) : {};
             const displayDiv = document.getElementById('zoom-info-display');
 
             // Check if any zoom info exists
-            if (!zoomInfo.url && !zoomInfo.id && !zoomInfo.day) {
+            if (!zoomInfo.url && !zoomInfo.meetingId && !(zoomInfo.schedule && zoomInfo.schedule.day)) {
                 displayDiv.style.display = 'none';
                 return;
             }
@@ -712,17 +711,17 @@
             const urlElement = document.getElementById('zoom-display-url');
 
             // Format day and time
-            if (zoomInfo.day && zoomInfo.time) {
-                const timezone = zoomInfo.timezone ? ` ${zoomInfo.timezone}` : '';
-                dayTimeElement.textContent = `Day & Time: ${zoomInfo.day} at ${zoomInfo.time}${timezone}`;
+            if (zoomInfo.schedule && zoomInfo.schedule.day && zoomInfo.schedule.time) {
+                const timezone = zoomInfo.schedule.timezone ? ` ${zoomInfo.schedule.timezone}` : '';
+                dayTimeElement.textContent = `Day & Time: ${zoomInfo.schedule.day} at ${zoomInfo.schedule.time}${timezone}`;
             } else {
                 dayTimeElement.textContent = '';
             }
 
             // Display meeting ID and passcode
-            if (zoomInfo.id) {
+            if (zoomInfo.meetingId) {
                 const passcode = zoomInfo.passcode ? ` (Passcode: ${zoomInfo.passcode})` : '';
-                idElement.textContent = `Meeting ID: ${zoomInfo.id}${passcode}`;
+                idElement.textContent = `Meeting ID: ${zoomInfo.meetingId}${passcode}`;
             } else {
                 idElement.textContent = '';
             }
@@ -743,13 +742,12 @@
         }
 
         function loadModuleInfo() {
-            // Check if we're loading from a specific module
-            const currentModuleId = localStorage.getItem('currentModuleId');
+            // Load module info using DataService
+            const currentModuleId = dataService.getCurrentModuleId();
             let moduleInfo = {};
 
             if (currentModuleId) {
-                const modules = JSON.parse(localStorage.getItem('modules') || '[]');
-                const currentModule = modules.find(m => m.id === parseInt(currentModuleId));
+                const currentModule = dataService.getModule(currentModuleId);
 
                 if (currentModule) {
                     moduleInfo = {
@@ -766,9 +764,6 @@
                         titleElement.textContent = currentModule.title || 'Module Overview';
                     }
                 }
-            } else {
-                // Fallback to old moduleInfo storage
-                moduleInfo = JSON.parse(localStorage.getItem('moduleInfo') || '{}');
             }
 
             if (moduleInfo.description) {
@@ -1421,13 +1416,14 @@
 
             weeks.push(newWeek);
 
-            // Save to localStorage scoped to current module
-            const currentModuleId = localStorage.getItem('currentModuleId');
-            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
-            localStorage.setItem(storageKey, JSON.stringify(weeks));
+            // Save using DataService
+            const currentModuleId = dataService.getCurrentModuleId();
+            if (currentModuleId) {
+                dataService.createWeek(currentModuleId, newWeek);
+            }
 
             // Clear the draft since we successfully saved
-            localStorage.removeItem('createWeekDraft');
+            dataService.deleteDraft('createWeek');
 
             // Close modal and refresh
             closeCreateWeekModal();
@@ -1437,19 +1433,18 @@
         }
 
         function loadWeeks() {
-            // Load weeks scoped to current module
-            const currentModuleId = localStorage.getItem('currentModuleId');
-            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
-            const savedWeeks = localStorage.getItem(storageKey);
-            if (savedWeeks) {
+            // Load weeks using DataService
+            const currentModuleId = dataService.getCurrentModuleId();
+            if (currentModuleId) {
+                const savedWeeks = dataService.getWeeks(currentModuleId);
                 weeks.length = 0; // Clear array
-                weeks.push(...JSON.parse(savedWeeks));
+                weeks.push(...savedWeeks);
             }
             checkForDraft();
         }
 
         function checkForDraft() {
-            const draft = localStorage.getItem('createWeekDraft');
+            const draft = dataService.getDraft('createWeek');
             const draftNotice = document.getElementById('draft-week-notice');
 
             if (draft && currentView === 'teacher') {
@@ -1461,14 +1456,14 @@
 
         function discardDraft() {
             if (confirm('Are you sure you want to discard your draft week? This cannot be undone.')) {
-                localStorage.removeItem('createWeekDraft');
+                dataService.deleteDraft('createWeek');
                 document.getElementById('draft-week-notice').style.display = 'none';
             }
         }
 
         function resumeDraft() {
-            // Load the draft data
-            const draft = JSON.parse(localStorage.getItem('createWeekDraft') || 'null');
+            // Load the draft data using DataService
+            const draft = dataService.getDraft('createWeek');
             if (draft) {
                 document.getElementById('week-title-input').value = draft.title || '';
                 document.getElementById('week-description-input').value = draft.description || '';

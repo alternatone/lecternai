@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Week Viewer - LecternAI</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="js/db-schema.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/data-service.js"></script>
 </head>
 <body>
     <header>
@@ -135,7 +138,7 @@
             } else {
                 buttons[1].classList.add('active');
             }
-            localStorage.setItem('currentView', view);
+            dataService.setCurrentView(view);
             renderPage();
         }
 
@@ -152,11 +155,11 @@
         function loadWeekData() {
             const weekId = getWeekIdFromURL();
 
-            // Load weeks scoped to current module
-            const currentModuleId = localStorage.getItem('currentModuleId');
-            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
-            const weeks = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            currentWeek = weeks.find(w => w.id === weekId);
+            // Load weeks using DataService
+            const currentModuleId = dataService.getCurrentModuleId();
+            if (currentModuleId) {
+                currentWeek = dataService.getWeek(currentModuleId, weekId);
+            }
 
             if (!currentWeek) {
                 document.getElementById('page-content').innerHTML = '<p style="text-align: center; color: #dc3545; padding: 2rem;">Week not found.</p>';
@@ -340,9 +343,8 @@
                 return;
             }
 
-            // Save to localStorage
-            const key = `week${currentWeek.id}-page${currentPage}-q${questionIndex}-response`;
-            localStorage.setItem(key, response);
+            // Save response using DataService
+            dataService.saveResponse(currentWeek.id, questionIndex, response);
 
             alert('Response saved successfully!');
             textarea.value = '';
@@ -360,14 +362,15 @@
                 currentPage++;
                 window.location.href = `week-viewer.html?week=${currentWeek.id}&page=${currentPage}`;
             } else {
-                // Finish - go back to module overview
+                // Finish - mark week as completed and go back to module overview
+                dataService.completeWeek(currentWeek.id);
                 alert('Week completed!');
                 window.location.href = 'module-overview.html';
             }
         }
 
         window.onload = function() {
-            const savedView = localStorage.getItem('currentView') || 'student';
+            const savedView = dataService.getCurrentView() || 'student';
             setView(savedView);
             if (loadWeekData()) {
                 renderPage();
