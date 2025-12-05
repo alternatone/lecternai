@@ -1329,8 +1329,10 @@
 
             weeks.push(newWeek);
 
-            // Save to localStorage
-            localStorage.setItem('moduleWeeks', JSON.stringify(weeks));
+            // Save to localStorage scoped to current module
+            const currentModuleId = localStorage.getItem('currentModuleId');
+            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
+            localStorage.setItem(storageKey, JSON.stringify(weeks));
 
             // Clear the draft since we successfully saved
             localStorage.removeItem('createWeekDraft');
@@ -1343,7 +1345,10 @@
         }
 
         function loadWeeks() {
-            const savedWeeks = localStorage.getItem('moduleWeeks');
+            // Load weeks scoped to current module
+            const currentModuleId = localStorage.getItem('currentModuleId');
+            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
+            const savedWeeks = localStorage.getItem(storageKey);
             if (savedWeeks) {
                 weeks.length = 0; // Clear array
                 weeks.push(...JSON.parse(savedWeeks));

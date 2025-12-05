@@ -121,7 +121,11 @@
 
         function loadWeekData() {
             const weekId = getWeekIdFromURL();
-            const weeks = JSON.parse(localStorage.getItem('moduleWeeks') || '[]');
+
+            // Load weeks scoped to current module
+            const currentModuleId = localStorage.getItem('currentModuleId');
+            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
+            const weeks = JSON.parse(localStorage.getItem(storageKey) || '[]');
             currentWeek = weeks.find(w => w.id === weekId);
 
             if (!currentWeek) {
