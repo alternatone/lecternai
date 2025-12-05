@@ -82,29 +82,29 @@
         <div class="breadcrumb">
             <a href="index.html">Home</a>
             <span>›</span>
-            <a href="module-overview.html">Biblical Preaching</a>
+            <a href="module-overview.html" id="breadcrumb-module">Module</a>
             <span>›</span>
-            <span>Edit Week 3</span>
+            <span id="breadcrumb-week">Edit Week</span>
         </div>
 
         <h2 class="page-title">
-            <span>Edit Week: Crafting the Sermon</span>
+            <span id="page-title">Edit Week</span>
         </h2>
 
         <div class="card">
             <div class="form-group">
                 <label for="week-title">Week Title</label>
-                <input type="text" id="week-title" value="Crafting the Sermon">
+                <input type="text" id="week-title" value="">
             </div>
 
             <div class="form-group">
                 <label for="week-description">Week Description</label>
-                <textarea id="week-description">Sermon structure, rhetoric, and homiletical principles</textarea>
+                <textarea id="week-description"></textarea>
             </div>
 
             <div class="form-group">
                 <label for="unlock-date">Unlock Date</label>
-                <input type="date" id="unlock-date" value="2025-12-09">
+                <input type="date" id="unlock-date" value="">
             </div>
         </div>
 
@@ -112,7 +112,7 @@
             <h3>Page 1: Opening Reflection Question</h3>
             <div class="form-group">
                 <label for="pre-question">Reflection Question</label>
-                <textarea id="pre-question">Describe your current approach to preparing a sermon. What aspects of sermon preparation come naturally to you, and what areas do you find most challenging? How do you hope this week will strengthen your preaching ministry?</textarea>
+                <textarea id="pre-question"></textarea>
             </div>
         </div>
 
@@ -120,7 +120,7 @@
             <h3>Page 2: Intro to the Week</h3>
             <div class="form-group">
                 <label for="week-intro">Week Introduction</label>
-                <textarea id="week-intro" style="min-height: 200px;">This week we'll explore the art and craft of sermon construction. You'll learn how to develop a clear "big idea," structure your message effectively, and use illustrations that illuminate rather than overshadow Scripture. Through video content and discussion, we'll examine various homiletical approaches and help you develop your own voice as a preacher.</textarea>
+                <textarea id="week-intro" style="min-height: 200px;"></textarea>
             </div>
         </div>
 
@@ -163,14 +163,14 @@
         <div class="breadcrumb">
             <a href="index.html">Home</a>
             <span>›</span>
-            <a href="module-overview.html">Biblical Preaching</a>
+            <a href="module-overview.html" id="preview-breadcrumb-module">Module</a>
             <span>›</span>
-            <span>Week 3: Crafting the Sermon</span>
+            <span id="preview-breadcrumb-week">Week</span>
         </div>
 
         <h2 class="page-title">
             <span class="icon">👁</span>
-            <span>Preview: Crafting the Sermon (Student View)</span>
+            <span id="preview-title">Preview: Week (Student View)</span>
         </h2>
 
         <div class="card" style="background: linear-gradient(135deg, #fff9e6 0%, #fff 100%); border-left: 4px solid var(--secondary-color);">
@@ -288,25 +288,10 @@
     </div>
 
     <script>
-        let weeklyReadings = [
-            { id: 1, title: "The Elements of Sermon Structure", url: "#", description: "A foundational overview of sermon organization and flow" },
-            { id: 2, title: "Biblical Preaching: An Introduction", url: "#", description: "Chapters 5-7 on exegesis and application" }
-        ];
-
-        let videos = [
-            { id: 1, title: "Video 1: The Sermon's Big Idea", url: "https://www.youtube.com/embed/dQw4w9WgXcQ", duration: "11:23" },
-            { id: 2, title: "Video 2: Structure and Flow", url: "https://www.youtube.com/embed/dQw4w9WgXcQ", duration: "10:47" }
-        ];
-
-        let reflectionQuestions = [
-            { id: 1, text: "What are the three most important insights you gained from this week about sermon structure and preparation?" },
-            { id: 2, text: "Describe a specific change you plan to implement in your next sermon preparation based on this week's teaching." }
-        ];
-
-        let furtherStudy = [
-            { id: 1, title: "Between Two Worlds: The Challenge of Preaching Today", url: "#", description: "John R.W. Stott" },
-            { id: 2, title: "Christ-Centered Preaching", url: "#", description: "Bryan Chapell" }
-        ];
+        let weeklyReadings = [];
+        let videos = [];
+        let reflectionQuestions = [];
+        let furtherStudy = [];
 
         function setView(view) {
             if (view === 'student') {
@@ -341,7 +326,7 @@
                 item.className = 'playlist-item';
                 item.innerHTML = `
                     <strong>${video.title}</strong>
-                    <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">${video.duration} • Dr. Michael Daniels</p>
+                    <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">${video.duration}</p>
                     <div class="resource-item-actions">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteVideo(${video.id})">Delete</button>
@@ -592,37 +577,178 @@
         }
 
         function saveWeek() {
+            const weekNum = getWeekNumber();
+            const currentModuleId = localStorage.getItem('currentModuleId');
+            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
+            const weeks = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+            // Find the week being edited
+            const weekIndex = weeks.findIndex(w => w.id === parseInt(weekNum));
+
+            if (weekIndex === -1) {
+                alert('Week not found. Please create the week first from the Module Overview page.');
+                return;
+            }
+
+            // Get form values
+            const title = document.getElementById('week-title').value.trim();
+            const description = document.getElementById('week-description').value.trim();
+            const unlockDate = document.getElementById('unlock-date').value;
+            const preQuestion = document.getElementById('pre-question').value.trim();
+            const weekIntro = document.getElementById('week-intro').value.trim();
+
+            // Update the week data structure matching the format from module-overview.html
+            const pages = [
+                {
+                    title: 'Opening Reflection Question',
+                    type: 'discussion',
+                    questions: preQuestion ? [{ id: 1, text: preQuestion }] : []
+                },
+                {
+                    title: 'Introduction to the Week',
+                    type: 'intro',
+                    content: weekIntro,
+                    videos: [...videos]
+                },
+                {
+                    title: 'Weekly Reading',
+                    type: 'reading',
+                    resources: [...weeklyReadings]
+                },
+                {
+                    title: 'Post-Zoom Reflection',
+                    type: 'discussion',
+                    questions: [...reflectionQuestions]
+                },
+                {
+                    title: 'Further Study',
+                    type: 'reading',
+                    resources: [...furtherStudy]
+                }
+            ];
+
+            // Update the week object
+            weeks[weekIndex].title = title || weeks[weekIndex].title;
+            weeks[weekIndex].description = description || weeks[weekIndex].description;
+            weeks[weekIndex].unlockDate = unlockDate;
+            weeks[weekIndex].pages = pages;
+
+            // Save back to localStorage
+            localStorage.setItem(storageKey, JSON.stringify(weeks));
+
             alert('Week content saved successfully!');
         }
 
         function previewAsStudent() {
+            // First save current changes
+            saveWeek();
+
+            // Load the saved week data to ensure preview shows saved content
+            const weekNum = getWeekNumber();
+            const currentModuleId = localStorage.getItem('currentModuleId');
+            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
+            const weeks = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const week = weeks.find(w => w.id === parseInt(weekNum));
+
+            if (!week) {
+                alert('Unable to preview. Please save the week first.');
+                return;
+            }
+
+            // Update preview breadcrumb
+            document.getElementById('preview-breadcrumb-module').textContent = 'Module';
+            document.getElementById('preview-breadcrumb-week').textContent = `Week ${weekNum}: ${week.title}`;
+            document.getElementById('preview-title').textContent = `Preview: ${week.title} (Student View)`;
+
             document.getElementById('edit-mode').style.display = 'none';
             document.getElementById('preview-mode').style.display = 'block';
 
-            // Generate student preview content
+            // Generate student preview content from saved data
             const previewContent = document.getElementById('student-preview-content');
-            previewContent.innerHTML = `
-                <div class="card">
-                    <h3>Opening Reflection</h3>
-                    <p>${document.getElementById('pre-question').value}</p>
-                </div>
-                <div class="card">
-                    <h3>Weekly Readings</h3>
-                    <div class="resource-list">
-                        ${weeklyReadings.map(r => `
-                            <div class="resource-item">
-                                <strong>${r.title}</strong>
-                                <p style="color: #6c757d; margin-top: 0.25rem;">${r.description}</p>
-                                <a href="${r.url}" target="_blank">View Resource →</a>
+            let html = '';
+
+            // Page 1: Opening Reflection Question
+            if (week.pages[0] && week.pages[0].questions && week.pages[0].questions.length > 0) {
+                html += `
+                    <div class="card">
+                        <h3>Opening Reflection</h3>
+                        <p>${week.pages[0].questions[0].text}</p>
+                    </div>
+                `;
+            }
+
+            // Page 2: Introduction to the Week
+            if (week.pages[1] && week.pages[1].content) {
+                html += `
+                    <div class="card">
+                        <h3>Introduction to the Week</h3>
+                        <p style="white-space: pre-wrap;">${week.pages[1].content}</p>
+                `;
+                if (week.pages[1].videos && week.pages[1].videos.length > 0) {
+                    html += `<h4 style="margin-top: 1.5rem;">Videos</h4>`;
+                    week.pages[1].videos.forEach(video => {
+                        html += `
+                            <div style="margin-top: 1rem;">
+                                <strong>${video.title}</strong>
+                                ${video.duration ? `<p style="color: #6c757d; font-size: 0.9rem;">${video.duration}</p>` : ''}
+                            </div>
+                        `;
+                    });
+                }
+                html += `</div>`;
+            }
+
+            // Page 3: Weekly Reading
+            if (week.pages[2] && week.pages[2].resources && week.pages[2].resources.length > 0) {
+                html += `
+                    <div class="card">
+                        <h3>Weekly Readings</h3>
+                        <div class="resource-list">
+                            ${week.pages[2].resources.map(r => `
+                                <div class="resource-item">
+                                    <strong>${r.title}</strong>
+                                    <p style="color: #6c757d; margin-top: 0.25rem;">${r.description || 'No description'}</p>
+                                    <a href="${r.url}" target="_blank">View Resource →</a>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Page 4: Post-Zoom Reflection Questions
+            if (week.pages[3] && week.pages[3].questions && week.pages[3].questions.length > 0) {
+                html += `
+                    <div class="card">
+                        <h3>Reflection Questions</h3>
+                        ${week.pages[3].questions.map((q, index) => `
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Question ${index + 1}:</strong> ${q.text}
                             </div>
                         `).join('')}
                     </div>
-                </div>
-                <div class="card">
-                    <h3>Videos</h3>
-                    <p>Students would see ${videos.length} videos here with playback capabilities.</p>
-                </div>
-            `;
+                `;
+            }
+
+            // Page 5: Further Study
+            if (week.pages[4] && week.pages[4].resources && week.pages[4].resources.length > 0) {
+                html += `
+                    <div class="card">
+                        <h3>Further Study</h3>
+                        <div class="resource-list">
+                            ${week.pages[4].resources.map(r => `
+                                <div class="resource-item">
+                                    <strong>${r.title}</strong>
+                                    <p style="color: #6c757d; margin-top: 0.25rem;">${r.description || 'No description'}</p>
+                                    <a href="${r.url}" target="_blank">View Resource →</a>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            previewContent.innerHTML = html || '<p style="text-align: center; color: #6c757d;">No content added yet.</p>';
         }
 
         function returnToEdit() {
@@ -650,61 +776,60 @@
         function loadWeekContent() {
             const weekNum = getWeekNumber();
 
-            // Week-specific data
-            const weekData = {
-                '1': {
-                    title: 'The Call to Preach',
-                    description: 'Understanding the sacred vocation of preaching in the Christian tradition',
-                    openingPrompt: 'What first drew you to consider the call to preach? Reflect on your journey and motivation.'
-                },
-                '2': {
-                    title: 'Scripture as Foundation',
-                    description: 'Exegetical methods and biblical interpretation for preaching',
-                    openingPrompt: 'How do you currently approach biblical interpretation? What methods do you use?'
-                },
-                '3': {
-                    title: 'Crafting the Sermon',
-                    description: 'Sermon structure, rhetoric, and homiletical principles',
-                    openingPrompt: 'Describe your current approach to preparing a sermon. What aspects come naturally and what areas are challenging?'
-                },
-                '4': {
-                    title: 'Preaching Christ',
-                    description: 'Christological interpretation and Gospel proclamation',
-                    openingPrompt: 'How do you incorporate Christological themes in your preaching?'
-                },
-                '5': {
-                    title: 'Engaging the Congregation',
-                    description: 'Contextual preaching and connecting with diverse audiences',
-                    openingPrompt: 'What strategies do you use to connect with your congregation?'
-                },
-                '6': {
-                    title: 'Prophetic Witness',
-                    description: 'Preaching justice, mercy, and social transformation',
-                    openingPrompt: 'How do you approach preaching on social justice topics?'
-                },
-                '7': {
-                    title: 'Delivery and Presence',
-                    description: 'Voice, body language, and authentic communication',
-                    openingPrompt: 'What aspects of sermon delivery do you find most challenging?'
-                },
-                '8': {
-                    title: 'Sustaining the Preacher',
-                    description: 'Spiritual formation and lifelong learning in homiletics',
-                    openingPrompt: 'How do you maintain your spiritual health as a preacher?'
-                }
-            };
-
-            const data = weekData[weekNum] || weekData['3'];
-
-            // Update page with week-specific content
-            document.querySelector('.breadcrumb span:last-child').textContent = `Edit Week ${weekNum}`;
-            document.querySelector('.page-title span').textContent = `Edit Week: ${data.title}`;
-            document.getElementById('week-title').value = data.title;
-            document.getElementById('week-description').value = data.description;
-            document.getElementById('opening-prompt').value = data.openingPrompt;
+            // Update breadcrumb and title
+            document.getElementById('breadcrumb-week').textContent = `Edit Week ${weekNum}`;
+            document.getElementById('page-title').textContent = `Edit Week ${weekNum}`;
 
             // Store week number for later use
             window.currentWeekNumber = weekNum;
+
+            // Load existing week data from localStorage
+            const currentModuleId = localStorage.getItem('currentModuleId');
+            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
+            const weeks = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const week = weeks.find(w => w.id === parseInt(weekNum));
+
+            if (week) {
+                // Populate form fields with existing data
+                document.getElementById('week-title').value = week.title || '';
+                document.getElementById('week-description').value = week.description || '';
+                document.getElementById('unlock-date').value = week.unlockDate || '';
+
+                // Load page data if it exists
+                if (week.pages && week.pages.length > 0) {
+                    // Page 1: Opening Reflection Question
+                    if (week.pages[0] && week.pages[0].questions && week.pages[0].questions.length > 0) {
+                        document.getElementById('pre-question').value = week.pages[0].questions[0].text || '';
+                    }
+
+                    // Page 2: Introduction to the Week
+                    if (week.pages[1]) {
+                        document.getElementById('week-intro').value = week.pages[1].content || '';
+                        videos = week.pages[1].videos || [];
+                    }
+
+                    // Page 3: Weekly Reading
+                    if (week.pages[2]) {
+                        weeklyReadings = week.pages[2].resources || [];
+                    }
+
+                    // Page 4: Post-Zoom Reflection
+                    if (week.pages[3]) {
+                        reflectionQuestions = week.pages[3].questions || [];
+                    }
+
+                    // Page 5: Further Study
+                    if (week.pages[4]) {
+                        furtherStudy = week.pages[4].resources || [];
+                    }
+                }
+
+                // Render all lists
+                renderWeeklyReadings();
+                renderVideos();
+                renderReflectionQuestions();
+                renderFurtherStudy();
+            }
         }
 
         // Initialize

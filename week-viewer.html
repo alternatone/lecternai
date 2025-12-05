@@ -43,7 +43,10 @@
 
         <!-- Navigation -->
         <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-            <button class="btn btn-secondary" id="prev-btn" onclick="previousPage()">← Previous</button>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-secondary" onclick="location.href='module-overview.html'">← Back to Module Overview</button>
+                <button class="btn btn-secondary" id="prev-btn" onclick="previousPage()" style="display: none;">← Previous</button>
+            </div>
             <button class="btn btn-primary" id="next-btn" onclick="nextPage()">Next →</button>
         </div>
     </div>
@@ -53,6 +56,33 @@
         let currentWeek = null;
         let currentPage = 1;
         const totalPages = 5;
+
+        // Convert video URLs to embed URLs
+        function getVideoEmbedUrl(url) {
+            if (!url) return null;
+
+            // YouTube URL patterns
+            const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/;
+            const youtubeMatch = url.match(youtubeRegex);
+            if (youtubeMatch) {
+                return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+            }
+
+            // Vimeo URL patterns
+            const vimeoRegex = /vimeo\.com\/(\d+)/;
+            const vimeoMatch = url.match(vimeoRegex);
+            if (vimeoMatch) {
+                return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+            }
+
+            // If already an embed URL, return it
+            if (url.includes('youtube.com/embed/') || url.includes('player.vimeo.com/video/')) {
+                return url;
+            }
+
+            // Not a supported video platform
+            return null;
+        }
 
         // Format text with basic markdown support (line breaks, bullet points)
         function formatText(text) {
@@ -221,12 +251,20 @@
                 html += '<div class="video-playlist" style="margin-top: 2rem;">';
                 videos.forEach(video => {
                     const durationText = video.duration ? ` (${video.duration})` : '';
+                    const embedUrl = getVideoEmbedUrl(video.url);
+
                     html += `
                         <div class="playlist-item">
                             <strong>${video.title}${durationText}</strong>
-                            <div style="margin-top: 0.5rem;">
-                                <a href="${video.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Watch Video</a>
-                            </div>
+                            ${embedUrl ? `
+                                <div style="margin-top: 1rem; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+                                    <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                </div>
+                            ` : `
+                                <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
+                                    <a href="${video.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Watch Video</a>
+                                </div>
+                            `}
                         </div>
                     `;
                 });
@@ -254,7 +292,7 @@
                             <div class="resource-item">
                                 <strong>${resource.title}</strong>
                                 ${resource.description ? `<p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>` : ''}
-                                <div style="margin-top: 0.5rem;">
+                                <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
                                     <a href="${resource.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Access Resource</a>
                                 </div>
                             </div>
@@ -268,12 +306,20 @@
                     html += '<div class="video-playlist" style="margin-top: 1rem;">';
                     videos.forEach(video => {
                         const durationText = video.duration ? ` (${video.duration})` : '';
+                        const embedUrl = getVideoEmbedUrl(video.url);
+
                         html += `
                             <div class="playlist-item">
                                 <strong>${video.title}${durationText}</strong>
-                                <div style="margin-top: 0.5rem;">
-                                    <a href="${video.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Watch Video</a>
-                                </div>
+                                ${embedUrl ? `
+                                    <div style="margin-top: 1rem; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+                                        <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    </div>
+                                ` : `
+                                    <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
+                                        <a href="${video.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Watch Video</a>
+                                    </div>
+                                `}
                             </div>
                         `;
                     });

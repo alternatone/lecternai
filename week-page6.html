@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 3 - Further Study</title>
+    <title>Week - Further Study</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -24,9 +24,9 @@
         <div class="breadcrumb">
             <a href="index.html">Home</a>
             <span>›</span>
-            <a href="module-overview.html">Biblical Preaching</a>
+            <a href="module-overview.html" id="breadcrumb-module">Module</a>
             <span>›</span>
-            <span>Week 3: Crafting the Sermon</span>
+            <span id="breadcrumb-week">Week</span>
         </div>
 
         <h2 class="page-title">
@@ -42,7 +42,7 @@
             <h3>Closing Reflection Questions</h3>
 
             <div class="reflection-question" style="margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border-color);">
-                <h4 style="color: var(--primary-color); margin-bottom: 1rem;">How has this week's content influenced your understanding of sermon preparation?</h4>
+                <h4 id="reflection-q1" style="color: var(--primary-color); margin-bottom: 1rem;">Reflection question 1 will load here.</h4>
 
                 <div class="discussion-section">
                     <div class="discussion-form">
@@ -59,7 +59,7 @@
             </div>
 
             <div class="reflection-question" style="padding-top: 1rem;">
-                <h4 style="color: var(--primary-color); margin-bottom: 1rem;">What specific steps will you take to apply what you've learned in your next sermon?</h4>
+                <h4 id="reflection-q2" style="color: var(--primary-color); margin-bottom: 1rem;">Reflection question 2 will load here.</h4>
 
                 <div class="discussion-section">
                     <div class="discussion-form">
@@ -105,7 +105,8 @@
         let postsQ2 = [];
 
         function loadPosts(question) {
-            const saved = localStorage.getItem(`week3-closing-${question}`);
+            const weekKey = 'current-week'; // Would be made week-specific
+            const saved = localStorage.getItem(`${weekKey}-closing-${question}`);
             if (saved) {
                 if (question === 'q1') postsQ1 = JSON.parse(saved);
                 else postsQ2 = JSON.parse(saved);
@@ -114,8 +115,9 @@
         }
 
         function savePosts(question) {
+            const weekKey = 'current-week'; // Would be made week-specific
             const posts = question === 'q1' ? postsQ1 : postsQ2;
-            localStorage.setItem(`week3-closing-${question}`, JSON.stringify(posts));
+            localStorage.setItem(`${weekKey}-closing-${question}`, JSON.stringify(posts));
         }
 
         function submitPost(question) {
@@ -221,23 +223,25 @@
         }
 
         function saveProgress() {
+            const weekKey = 'current-week'; // Would be made week-specific
             const progress = {
-                week: 'week3',
+                week: weekKey,
                 page: 'page6',
                 completed: false,
                 timestamp: new Date().toISOString()
             };
-            localStorage.setItem('week3-progress', JSON.stringify(progress));
+            localStorage.setItem(`${weekKey}-progress`, JSON.stringify(progress));
         }
 
         function markPageComplete() {
+            const weekKey = 'current-week'; // Would be made week-specific
             const progress = {
-                week: 'week3',
+                week: weekKey,
                 page: 'page6',
                 completed: true,
                 timestamp: new Date().toISOString()
             };
-            localStorage.setItem('week3-progress', JSON.stringify(progress));
+            localStorage.setItem(`${weekKey}-progress`, JSON.stringify(progress));
         }
 
         function saveAndExit() {
@@ -247,7 +251,8 @@
         }
 
         function checkIfCompleted() {
-            const completed = localStorage.getItem('week3-completed');
+            const weekKey = 'current-week'; // Would be made week-specific
+            const completed = localStorage.getItem(`${weekKey}-completed`);
             if (completed === 'true') {
                 // Show read-only banner
                 const banner = document.createElement('div');

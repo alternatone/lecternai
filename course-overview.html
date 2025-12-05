@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biblical Preaching - Course Overview</title>
+    <title>Course Overview - LecternAI</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -24,91 +24,29 @@
         <div class="breadcrumb">
             <a href="index.html">Home</a>
             <span>›</span>
-            <span>Biblical Preaching: Proclaiming the Word</span>
+            <span id="breadcrumb-course">Course Overview</span>
         </div>
 
         <h2 class="page-title">
             <span>📖</span>
-            <span>Biblical Preaching: Proclaiming the Word</span>
+            <span id="page-title">Course Overview</span>
         </h2>
 
         <div class="card">
             <h3>Course Description</h3>
-            <p>This course explores the theological foundations and practical skills necessary for effective biblical preaching. Students will engage with Scripture, develop sermon preparation techniques, and practice the art of homiletics in a supportive learning community.</p>
+            <p id="course-description">Course description will appear here.</p>
 
             <div style="margin-top: 1.5rem;">
-                <p><strong>Instructor:</strong> Dr. Michael Daniels</p>
-                <p><strong>Duration:</strong> 8 Weeks</p>
-                <p><strong>Format:</strong> Online with weekly Zoom sessions</p>
+                <p><strong>Instructor:</strong> <span id="course-instructor">Not specified</span></p>
+                <p><strong>Duration:</strong> <span id="course-duration">Not specified</span></p>
+                <p><strong>Format:</strong> <span id="course-format">Not specified</span></p>
             </div>
         </div>
 
         <div class="card">
             <h3>Course Modules</h3>
-            <div class="module-list">
-                <div class="module-item">
-                    <div>
-                        <strong>Module 1: The Call to Preach</strong>
-                        <p style="margin-top: 0.5rem; color: #6c757d;">Understanding the sacred vocation of preaching in the Christian tradition</p>
-                    </div>
-                    <span class="status-badge status-complete">Completed</span>
-                </div>
-
-                <div class="module-item">
-                    <div>
-                        <strong>Module 2: Scripture as Foundation</strong>
-                        <p style="margin-top: 0.5rem; color: #6c757d;">Exegetical methods and biblical interpretation for preaching</p>
-                    </div>
-                    <span class="status-badge status-complete">Completed</span>
-                </div>
-
-                <div class="module-item">
-                    <div>
-                        <strong>Module 3: Crafting the Sermon</strong>
-                        <p style="margin-top: 0.5rem; color: #6c757d;">Sermon structure, rhetoric, and homiletical principles</p>
-                    </div>
-                    <a href="module-page1.html">Start Module →</a>
-                </div>
-
-                <div class="module-item">
-                    <div>
-                        <strong>Module 4: Preaching Christ</strong>
-                        <p style="margin-top: 0.5rem; color: #6c757d;">Christological interpretation and Gospel proclamation</p>
-                    </div>
-                    <span class="status-badge status-incomplete">Locked</span>
-                </div>
-
-                <div class="module-item">
-                    <div>
-                        <strong>Module 5: Engaging the Congregation</strong>
-                        <p style="margin-top: 0.5rem; color: #6c757d;">Contextual preaching and connecting with diverse audiences</p>
-                    </div>
-                    <span class="status-badge status-incomplete">Locked</span>
-                </div>
-
-                <div class="module-item">
-                    <div>
-                        <strong>Module 6: Prophetic Witness</strong>
-                        <p style="margin-top: 0.5rem; color: #6c757d;">Preaching justice, mercy, and social transformation</p>
-                    </div>
-                    <span class="status-badge status-incomplete">Locked</span>
-                </div>
-
-                <div class="module-item">
-                    <div>
-                        <strong>Module 7: Delivery and Presence</strong>
-                        <p style="margin-top: 0.5rem; color: #6c757d;">Voice, body language, and authentic communication</p>
-                    </div>
-                    <span class="status-badge status-incomplete">Locked</span>
-                </div>
-
-                <div class="module-item">
-                    <div>
-                        <strong>Module 8: Sustaining the Preacher</strong>
-                        <p style="margin-top: 0.5rem; color: #6c757d;">Spiritual formation and lifelong learning in homiletics</p>
-                    </div>
-                    <span class="status-badge status-incomplete">Locked</span>
-                </div>
+            <div class="module-list" id="modules-list">
+                <!-- Modules will be populated here -->
             </div>
         </div>
 
@@ -136,33 +74,7 @@
         }
 
         function updateModuleActions(view) {
-            const moduleItems = document.querySelectorAll('.module-item');
-
-            moduleItems.forEach((item, index) => {
-                const actionArea = item.querySelector('span, a');
-
-                if (view === 'teacher') {
-                    // Replace action with Edit Module button
-                    if (actionArea) {
-                        actionArea.outerHTML = `<button class="btn btn-primary" style="padding: 0.5rem 1rem;" onclick="location.href='teacher-module-edit.html'">Edit Module</button>`;
-                    }
-                } else {
-                    // Restore student view actions
-                    if (index === 0 || index === 1) {
-                        if (actionArea && actionArea.tagName === 'BUTTON') {
-                            actionArea.outerHTML = `<span class="status-badge status-complete">Completed</span>`;
-                        }
-                    } else if (index === 2) {
-                        if (actionArea && actionArea.tagName === 'BUTTON') {
-                            actionArea.outerHTML = `<a href="module-page1.html">Start Module →</a>`;
-                        }
-                    } else {
-                        if (actionArea && actionArea.tagName === 'BUTTON') {
-                            actionArea.outerHTML = `<span class="status-badge status-incomplete">Locked</span>`;
-                        }
-                    }
-                }
-            });
+            // Module actions will be updated dynamically based on loaded data
         }
 
         window.onload = function() {

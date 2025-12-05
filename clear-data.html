@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Data - LecternAI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container" style="max-width: 600px; margin: 4rem auto; text-align: center;">
+        <h2 style="color: var(--primary-color); margin-bottom: 2rem;">Clear All Data</h2>
+        <p style="margin-bottom: 2rem;">This will clear all modules, weeks, and settings from the application.</p>
+        <button class="btn btn-primary" onclick="clearAllData()" style="font-size: 1.1rem; padding: 1rem 2rem;">Clear All Data</button>
+        <div id="result" style="margin-top: 2rem;"></div>
+    </div>
+
+    <script>
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear ALL data? This cannot be undone.')) {
+                // Clear all localStorage
+                localStorage.clear();
+
+                document.getElementById('result').innerHTML = '<p style="color: #28a745; font-weight: bold;">All data cleared successfully!</p><p><a href="index.html" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Go to Homepage</a></p>';
+            }
+        }
+    </script>
+</body>
+</html>

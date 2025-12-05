@@ -100,7 +100,7 @@
                     <div class="course-body">
                         <p>Design module structure, add weeks, and upload content for your students.</p>
                         <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
-                            <button class="btn btn-primary" onclick="openCreateModuleModal()">+ Create Module</button>
+                            <button class="btn btn-primary" onclick="openCreateModuleModal()">New Module</button>
                         </div>
                     </div>
                 </div>
@@ -110,9 +110,9 @@
 
     <!-- Create Module Modal -->
     <div id="create-module-modal" class="modal">
-        <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
             <div class="modal-header">
-                <h3>Create New Module</h3>
+                <h3>Edit Module Information</h3>
                 <button class="modal-close" onclick="closeCreateModuleModal()">&times;</button>
             </div>
             <div class="form-group">
@@ -120,8 +120,8 @@
                 <input type="text" id="module-title-input">
             </div>
             <div class="form-group">
-                <label for="module-description-input">Module Description</label>
-                <textarea id="module-description-input" style="min-height: 120px;"></textarea>
+                <label for="module-description-input">Module Overview</label>
+                <textarea id="module-description-input" style="min-height: 150px;"></textarea>
             </div>
             <div class="form-group">
                 <label for="module-instructor-input">Instructor</label>
@@ -131,9 +131,58 @@
                 <label for="module-duration-input">Duration</label>
                 <input type="text" id="module-duration-input">
             </div>
+            <div class="form-group">
+                <label for="module-participation-input">Participation Requirements</label>
+                <textarea id="module-participation-input" style="min-height: 80px;"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="module-time-input">Time Expectations</label>
+                <textarea id="module-time-input" style="min-height: 80px;"></textarea>
+            </div>
+            <hr style="margin: 2rem 0;">
+            <h4 style="margin-bottom: 1rem;">Zoom Meeting Setup</h4>
+            <div class="form-group">
+                <label for="module-zoom-url-input">Zoom Meeting URL</label>
+                <input type="text" id="module-zoom-url-input">
+            </div>
+            <div class="form-group">
+                <label for="module-zoom-id-input">Meeting ID</label>
+                <input type="text" id="module-zoom-id-input">
+            </div>
+            <div class="form-group">
+                <label for="module-zoom-passcode-input">Passcode</label>
+                <input type="text" id="module-zoom-passcode-input">
+            </div>
+            <div class="form-group">
+                <label for="module-zoom-day-input">Weekly Meeting Day</label>
+                <select id="module-zoom-day-input">
+                    <option value="">Select a day</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="module-zoom-time-input">Meeting Time</label>
+                <input type="time" id="module-zoom-time-input">
+            </div>
+            <div class="form-group">
+                <label for="module-zoom-timezone-input">Timezone</label>
+                <select id="module-zoom-timezone-input">
+                    <option value="EST">Eastern (EST/EDT)</option>
+                    <option value="CST">Central (CST/CDT)</option>
+                    <option value="MST">Mountain (MST/MDT)</option>
+                    <option value="PST">Pacific (PST/PDT)</option>
+                    <option value="UTC">UTC</option>
+                </select>
+            </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeCreateModuleModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveModule()">Save Module</button>
+                <button class="btn btn-primary" onclick="saveModule()">Save & Close</button>
             </div>
         </div>
     </div>
@@ -173,6 +222,14 @@
             document.getElementById('module-description-input').value = '';
             document.getElementById('module-instructor-input').value = '';
             document.getElementById('module-duration-input').value = '';
+            document.getElementById('module-participation-input').value = '';
+            document.getElementById('module-time-input').value = '';
+            document.getElementById('module-zoom-url-input').value = '';
+            document.getElementById('module-zoom-id-input').value = '';
+            document.getElementById('module-zoom-passcode-input').value = '';
+            document.getElementById('module-zoom-day-input').value = '';
+            document.getElementById('module-zoom-time-input').value = '';
+            document.getElementById('module-zoom-timezone-input').value = 'EST';
 
             document.getElementById('create-module-modal').style.display = 'block';
             document.body.classList.add('modal-open');
@@ -188,6 +245,8 @@
             const description = document.getElementById('module-description-input').value.trim();
             const instructor = document.getElementById('module-instructor-input').value.trim();
             const duration = document.getElementById('module-duration-input').value.trim();
+            const participation = document.getElementById('module-participation-input').value.trim();
+            const timeExpectations = document.getElementById('module-time-input').value.trim();
 
             if (!title) {
                 alert('Please enter a module title');
@@ -201,6 +260,8 @@
                 description: description,
                 instructor: instructor,
                 duration: duration,
+                participation: participation,
+                timeExpectations: timeExpectations,
                 createdAt: new Date().toISOString(),
                 isDraft: true
             };
@@ -212,6 +273,27 @@
 
             // Store the current module ID for module-overview.html
             localStorage.setItem('currentModuleId', newModule.id);
+
+            // Save module info to moduleInfo storage
+            const moduleInfo = {
+                description: description,
+                instructor: instructor,
+                duration: duration,
+                participation: participation,
+                timeExpectations: timeExpectations
+            };
+            localStorage.setItem('moduleInfo', JSON.stringify(moduleInfo));
+
+            // Save zoom info scoped to the new module
+            const zoomInfo = {
+                url: document.getElementById('module-zoom-url-input').value.trim(),
+                id: document.getElementById('module-zoom-id-input').value.trim(),
+                passcode: document.getElementById('module-zoom-passcode-input').value.trim(),
+                day: document.getElementById('module-zoom-day-input').value,
+                time: document.getElementById('module-zoom-time-input').value,
+                timezone: document.getElementById('module-zoom-timezone-input').value
+            };
+            localStorage.setItem(`module_${newModule.id}_zoom`, JSON.stringify(zoomInfo));
 
             closeCreateModuleModal();
 
@@ -229,28 +311,28 @@
             modules.forEach(module => {
                 const moduleCard = document.createElement('div');
                 moduleCard.className = 'course-card';
+                moduleCard.style.position = 'relative';
                 // Lighter opacity for draft modules
                 if (module.isDraft) {
                     moduleCard.style.opacity = '0.85';
                 }
-                moduleCard.style.cursor = 'pointer';
-                moduleCard.onclick = function() {
-                    localStorage.setItem('currentModuleId', module.id);
-                    location.href = 'module-overview.html';
-                };
 
-                const statusBadge = module.isDraft ? '<span class="status-badge status-incomplete" style="font-size: 0.8rem; padding: 0.25rem 0.5rem; margin-top: 0.5rem; display: inline-block;">Draft</span>' : '';
+                const statusBadge = module.isDraft ? '<span class="status-badge status-incomplete" style="position: absolute; top: 1rem; right: 1rem; font-size: 0.8rem; padding: 0.25rem 0.5rem;">Draft</span>' : '';
 
                 moduleCard.innerHTML = `
+                    ${statusBadge}
                     <div class="course-header">
                         <h3>${module.title}</h3>
-                        ${statusBadge}
                         ${module.description ? `<p style="opacity: 0.8; margin-top: 0.5rem;">${module.description}</p>` : ''}
                     </div>
                     <div class="course-body">
-                        <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem;">
+                        <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
                             ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
                             ${module.duration ? `<span><strong>Duration:</strong> ${module.duration}</span>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-start;">
+                            <button class="btn btn-primary" onclick="editModule(${module.id})">Edit Module</button>
+                            <button class="btn btn-secondary" onclick="deleteModule(${module.id})">Delete Module</button>
                         </div>
                     </div>
                 `;
@@ -260,6 +342,33 @@
 
             // Add the "Create New Module" card at the end
             grid.appendChild(createCard);
+        }
+
+        function editModule(moduleId) {
+            localStorage.setItem('currentModuleId', moduleId);
+            location.href = 'module-overview.html';
+        }
+
+        function deleteModule(moduleId) {
+            if (confirm('Are you sure you want to delete this module? This action cannot be undone.')) {
+                // Remove module from array
+                modules = modules.filter(m => m.id !== moduleId);
+
+                // Save updated modules array
+                localStorage.setItem('modules', JSON.stringify(modules));
+
+                // Clear module-specific data
+                localStorage.removeItem(`module_${moduleId}_weeks`);
+                localStorage.removeItem(`module_${moduleId}_zoom`);
+
+                // If this was the current module, clear that reference
+                if (localStorage.getItem('currentModuleId') == moduleId) {
+                    localStorage.removeItem('currentModuleId');
+                }
+
+                // Re-render modules
+                renderModules();
+            }
         }
 
         function loadModules() {

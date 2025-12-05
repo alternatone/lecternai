@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Biblical Preaching - Module Overview</title>
+    <title>Module Overview - LecternAI</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         .modal {
@@ -80,6 +80,7 @@
         </h2>
 
         <div class="card">
+            <h3 style="margin-bottom: 1.5rem;">Module Info</h3>
             <p id="module-description"></p>
 
             <div style="margin-top: 1.5rem;">
@@ -110,7 +111,7 @@
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0;">Module Weeks</h3>
-                <button id="create-week-btn" class="btn btn-primary" style="display: none; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openCreateWeekModal()">+ Create Week</button>
+                <button id="create-week-btn" class="btn btn-primary" style="display: none; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openCreateWeekModal()">New Week</button>
             </div>
             <div id="draft-week-notice" style="display: none; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -129,8 +130,9 @@
             </div>
         </div>
 
-        <div style="margin-top: 2rem;">
+        <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
             <a href="index.html" class="btn btn-secondary">← Back to My Modules</a>
+            <button id="save-module-btn" class="btn btn-primary" style="display: none;" onclick="saveModuleProgress()">Save Module</button>
         </div>
     </div>
 
@@ -163,11 +165,49 @@
                 <label for="time-input">Time Expectations</label>
                 <textarea id="time-input" style="min-height: 80px;"></textarea>
             </div>
+            <hr style="margin: 2rem 0;">
+            <h4 style="margin-bottom: 1rem;">Zoom Meeting Setup</h4>
             <div class="form-group">
-                <button type="button" class="btn btn-secondary" onclick="openZoomSetupModal()" style="width: 100%;">Zoom Meeting Setup</button>
+                <label for="zoom-url-input">Zoom Meeting URL</label>
+                <input type="text" id="zoom-url-input">
+            </div>
+            <div class="form-group">
+                <label for="zoom-id-input">Meeting ID</label>
+                <input type="text" id="zoom-id-input">
+            </div>
+            <div class="form-group">
+                <label for="zoom-passcode-input">Passcode</label>
+                <input type="text" id="zoom-passcode-input">
+            </div>
+            <div class="form-group">
+                <label for="zoom-day-input">Weekly Meeting Day</label>
+                <select id="zoom-day-input">
+                    <option value="">Select a day</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="zoom-time-input">Meeting Time</label>
+                <input type="time" id="zoom-time-input">
+            </div>
+            <div class="form-group">
+                <label for="zoom-timezone-input">Timezone</label>
+                <select id="zoom-timezone-input">
+                    <option value="EST">Eastern (EST/EDT)</option>
+                    <option value="CST">Central (CST/CDT)</option>
+                    <option value="MST">Mountain (MST/MDT)</option>
+                    <option value="PST">Pacific (PST/PDT)</option>
+                    <option value="UTC">UTC</option>
+                </select>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeEditDescriptionModal()">Exit Without Saving</button>
+                <button class="btn btn-secondary" onclick="closeEditDescriptionModal()">Cancel</button>
                 <button class="btn btn-primary" onclick="saveDescription()">Save & Close</button>
             </div>
         </div>
@@ -369,7 +409,7 @@
     <div id="add-video-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Add Video</h3>
+                <h3 id="video-modal-title">Add Video</h3>
                 <button class="modal-close" onclick="closeAddVideoModal()">&times;</button>
             </div>
             <div class="form-group">
@@ -387,7 +427,7 @@
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeAddVideoModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="addVideo()">Add Video</button>
+                <button class="btn btn-primary" id="video-modal-submit-btn" onclick="addVideo()">Add Video</button>
             </div>
         </div>
     </div>
@@ -396,7 +436,7 @@
     <div id="add-question-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Add Reflection Question</h3>
+                <h3 id="question-modal-title">Add Question</h3>
                 <button class="modal-close" onclick="closeAddQuestionModal()">&times;</button>
             </div>
             <div class="form-group">
@@ -405,7 +445,7 @@
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeAddQuestionModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="addQuestion()">Add Question</button>
+                <button class="btn btn-primary" id="question-modal-submit-btn" onclick="addQuestion()">Add Question</button>
             </div>
         </div>
     </div>
@@ -431,11 +471,13 @@
                 localStorage.setItem('currentView', 'student');
                 document.getElementById('edit-description-btn').style.display = 'none';
                 document.getElementById('create-week-btn').style.display = 'none';
+                document.getElementById('save-module-btn').style.display = 'none';
             } else {
                 buttons[1].classList.add('active');
                 localStorage.setItem('currentView', 'teacher');
                 document.getElementById('edit-description-btn').style.display = 'inline-block';
                 document.getElementById('create-week-btn').style.display = 'inline-block';
+                document.getElementById('save-module-btn').style.display = 'inline-block';
             }
 
             checkForDraft();
@@ -468,20 +510,20 @@
 
                 const weekAction = document.createElement('div');
 
-                // Check progress from localStorage
-                const progress = JSON.parse(localStorage.getItem('week3-progress') || '{}');
-                const isComplete = localStorage.getItem('week3-completed') === 'true';
-                const hasProgress = progress.week === 'week3' && progress.page;
+                // Check progress from localStorage (dynamic based on week ID)
+                const progress = JSON.parse(localStorage.getItem(`week${week.id}-progress`) || '{}');
+                const isComplete = localStorage.getItem(`week${week.id}-completed`) === 'true';
+                const hasProgress = progress.week === `week${week.id}` && progress.page;
 
                 weekAction.style.display = 'flex';
                 weekAction.style.alignItems = 'center';
                 weekAction.style.gap = '1rem';
 
                 if (currentView === 'teacher') {
-                    // Teacher view: Show Edit Week button for all weeks, plus View Week for unlocked weeks
+                    // Teacher view: Show Edit Week button for all weeks, plus Preview Week for unlocked weeks
                     if (week.status !== 'locked') {
                         weekAction.innerHTML = `
-                            <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
+                            <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Preview Week</button>
                             <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="location.href='teacher-week-edit.html?week=${week.id}'">Edit Week</button>
                         `;
                     } else {
@@ -489,12 +531,12 @@
                     }
                 } else {
                     // Student view: Show status and View Week button
-                    if (week.status === 'complete' || (week.id === 3 && isComplete)) {
+                    if (week.status === 'complete' || isComplete) {
                         weekAction.innerHTML = `
                             <button class="status-badge status-complete" style="cursor: default;">Completed</button>
                             <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
                         `;
-                    } else if (week.status === 'current' || (week.id === 3 && hasProgress)) {
+                    } else if (week.status === 'current' || hasProgress) {
                         const statusText = hasProgress && !isComplete ? 'In Progress' : 'Not Started';
                         const statusClass = hasProgress && !isComplete ? 'status-inprogress' : 'status-incomplete';
                         weekAction.innerHTML = `
@@ -521,6 +563,17 @@
             document.getElementById('duration-input').value = moduleInfo.duration || document.getElementById('module-duration').textContent;
             document.getElementById('participation-input').value = moduleInfo.participation || document.getElementById('participation-requirements').textContent;
             document.getElementById('time-input').value = moduleInfo.timeExpectations || document.getElementById('time-expectations').textContent;
+
+            // Load zoom info scoped to current module
+            const currentModuleId = localStorage.getItem('currentModuleId');
+            const zoomStorageKey = currentModuleId ? `module_${currentModuleId}_zoom` : 'zoomInfo';
+            const zoomInfo = JSON.parse(localStorage.getItem(zoomStorageKey) || '{}');
+            document.getElementById('zoom-url-input').value = zoomInfo.url || '';
+            document.getElementById('zoom-id-input').value = zoomInfo.id || '';
+            document.getElementById('zoom-passcode-input').value = zoomInfo.passcode || '';
+            document.getElementById('zoom-day-input').value = zoomInfo.day || '';
+            document.getElementById('zoom-time-input').value = zoomInfo.time || '';
+            document.getElementById('zoom-timezone-input').value = zoomInfo.timezone || 'EST';
 
             // Load any unsaved draft
             loadModuleInfoDraft();
@@ -558,8 +611,20 @@
             };
             localStorage.setItem('moduleInfo', JSON.stringify(moduleInfo));
 
-            // Also update in modules array if we have a currentModuleId
+            // Save zoom info scoped to current module
             const currentModuleId = localStorage.getItem('currentModuleId');
+            const zoomStorageKey = currentModuleId ? `module_${currentModuleId}_zoom` : 'zoomInfo';
+            const zoomInfo = {
+                url: document.getElementById('zoom-url-input').value,
+                id: document.getElementById('zoom-id-input').value,
+                passcode: document.getElementById('zoom-passcode-input').value,
+                day: document.getElementById('zoom-day-input').value,
+                time: document.getElementById('zoom-time-input').value,
+                timezone: document.getElementById('zoom-timezone-input').value
+            };
+            localStorage.setItem(zoomStorageKey, JSON.stringify(zoomInfo));
+
+            // Also update in modules array if we have a currentModuleId
             if (currentModuleId) {
                 const modules = JSON.parse(localStorage.getItem('modules') || '[]');
                 const moduleIndex = modules.findIndex(m => m.id === parseInt(currentModuleId));
@@ -584,6 +649,9 @@
             } else {
                 document.getElementById('additional-info').style.display = 'none';
             }
+
+            // Update zoom info display
+            displayZoomInfo();
 
             closeEditDescriptionModal();
             alert('Module information saved successfully!');
@@ -624,7 +692,10 @@
         }
 
         function displayZoomInfo() {
-            const zoomInfo = JSON.parse(localStorage.getItem('zoomInfo') || '{}');
+            // Load zoom info scoped to current module
+            const currentModuleId = localStorage.getItem('currentModuleId');
+            const zoomStorageKey = currentModuleId ? `module_${currentModuleId}_zoom` : 'zoomInfo';
+            const zoomInfo = JSON.parse(localStorage.getItem(zoomStorageKey) || '{}');
             const displayDiv = document.getElementById('zoom-info-display');
 
             // Check if any zoom info exists
@@ -730,15 +801,18 @@
             page5Videos = [];
             page1Questions = [];
             reflectionQuestions = [];
+
+            // Clear form fields
+            document.getElementById('week-title-input').value = '';
+            document.getElementById('week-description-input').value = '';
+            document.getElementById('page2-intro-text').value = '';
+
             renderWeeklyReadings();
             renderFurtherStudy();
             renderVideos();
             renderPage5Videos();
             renderPage1Questions();
             renderReflectionQuestions();
-
-            // Load any draft
-            loadCreateWeekDraft();
 
             document.getElementById('create-week-modal').style.display = 'block';
             document.body.classList.add('modal-open');
@@ -773,7 +847,7 @@
                 item.innerHTML = `
                     <strong>${resource.title}</strong>
                     <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description || 'No description'}</p>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
                     </div>
@@ -797,7 +871,7 @@
                 item.innerHTML = `
                     <strong>${resource.title}</strong>
                     <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description || 'No description'}</p>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
                     </div>
@@ -938,7 +1012,7 @@
                 item.style.marginBottom = '1rem';
                 item.innerHTML = `
                     <strong>Question ${index + 1}:</strong> ${question.text}
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editPage1Question(${question.id})">Edit</button>
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deletePage1Question(${question.id})">Delete</button>
                     </div>
@@ -961,6 +1035,8 @@
                 document.getElementById('question-text').value = question.text;
                 window.editingPage1QuestionId = id;
                 window.editingPage1 = true;
+                document.getElementById('question-modal-title').textContent = 'Edit Question';
+                document.getElementById('question-modal-submit-btn').textContent = 'Save Question';
                 document.getElementById('add-question-modal').style.display = 'block';
                 document.body.classList.add('modal-open');
             }
@@ -988,7 +1064,7 @@
                 item.innerHTML = `
                     <strong>${video.title}</strong>
                     ${durationHtml}
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteVideo(${video.id})">Delete</button>
                     </div>
@@ -1002,6 +1078,8 @@
             document.getElementById('video-title').value = '';
             document.getElementById('video-url').value = '';
             document.getElementById('video-duration').value = '';
+            document.getElementById('video-modal-title').textContent = 'Add Video';
+            document.getElementById('video-modal-submit-btn').textContent = 'Add Video';
             document.getElementById('add-video-modal').style.display = 'block';
             document.body.classList.add('modal-open');
         }
@@ -1058,7 +1136,10 @@
                 document.getElementById('video-duration').value = video.duration || '';
                 // Store the ID being edited
                 window.editingVideoId = id;
-                openAddVideoModal();
+                document.getElementById('video-modal-title').textContent = 'Edit Video';
+                document.getElementById('video-modal-submit-btn').textContent = 'Save Video';
+                document.getElementById('add-video-modal').style.display = 'block';
+                document.body.classList.add('modal-open');
             }
         }
 
@@ -1085,7 +1166,7 @@
                 item.innerHTML = `
                     <strong>${video.title}</strong>
                     ${durationHtml}
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editPage5Video(${video.id})">Edit</button>
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deletePage5Video(${video.id})">Delete</button>
                     </div>
@@ -1100,6 +1181,8 @@
             document.getElementById('video-url').value = '';
             document.getElementById('video-duration').value = '';
             window.editingPage5Video = true;
+            document.getElementById('video-modal-title').textContent = 'Add Video';
+            document.getElementById('video-modal-submit-btn').textContent = 'Add Video';
             document.getElementById('add-video-modal').style.display = 'block';
             document.body.classList.add('modal-open');
         }
@@ -1145,7 +1228,11 @@
                 document.getElementById('video-url').value = video.url;
                 document.getElementById('video-duration').value = video.duration || '';
                 window.editingPage5VideoId = id;
-                openAddPage5VideoModal();
+                window.editingPage5Video = true;
+                document.getElementById('video-modal-title').textContent = 'Edit Video';
+                document.getElementById('video-modal-submit-btn').textContent = 'Save Video';
+                document.getElementById('add-video-modal').style.display = 'block';
+                document.body.classList.add('modal-open');
             }
         }
 
@@ -1172,7 +1259,7 @@
                 item.style.marginBottom = '1rem';
                 item.innerHTML = `
                     <strong>Question ${index + 1}:</strong> ${question.text}
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editQuestion(${question.id})">Edit</button>
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteQuestion(${question.id})">Delete</button>
                     </div>
@@ -1184,6 +1271,8 @@
 
         function openAddQuestionModal() {
             document.getElementById('question-text').value = '';
+            document.getElementById('question-modal-title').textContent = 'Add Question';
+            document.getElementById('question-modal-submit-btn').textContent = 'Add Question';
             document.getElementById('add-question-modal').style.display = 'block';
             document.body.classList.add('modal-open');
         }
@@ -1245,7 +1334,10 @@
                 document.getElementById('question-text').value = question.text;
                 // Store the ID being edited
                 window.editingQuestionId = id;
-                openAddQuestionModal();
+                document.getElementById('question-modal-title').textContent = 'Edit Question';
+                document.getElementById('question-modal-submit-btn').textContent = 'Save Question';
+                document.getElementById('add-question-modal').style.display = 'block';
+                document.body.classList.add('modal-open');
             }
         }
 
@@ -1375,7 +1467,30 @@
         }
 
         function resumeDraft() {
-            openCreateWeekModal();
+            // Load the draft data
+            const draft = JSON.parse(localStorage.getItem('createWeekDraft') || 'null');
+            if (draft) {
+                document.getElementById('week-title-input').value = draft.title || '';
+                document.getElementById('week-description-input').value = draft.description || '';
+                document.getElementById('page2-intro-text').value = draft.page2IntroText || '';
+                weeklyReadings = draft.weeklyReadings || [];
+                furtherStudy = draft.furtherStudy || [];
+                videos = draft.videos || [];
+                page5Videos = draft.page5Videos || [];
+                page1Questions = draft.page1Questions || [];
+                reflectionQuestions = draft.reflectionQuestions || [];
+
+                // Re-render all lists
+                renderWeeklyReadings();
+                renderFurtherStudy();
+                renderVideos();
+                renderPage5Videos();
+                renderPage1Questions();
+                renderReflectionQuestions();
+            }
+
+            document.getElementById('create-week-modal').style.display = 'block';
+            document.body.classList.add('modal-open');
         }
 
         window.onload = function() {
@@ -1535,6 +1650,41 @@
                 document.getElementById('duration-input').value = draft.duration || '';
                 document.getElementById('participation-input').value = draft.participation || '';
                 document.getElementById('time-input').value = draft.timeExpectations || '';
+            }
+        }
+
+        function saveModuleProgress() {
+            // Save all module info and weeks to ensure everything is persisted
+            const currentModuleId = localStorage.getItem('currentModuleId');
+
+            if (!currentModuleId) {
+                alert('No module selected');
+                return;
+            }
+
+            // Module info is already auto-saved, but we can sync to modules array
+            const modules = JSON.parse(localStorage.getItem('modules') || '[]');
+            const moduleIndex = modules.findIndex(m => m.id === parseInt(currentModuleId));
+
+            if (moduleIndex !== -1) {
+                // Get current module info from localStorage
+                const moduleInfo = JSON.parse(localStorage.getItem('moduleInfo') || '{}');
+
+                modules[moduleIndex].description = moduleInfo.description || '';
+                modules[moduleIndex].instructor = moduleInfo.instructor || '';
+                modules[moduleIndex].duration = moduleInfo.duration || '';
+                modules[moduleIndex].participation = moduleInfo.participation || '';
+                modules[moduleIndex].timeExpectations = moduleInfo.timeExpectations || '';
+
+                // Mark as no longer draft if it has content
+                if (moduleInfo.description || weeks.length > 0) {
+                    modules[moduleIndex].isDraft = false;
+                }
+
+                localStorage.setItem('modules', JSON.stringify(modules));
+                alert('Module progress saved successfully!');
+            } else {
+                alert('Module not found');
             }
         }
     </script>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Module 3 - Teacher View</title>
+    <title>Edit Module - Teacher View</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -24,31 +24,31 @@
         <div class="breadcrumb">
             <a href="index.html">Home</a>
             <span>›</span>
-            <a href="course-overview.html">Biblical Preaching</a>
+            <a href="course-overview.html" id="breadcrumb-course">Course</a>
             <span>›</span>
-            <span>Edit Module 3</span>
+            <span id="breadcrumb-module">Edit Module</span>
         </div>
 
         <h2 class="page-title">
             <span>✏️</span>
-            <span>Edit Module: Crafting the Sermon</span>
+            <span id="page-title">Edit Module</span>
         </h2>
 
         <div class="card">
             <h3>Module Settings</h3>
             <div class="form-group">
                 <label for="module-title">Module Title</label>
-                <input type="text" id="module-title" value="Crafting the Sermon">
+                <input type="text" id="module-title" value="">
             </div>
 
             <div class="form-group">
                 <label for="module-description">Module Description</label>
-                <textarea id="module-description">Sermon structure, rhetoric, and homiletical principles</textarea>
+                <textarea id="module-description"></textarea>
             </div>
 
             <div class="form-group">
                 <label for="unlock-date">Unlock Date</label>
-                <input type="date" id="unlock-date" value="2025-12-09">
+                <input type="date" id="unlock-date" value="">
             </div>
         </div>
 
@@ -56,7 +56,7 @@
             <h3>Page 1: Pre-Lecture Essay Question</h3>
             <div class="form-group">
                 <label for="pre-question">Essay Question</label>
-                <textarea id="pre-question">Describe your current approach to preparing a sermon. What aspects of sermon preparation come naturally to you, and what areas do you find most challenging? How do you hope this module will strengthen your preaching ministry?</textarea>
+                <textarea id="pre-question"></textarea>
             </div>
         </div>
 
@@ -67,14 +67,7 @@
             <button class="btn btn-secondary" style="margin-bottom: 1rem; margin-left: 0.5rem;">+ Add Video Resource</button>
 
             <div class="resource-list">
-                <div class="resource-item">
-                    <strong>The Elements of Sermon Structure</strong>
-                    <p style="color: #6c757d; margin-top: 0.25rem;">PDF Article</p>
-                    <div style="margin-top: 0.5rem;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; margin-left: 0.5rem; background: #dc3545; color: white;">Delete</button>
-                    </div>
-                </div>
+                <!-- Resources will be populated here -->
             </div>
         </div>
 
@@ -85,15 +78,7 @@
             <button class="btn btn-secondary" style="margin-bottom: 1rem; margin-left: 0.5rem;">+ Add Vimeo Link</button>
 
             <div class="video-playlist">
-                <div class="playlist-item">
-                    <strong>Lecture 1: The Sermon's Big Idea</strong>
-                    <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">11:23 • Uploaded</p>
-                    <div style="margin-top: 0.5rem;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; margin-left: 0.5rem;">Reorder</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; margin-left: 0.5rem; background: #dc3545; color: white;">Delete</button>
-                    </div>
-                </div>
+                <!-- Videos will be populated here -->
             </div>
         </div>
 
@@ -106,8 +91,8 @@
             </div>
 
             <div style="margin-top: 1.5rem; padding: 1rem; background: var(--background); border-radius: 8px;">
-                <strong>Current Session:</strong> Wednesday, Dec 18 at 2:00 PM EST<br>
-                <strong>Student Votes:</strong> 18 of 24
+                <strong>Current Session:</strong> Not scheduled<br>
+                <strong>Student Votes:</strong> 0
             </div>
         </div>
 
@@ -115,17 +100,17 @@
             <h3>Page 5: Zoom Meeting Link</h3>
             <div class="form-group">
                 <label for="zoom-link">Zoom Meeting URL</label>
-                <input type="text" id="zoom-link" value="https://zoom.us/j/1234567890">
+                <input type="text" id="zoom-link" value="">
             </div>
 
             <div class="form-group">
                 <label for="zoom-id">Meeting ID</label>
-                <input type="text" id="zoom-id" value="123 456 7890">
+                <input type="text" id="zoom-id" value="">
             </div>
 
             <div class="form-group">
                 <label for="zoom-passcode">Passcode</label>
-                <input type="text" id="zoom-passcode" value="Preach24">
+                <input type="text" id="zoom-passcode" value="">
             </div>
 
             <p style="color: #6c757d; margin-top: 1rem;">
@@ -138,13 +123,7 @@
             <button class="btn btn-secondary" style="margin-bottom: 1rem;">+ Add Question</button>
 
             <div style="margin-top: 1rem;">
-                <div style="padding: 1rem; background: var(--background); border-radius: 8px; margin-bottom: 1rem;">
-                    <strong>Question 1:</strong> What are the three most important insights you gained from this module about sermon structure and preparation?
-                    <div style="margin-top: 0.5rem;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; margin-left: 0.5rem; background: #dc3545; color: white;">Delete</button>
-                    </div>
-                </div>
+                <!-- Questions will be populated here -->
             </div>
         </div>
 
@@ -156,14 +135,7 @@
             <button class="btn btn-secondary" style="margin-bottom: 1rem; margin-left: 0.5rem;">+ Add Website</button>
 
             <div class="resource-list">
-                <div class="resource-item">
-                    <strong>Between Two Worlds: The Challenge of Preaching Today</strong>
-                    <p style="color: #6c757d; margin-top: 0.25rem;">John R.W. Stott • Book</p>
-                    <div style="margin-top: 0.5rem;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; margin-left: 0.5rem; background: #dc3545; color: white;">Delete</button>
-                    </div>
-                </div>
+                <!-- Resources will be populated here -->
             </div>
         </div>
 

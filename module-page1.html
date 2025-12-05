@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Module 3 - Pre-Lecture Reflection</title>
+    <title>Module - Pre-Lecture Reflection</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -24,9 +24,9 @@
         <div class="breadcrumb">
             <a href="index.html">Home</a>
             <span>›</span>
-            <a href="course-overview.html">Biblical Preaching</a>
+            <a href="course-overview.html" id="breadcrumb-course">Course</a>
             <span>›</span>
-            <span>Module 3: Crafting the Sermon</span>
+            <span id="breadcrumb-module">Module</span>
         </div>
 
         <h2 class="page-title">
@@ -47,9 +47,9 @@
 
             <div class="essay-form">
                 <div class="form-group">
-                    <label for="essay-question">
+                    <label for="essay-question" id="reflection-question">
                         <strong>Reflection Question:</strong><br>
-                        Describe your current approach to preparing a sermon. What aspects of sermon preparation come naturally to you, and what areas do you find most challenging? How do you hope this module will strengthen your preaching ministry?
+                        Question will be loaded here.
                     </label>
                     <textarea
                         id="essay-question"
@@ -89,15 +89,16 @@
             const savedView = localStorage.getItem('currentView') || 'student';
             setView(savedView);
 
-            // Load saved response
-            const savedResponse = localStorage.getItem('module3-prereflection');
+            // Load saved response (use dynamic module key)
+            const moduleKey = 'current-module-prereflection'; // Would be made module-specific
+            const savedResponse = localStorage.getItem(moduleKey);
             if (savedResponse) {
                 document.getElementById('essay-question').value = savedResponse;
             }
 
             // Auto-save response
             document.getElementById('essay-question').addEventListener('input', function() {
-                localStorage.setItem('module3-prereflection', this.value);
+                localStorage.setItem(moduleKey, this.value);
             });
         };
     </script>

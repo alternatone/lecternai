@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 3 - Further Study</title>
+    <title>Week - Further Study</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -24,9 +24,9 @@
         <div class="breadcrumb">
             <a href="index.html">Home</a>
             <span>›</span>
-            <a href="module-overview.html">Biblical Preaching</a>
+            <a href="module-overview.html" id="breadcrumb-module">Module</a>
             <span>›</span>
-            <span>Week 3: Crafting the Sermon</span>
+            <span id="breadcrumb-week">Week</span>
         </div>
 
         <h2 class="page-title">
@@ -40,61 +40,29 @@
 
         <div class="card">
             <h3>Recommended Books</h3>
-            <div class="resource-list">
-                <div class="resource-item">
-                    <h4>Between Two Worlds: The Challenge of Preaching Today</h4>
-                    <p style="margin: 0.5rem 0; color: #6c757d;">John R.W. Stott</p>
-                    <p>A classic exploration of faithful biblical preaching that bridges the ancient text and contemporary context with theological depth and practical wisdom.</p>
-                    <a href="https://www.amazon.com" target="_blank" rel="noopener" style="margin-top: 0.5rem; display: inline-block;">View on Amazon →</a>
-                </div>
-
-                <div class="resource-item">
-                    <h4>Christ-Centered Preaching: Redeeming the Expository Sermon</h4>
-                    <p style="margin: 0.5rem 0; color: #6c757d;">Bryan Chapell</p>
-                    <p>Essential reading on how to craft sermons that consistently point to Christ while remaining faithful to the biblical text's original meaning and intent.</p>
-                    <a href="https://www.amazon.com" target="_blank" rel="noopener" style="margin-top: 0.5rem; display: inline-block;">View on Amazon →</a>
-                </div>
+            <div class="resource-list" id="books-list">
+                <!-- Resources will be populated here -->
             </div>
         </div>
 
         <div class="card">
             <h3>Podcasts & Audio Resources</h3>
-            <div class="resource-list">
-                <div class="resource-item">
-                    <h4>Preaching Today</h4>
-                    <p style="margin: 0.5rem 0;">Weekly podcast featuring sermons and preaching insights from contemporary Christian leaders across denominational traditions.</p>
-                    <a href="https://www.preachingtoday.com/skills/podcast/" target="_blank" rel="noopener">Listen on Preaching Today →</a>
-                </div>
-
-                <div class="resource-item">
-                    <h4>The Preacher's Workshop</h4>
-                    <p style="margin: 0.5rem 0;">Practical discussions on sermon preparation, exegesis, and homiletical technique from experienced pastors and scholars.</p>
-                    <a href="https://www.spotify.com" target="_blank" rel="noopener">Listen on Spotify →</a>
-                </div>
+            <div class="resource-list" id="podcasts-list">
+                <!-- Resources will be populated here -->
             </div>
         </div>
 
         <div class="card">
             <h3>Websites & Online Tools</h3>
-            <div class="resource-list">
-                <div class="resource-item">
-                    <h4>Working Preacher</h4>
-                    <p style="margin: 0.5rem 0;">Free lectionary-based preaching resources from Luther Seminary, including commentaries, videos, and articles for each Sunday.</p>
-                    <a href="https://www.workingpreacher.org" target="_blank" rel="noopener">Visit Website →</a>
-                </div>
-
-                <div class="resource-item">
-                    <h4>The Gospel Coalition - Preaching & Teaching</h4>
-                    <p style="margin: 0.5rem 0;">Articles, videos, and resources on biblical preaching from a Reformed evangelical perspective.</p>
-                    <a href="https://www.thegospelcoalition.org/topics/preaching-teaching/" target="_blank" rel="noopener">Visit Website →</a>
-                </div>
+            <div class="resource-list" id="websites-list">
+                <!-- Resources will be populated here -->
             </div>
         </div>
 
         <div class="card" style="background: linear-gradient(135deg, #e8f5e9 0%, #fff 100%); border-left: 4px solid #28a745;">
-            <h3>Week 3 Complete!</h3>
-            <p style="margin-top: 1rem;">
-                Congratulations on completing this week on sermon crafting. Review the resources above to continue your learning journey.
+            <h3 id="completion-title">Week Complete!</h3>
+            <p id="completion-message" style="margin-top: 1rem;">
+                Congratulations on completing this week. Review the resources above to continue your learning journey.
             </p>
         </div>
 
@@ -124,25 +92,27 @@
         }
 
         function saveProgress() {
+            const weekKey = 'current-week'; // Would be made week-specific
             const progress = {
-                week: 'week3',
+                week: weekKey,
                 page: 'page7',
                 completed: false,
                 timestamp: new Date().toISOString()
             };
-            localStorage.setItem('week3-progress', JSON.stringify(progress));
+            localStorage.setItem(`${weekKey}-progress`, JSON.stringify(progress));
         }
 
         function markWeekComplete() {
+            const weekKey = 'current-week'; // Would be made week-specific
             const progress = {
-                week: 'week3',
+                week: weekKey,
                 page: 'page7',
                 completed: true,
                 weekComplete: true,
                 timestamp: new Date().toISOString()
             };
-            localStorage.setItem('week3-progress', JSON.stringify(progress));
-            localStorage.setItem('week3-completed', 'true');
+            localStorage.setItem(`${weekKey}-progress`, JSON.stringify(progress));
+            localStorage.setItem(`${weekKey}-completed`, 'true');
         }
 
         function saveAndExit() {
