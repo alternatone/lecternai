@@ -556,13 +556,13 @@
         function openEditDescriptionModal() {
             // Load module info using DataService
             const currentModuleId = dataService.getCurrentModuleId();
-            const moduleInfo = currentModuleId ? dataService.getModule(currentModuleId) : {};
+            const currentModule = currentModuleId ? dataService.getModule(currentModuleId) : {};
 
-            document.getElementById('description-input').value = moduleInfo.description || document.getElementById('module-description').textContent;
-            document.getElementById('instructor-input').value = moduleInfo.instructor || document.getElementById('module-instructor').textContent;
-            document.getElementById('duration-input').value = moduleInfo.duration || document.getElementById('module-duration').textContent;
-            document.getElementById('participation-input').value = moduleInfo.participation || document.getElementById('participation-requirements').textContent;
-            document.getElementById('time-input').value = moduleInfo.timeExpectations || document.getElementById('time-expectations').textContent;
+            document.getElementById('description-input').value = currentModule.description || '';
+            document.getElementById('instructor-input').value = currentModule.instructor || '';
+            document.getElementById('duration-input').value = currentModule.duration || '';
+            document.getElementById('participation-input').value = currentModule.participation || '';
+            document.getElementById('time-input').value = currentModule.timeExpectations || '';
 
             // Load zoom info using DataService
             const zoomInfo = currentModuleId ? dataService.getZoomInfo(currentModuleId) : {};
