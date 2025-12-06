@@ -592,49 +592,68 @@
             const participation = document.getElementById('participation-input').value;
             const timeExp = document.getElementById('time-input').value;
 
+            // Get current module and update using DataService
+            const currentModuleId = dataService.getCurrentModuleId();
+            if (!currentModuleId) {
+                showNotification('No module selected', 'error');
+                return;
+            }
+
+            // Show loading state
+            const saveBtn = document.querySelector('#edit-description-modal .btn-primary');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+
+            const updates = {
+                description: description,
+                instructor: instructor,
+                duration: duration,
+                participation: participation,
+                timeExpectations: timeExp,
+                status: 'published' // Mark as no longer draft
+            };
+
+            const result = dataService.updateModule(currentModuleId, updates);
+
+            if (!result.success) {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+                showNotification(result.message || 'Failed to save module', 'error');
+                return;
+            }
+
+            // Save zoom info using DataService
+            const zoomInfo = {
+                url: document.getElementById('zoom-url-input').value,
+                meetingId: document.getElementById('zoom-id-input').value,
+                passcode: document.getElementById('zoom-passcode-input').value,
+                schedule: {
+                    day: document.getElementById('zoom-day-input').value,
+                    time: document.getElementById('zoom-time-input').value,
+                    timezone: document.getElementById('zoom-timezone-input').value
+                }
+            };
+
+            // Validate zoom info if provided
+            if (zoomInfo.url || zoomInfo.meetingId) {
+                const validation = Validator.validateZoomInfo(zoomInfo);
+                if (!validation.valid) {
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                    showNotification('Zoom validation errors: ' + validation.errors.join(', '), 'error');
+                    return;
+                }
+            }
+
+            dataService.updateZoomInfo(currentModuleId, zoomInfo);
+
             // Update UI with formatted text
             document.getElementById('module-description').innerHTML = formatText(description);
             document.getElementById('module-instructor').textContent = instructor;
             document.getElementById('module-duration').textContent = duration;
             document.getElementById('participation-requirements').innerHTML = formatText(participation);
             document.getElementById('time-expectations').innerHTML = formatText(timeExp);
-
-            // Get current module and update using DataService
-            const currentModuleId = dataService.getCurrentModuleId();
-            if (currentModuleId) {
-                const updates = {
-                    description: description,
-                    instructor: instructor,
-                    duration: duration,
-                    participation: participation,
-                    timeExpectations: timeExp,
-                    status: 'published' // Mark as no longer draft
-                };
-                dataService.updateModule(currentModuleId, updates);
-
-                // Save zoom info using DataService
-                const zoomInfo = {
-                    url: document.getElementById('zoom-url-input').value,
-                    meetingId: document.getElementById('zoom-id-input').value,
-                    passcode: document.getElementById('zoom-passcode-input').value,
-                    schedule: {
-                        day: document.getElementById('zoom-day-input').value,
-                        time: document.getElementById('zoom-time-input').value,
-                        timezone: document.getElementById('zoom-timezone-input').value
-                    }
-                };
-
-                // Validate zoom info if provided
-                if (zoomInfo.url || zoomInfo.meetingId) {
-                    const validation = Validator.validateZoomInfo(zoomInfo);
-                    if (!validation.valid) {
-                        alert('Zoom validation errors:\n' + validation.errors.join('\n'));
-                        return;
-                    }
-                }
-
-                dataService.updateZoomInfo(currentModuleId, zoomInfo);
-            }
 
             // Clear the draft since we successfully saved
             dataService.deleteDraft('moduleInfo');
@@ -650,7 +669,41 @@
             displayZoomInfo();
 
             closeEditDescriptionModal();
-            alert('Module information saved successfully!');
+            showNotification('Module information saved successfully!', 'success');
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 9999;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+
+            if (type === 'success') {
+                notification.style.backgroundColor = '#28a745';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = '#dc3545';
+            } else {
+                notification.style.backgroundColor = '#17a2b8';
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.remove(), 4000);
         }
 
         function openZoomSetupModal() {
@@ -1349,12 +1402,17 @@
             const description = document.getElementById('week-description-input').value.trim();
 
             if (!title) {
-                alert('Please enter a week title');
+                showNotification('Please enter a week title', 'error');
+                return;
+            }
+
+            if (title.length < 3) {
+                showNotification('Week title must be at least 3 characters', 'error');
                 return;
             }
 
             if (!description) {
-                alert('Please enter a week description');
+                showNotification('Please enter a week description', 'error');
                 return;
             }
 
@@ -1363,17 +1421,29 @@
 
             // Validate required fields
             if (page1Questions.length === 0) {
-                alert('Please add at least one opening reflection question (Page 1)');
+                showNotification('Please add at least one opening reflection question (Page 1)', 'error');
                 return;
             }
             if (!page2IntroText) {
-                alert('Please enter introduction text for the week (Page 2)');
+                showNotification('Please enter introduction text for the week (Page 2)', 'error');
                 return;
             }
             if (reflectionQuestions.length === 0) {
-                alert('Please add at least one post-zoom reflection question (Page 4)');
+                showNotification('Please add at least one post-zoom reflection question (Page 4)', 'error');
                 return;
             }
+
+            const currentModuleId = dataService.getCurrentModuleId();
+            if (!currentModuleId) {
+                showNotification('No module selected', 'error');
+                return;
+            }
+
+            // Show loading state
+            const saveBtn = document.querySelector('#create-week-modal .btn-primary');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Creating...';
+            saveBtn.disabled = true;
 
             // Create page data array with fixed 5-page structure
             const pages = [
@@ -1407,21 +1477,25 @@
             ];
 
             // Create new week object
-            const newWeek = {
-                id: weeks.length > 0 ? Math.max(...weeks.map(w => w.id)) + 1 : 1,
+            const newWeekData = {
                 title: title,
                 description: description,
                 status: weeks.length === 0 ? 'current' : 'locked',
                 pages: pages
             };
 
-            weeks.push(newWeek);
-
             // Save using DataService
-            const currentModuleId = dataService.getCurrentModuleId();
-            if (currentModuleId) {
-                dataService.createWeek(currentModuleId, newWeek);
+            const result = dataService.createWeek(currentModuleId, newWeekData);
+
+            if (!result.success) {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+                showNotification(result.message || 'Failed to create week', 'error');
+                return;
             }
+
+            const newWeek = result.data;
+            weeks.push(newWeek);
 
             // Clear the draft since we successfully saved
             dataService.deleteDraft('createWeek');
@@ -1430,7 +1504,7 @@
             closeCreateWeekModal();
             renderWeeks();
 
-            alert(`Week ${newWeek.id}: ${title} created successfully!`);
+            showNotification(`Week ${newWeek.id}: ${title} created successfully!`, 'success');
         }
 
         function loadWeeks() {
@@ -1654,7 +1728,7 @@
             const currentModuleId = dataService.getCurrentModuleId();
 
             if (!currentModuleId) {
-                alert('No module selected');
+                showNotification('No module selected', 'error');
                 return;
             }
 
@@ -1666,12 +1740,16 @@
                 const hasContent = currentModule.description || weeks.length > 0;
 
                 if (hasContent && currentModule.status === 'draft') {
-                    dataService.updateModule(currentModuleId, { status: 'published' });
+                    const result = dataService.updateModule(currentModuleId, { status: 'published' });
+                    if (!result.success) {
+                        showNotification(result.message || 'Failed to save module', 'error');
+                        return;
+                    }
                 }
 
-                alert('Module progress saved successfully!');
+                showNotification('Module progress saved successfully!', 'success');
             } else {
-                alert('Module not found');
+                showNotification('Module not found', 'error');
             }
         }
     </script>

@@ -407,34 +407,50 @@
         }
 
         function addResource() {
-            const title = document.getElementById('resource-title').value;
-            const url = document.getElementById('resource-url').value;
-            const description = document.getElementById('resource-description').value;
+            const title = document.getElementById('resource-title').value.trim();
+            const url = document.getElementById('resource-url').value.trim();
+            const description = document.getElementById('resource-description').value.trim();
 
-            if (title && url) {
-                // Check if we're adding to Further Study or Weekly Readings
-                if (window.tempAddFunction === 'study') {
-                    const newResource = {
-                        id: furtherStudy.length + 1,
-                        title: title,
-                        url: url,
-                        description: description || 'No description provided'
-                    };
-                    furtherStudy.push(newResource);
-                    renderFurtherStudy();
-                    window.tempAddFunction = null;
-                } else {
-                    const newResource = {
-                        id: weeklyReadings.length + 1,
-                        title: title,
-                        url: url,
-                        description: description || 'No description provided'
-                    };
-                    weeklyReadings.push(newResource);
-                    renderWeeklyReadings();
-                }
-                closeAddResourceModal();
+            if (!title || !url) {
+                showNotification('Please enter both title and URL', 'error');
+                return;
             }
+
+            // Validate URL format
+            if (typeof Validator !== 'undefined') {
+                const validation = Validator.validateResource({ title, url });
+                if (!validation.valid) {
+                    showNotification(validation.errors.join(', '), 'error');
+                    return;
+                }
+            }
+
+            // Check if we're adding to Further Study or Weekly Readings
+            if (window.tempAddFunction === 'study') {
+                const maxId = furtherStudy.length > 0 ? Math.max(...furtherStudy.map(r => r.id)) : 0;
+                const newResource = {
+                    id: maxId + 1,
+                    title: title,
+                    url: url,
+                    description: description || ''
+                };
+                furtherStudy.push(newResource);
+                renderFurtherStudy();
+                window.tempAddFunction = null;
+                showNotification('Resource added to Further Study', 'success');
+            } else {
+                const maxId = weeklyReadings.length > 0 ? Math.max(...weeklyReadings.map(r => r.id)) : 0;
+                const newResource = {
+                    id: maxId + 1,
+                    title: title,
+                    url: url,
+                    description: description || ''
+                };
+                weeklyReadings.push(newResource);
+                renderWeeklyReadings();
+                showNotification('Resource added to Weekly Readings', 'success');
+            }
+            closeAddResourceModal();
         }
 
         function openAddVideoModal() {
@@ -448,24 +464,78 @@
         function closeAddVideoModal() {
             document.getElementById('add-video-modal').style.display = 'none';
             document.body.classList.remove('modal-open');
+            // Clear editing state to prevent stale data
+            window.editingVideoId = null;
         }
 
         function addVideo() {
-            const title = document.getElementById('video-title').value;
-            const url = document.getElementById('video-url').value;
-            const duration = document.getElementById('video-duration').value;
+            const title = document.getElementById('video-title').value.trim();
+            const url = document.getElementById('video-url').value.trim();
+            const duration = document.getElementById('video-duration').value.trim();
 
-            if (title && url) {
+            if (!title || !url) {
+                showNotification('Please enter both title and URL', 'error');
+                return;
+            }
+
+            // Check if we're editing an existing video
+            if (window.editingVideoId) {
+                const video = videos.find(v => v.id === window.editingVideoId);
+                if (video) {
+                    video.title = title;
+                    video.url = url;
+                    video.duration = duration || '';
+                }
+                window.editingVideoId = null;
+                showNotification('Video updated successfully', 'success');
+            } else {
+                // Adding new video - use safe ID generation
+                const maxId = videos.length > 0 ? Math.max(...videos.map(v => v.id)) : 0;
                 const newVideo = {
-                    id: videos.length + 1,
+                    id: maxId + 1,
                     title: title,
                     url: url,
-                    duration: duration || '00:00'
+                    duration: duration || ''
                 };
                 videos.push(newVideo);
-                renderVideos();
-                closeAddVideoModal();
+                showNotification('Video added successfully', 'success');
             }
+            renderVideos();
+            closeAddVideoModal();
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 9999;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+
+            if (type === 'success') {
+                notification.style.backgroundColor = '#28a745';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = '#dc3545';
+            } else {
+                notification.style.backgroundColor = '#17a2b8';
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.remove(), 4000);
         }
 
         function openAddQuestionModal() {
@@ -477,20 +547,43 @@
         function closeAddQuestionModal() {
             document.getElementById('add-question-modal').style.display = 'none';
             document.body.classList.remove('modal-open');
+            // Clear editing state to prevent stale data
+            window.editingQuestionId = null;
         }
 
         function addQuestion() {
-            const text = document.getElementById('question-text').value;
+            const text = document.getElementById('question-text').value.trim();
 
-            if (text) {
+            if (!text) {
+                showNotification('Please enter a question', 'error');
+                return;
+            }
+
+            if (text.length < 10) {
+                showNotification('Question must be at least 10 characters', 'error');
+                return;
+            }
+
+            // Check if we're editing an existing question
+            if (window.editingQuestionId) {
+                const question = reflectionQuestions.find(q => q.id === window.editingQuestionId);
+                if (question) {
+                    question.text = text;
+                }
+                window.editingQuestionId = null;
+                showNotification('Question updated successfully', 'success');
+            } else {
+                // Adding new question - use safe ID generation
+                const maxId = reflectionQuestions.length > 0 ? Math.max(...reflectionQuestions.map(q => q.id)) : 0;
                 const newQuestion = {
-                    id: reflectionQuestions.length + 1,
+                    id: maxId + 1,
                     text: text
                 };
                 reflectionQuestions.push(newQuestion);
-                renderReflectionQuestions();
-                closeAddQuestionModal();
+                showNotification('Question added successfully', 'success');
             }
+            renderReflectionQuestions();
+            closeAddQuestionModal();
         }
 
         function openAddStudyResourceModal() {
@@ -570,10 +663,10 @@
             if (video) {
                 document.getElementById('video-title').value = video.title;
                 document.getElementById('video-url').value = video.url;
-                document.getElementById('video-duration').value = video.duration;
+                document.getElementById('video-duration').value = video.duration || '';
+                // Store the ID being edited - don't delete the video
+                window.editingVideoId = id;
                 openAddVideoModal();
-                // Remove the video silently (will be re-added when saved)
-                videos = videos.filter(v => v.id !== id);
             }
         }
 
@@ -588,9 +681,9 @@
             const question = reflectionQuestions.find(q => q.id === id);
             if (question) {
                 document.getElementById('question-text').value = question.text;
+                // Store the ID being edited - don't delete the question
+                window.editingQuestionId = id;
                 openAddQuestionModal();
-                // Remove the question silently (will be re-added when saved)
-                reflectionQuestions = reflectionQuestions.filter(q => q.id !== id);
             }
         }
 
@@ -599,14 +692,14 @@
             const currentModuleId = dataService.getCurrentModuleId();
 
             if (!currentModuleId) {
-                alert('No module selected. Please navigate from the Module Overview page.');
+                showNotification('No module selected. Please navigate from the Module Overview page.', 'error');
                 return;
             }
 
             const week = dataService.getWeek(currentModuleId, parseInt(weekNum));
 
             if (!week) {
-                alert('Week not found. Please create the week first from the Module Overview page.');
+                showNotification('Week not found. Please create the week first from the Module Overview page.', 'error');
                 return;
             }
 
@@ -616,6 +709,18 @@
             const unlockDate = document.getElementById('unlock-date').value;
             const preQuestion = document.getElementById('pre-question').value.trim();
             const weekIntro = document.getElementById('week-intro').value.trim();
+
+            // Validate required fields
+            if (!title) {
+                showNotification('Please enter a week title', 'error');
+                return;
+            }
+
+            // Show loading state
+            const saveBtn = document.querySelector('.btn-primary[onclick="saveWeek()"]');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
 
             // Update the week data structure matching the format from module-overview.html
             const pages = [
@@ -655,10 +760,18 @@
                 pages: pages
             };
 
-            dataService.updateWeek(currentModuleId, parseInt(weekNum), updates);
+            const result = dataService.updateWeek(currentModuleId, parseInt(weekNum), updates);
 
-            alert('Week content saved successfully!');
-            window.location.href = 'module-overview.html';
+            if (result.success) {
+                showNotification('Week content saved successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'module-overview.html';
+                }, 500);
+            } else {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+                showNotification(result.message || 'Failed to save week', 'error');
+            }
         }
 
         function previewAsStudent() {
