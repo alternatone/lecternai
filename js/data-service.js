@@ -19,6 +19,45 @@ class DataService {
         this.initializeStorage();
     }
 
+    // ==================== ID Generation ====================
+
+    /**
+     * Generate a unique ID using timestamp and random suffix
+     * This prevents ID collisions after deletions
+     */
+    generateId() {
+        return Date.now() + Math.random().toString(36).substr(2, 9);
+    }
+
+    /**
+     * Generate numeric ID safely by finding max ID in collection
+     * Falls back to timestamp-based if collection is empty
+     */
+    generateNumericId(collection) {
+        if (!collection || collection.length === 0) {
+            return 1;
+        }
+        const maxId = Math.max(...collection.map(item => parseInt(item.id) || 0));
+        return maxId + 1;
+    }
+
+    // ==================== Operation Result Helpers ====================
+
+    /**
+     * Create a success result object
+     */
+    success(data, message = 'Operation successful') {
+        return { success: true, data, message, error: null };
+    }
+
+    /**
+     * Create an error result object
+     */
+    error(message, code = 'UNKNOWN_ERROR') {
+        console.error(`[DataService] Error: ${message}`);
+        return { success: false, data: null, message, error: { code, message } };
+    }
+
     /**
      * Initialize storage and run migrations if needed
      */
@@ -117,63 +156,108 @@ class DataService {
     }
 
     /**
-     * Create a new module
+     * Create a new module with validation
      */
     createModule(moduleData) {
-        const modules = this.getModules();
-        const newModule = {
-            id: modules.length > 0 ? Math.max(...modules.map(m => m.id)) + 1 : 1,
-            ...moduleData,
-            status: moduleData.status || 'draft',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
+        // Validate module data if Validator is available
+        if (typeof Validator !== 'undefined') {
+            const validation = Validator.validateModule(moduleData);
+            if (!validation.valid) {
+                return this.error('Validation failed: ' + validation.errors.join(', '), 'VALIDATION_ERROR');
+            }
+        }
 
-        modules.push(newModule);
-        this.set('modules', modules);
+        try {
+            const modules = this.getModules();
+            const newModule = {
+                id: this.generateNumericId(modules),
+                ...moduleData,
+                status: moduleData.status || 'draft',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
 
-        // Initialize module-specific storage
-        this.set(`module:${newModule.id}:weeks`, []);
+            modules.push(newModule);
+            const saved = this.set('modules', modules);
 
-        return newModule;
+            if (!saved) {
+                return this.error('Failed to save module to storage', 'STORAGE_ERROR');
+            }
+
+            // Initialize module-specific storage
+            this.set(`module:${newModule.id}:weeks`, []);
+
+            return this.success(newModule, 'Module created successfully');
+        } catch (err) {
+            return this.error('Failed to create module: ' + err.message, 'CREATE_ERROR');
+        }
     }
 
     /**
-     * Update an existing module
+     * Update an existing module with validation
      */
     updateModule(moduleId, updates) {
-        const modules = this.getModules();
-        const index = modules.findIndex(m => m.id === parseInt(moduleId));
+        try {
+            const modules = this.getModules();
+            const index = modules.findIndex(m => m.id === parseInt(moduleId));
 
-        if (index === -1) {
-            throw new Error(`Module ${moduleId} not found`);
+            if (index === -1) {
+                return this.error(`Module ${moduleId} not found`, 'NOT_FOUND');
+            }
+
+            // Validate updates if title is being changed
+            if (updates.title && typeof Validator !== 'undefined') {
+                const validation = Validator.validateModule({ ...modules[index], ...updates });
+                if (!validation.valid) {
+                    return this.error('Validation failed: ' + validation.errors.join(', '), 'VALIDATION_ERROR');
+                }
+            }
+
+            modules[index] = {
+                ...modules[index],
+                ...updates,
+                updatedAt: new Date().toISOString()
+            };
+
+            const saved = this.set('modules', modules);
+            if (!saved) {
+                return this.error('Failed to save module updates', 'STORAGE_ERROR');
+            }
+
+            return this.success(modules[index], 'Module updated successfully');
+        } catch (err) {
+            return this.error('Failed to update module: ' + err.message, 'UPDATE_ERROR');
         }
-
-        modules[index] = {
-            ...modules[index],
-            ...updates,
-            updatedAt: new Date().toISOString()
-        };
-
-        this.set('modules', modules);
-        return modules[index];
     }
 
     /**
      * Delete a module and all its data
      */
     deleteModule(moduleId) {
-        const modules = this.getModules();
-        const filtered = modules.filter(m => m.id !== parseInt(moduleId));
+        try {
+            const modules = this.getModules();
+            const moduleExists = modules.some(m => m.id === parseInt(moduleId));
 
-        this.set('modules', filtered);
+            if (!moduleExists) {
+                return this.error(`Module ${moduleId} not found`, 'NOT_FOUND');
+            }
 
-        // Clean up module-specific data
-        this.remove(`module:${moduleId}:weeks`);
-        this.remove(`module:${moduleId}:zoom`);
-        this.remove(`module:${moduleId}:info`);
+            const filtered = modules.filter(m => m.id !== parseInt(moduleId));
+            const saved = this.set('modules', filtered);
 
-        return true;
+            if (!saved) {
+                return this.error('Failed to delete module from storage', 'STORAGE_ERROR');
+            }
+
+            // Clean up module-specific data
+            this.remove(`module:${moduleId}:weeks`);
+            this.remove(`module:${moduleId}:zoom`);
+            this.remove(`module:${moduleId}:info`);
+
+            return this.success(null, 'Module deleted successfully');
+        } catch (err) {
+            return this.error('Failed to delete module: ' + err.message, 'DELETE_ERROR');
+        }
     }
 
     // ==================== Week Operations ====================
@@ -194,61 +278,106 @@ class DataService {
     }
 
     /**
-     * Create a new week
+     * Create a new week with validation
      */
     createWeek(moduleId, weekData) {
-        const weeks = this.getWeeks(moduleId);
-        const newWeek = {
-            id: weeks.length > 0 ? Math.max(...weeks.map(w => w.id)) + 1 : 1,
-            moduleId: parseInt(moduleId),
-            ...weekData,
-            status: weekData.status || 'locked',
-            order: weekData.order || weeks.length + 1,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
+        // Validate week data if Validator is available
+        if (typeof Validator !== 'undefined') {
+            const validation = Validator.validateWeek(weekData);
+            if (!validation.valid) {
+                return this.error('Validation failed: ' + validation.errors.join(', '), 'VALIDATION_ERROR');
+            }
+        }
 
-        weeks.push(newWeek);
-        this.set(`module:${moduleId}:weeks`, weeks);
+        try {
+            const weeks = this.getWeeks(moduleId);
+            const newWeek = {
+                id: this.generateNumericId(weeks),
+                moduleId: parseInt(moduleId),
+                ...weekData,
+                status: weekData.status || 'locked',
+                order: weekData.order || weeks.length + 1,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
 
-        return newWeek;
+            weeks.push(newWeek);
+            const saved = this.set(`module:${moduleId}:weeks`, weeks);
+
+            if (!saved) {
+                return this.error('Failed to save week to storage', 'STORAGE_ERROR');
+            }
+
+            return this.success(newWeek, 'Week created successfully');
+        } catch (err) {
+            return this.error('Failed to create week: ' + err.message, 'CREATE_ERROR');
+        }
     }
 
     /**
-     * Update an existing week
+     * Update an existing week with validation
      */
     updateWeek(moduleId, weekId, updates) {
-        const weeks = this.getWeeks(moduleId);
-        const index = weeks.findIndex(w => w.id === parseInt(weekId));
+        try {
+            const weeks = this.getWeeks(moduleId);
+            const index = weeks.findIndex(w => w.id === parseInt(weekId));
 
-        if (index === -1) {
-            throw new Error(`Week ${weekId} not found in module ${moduleId}`);
+            if (index === -1) {
+                return this.error(`Week ${weekId} not found in module ${moduleId}`, 'NOT_FOUND');
+            }
+
+            // Validate updates if title is being changed
+            if (updates.title && typeof Validator !== 'undefined') {
+                const validation = Validator.validateWeek({ ...weeks[index], ...updates });
+                if (!validation.valid) {
+                    return this.error('Validation failed: ' + validation.errors.join(', '), 'VALIDATION_ERROR');
+                }
+            }
+
+            weeks[index] = {
+                ...weeks[index],
+                ...updates,
+                updatedAt: new Date().toISOString()
+            };
+
+            const saved = this.set(`module:${moduleId}:weeks`, weeks);
+            if (!saved) {
+                return this.error('Failed to save week updates', 'STORAGE_ERROR');
+            }
+
+            return this.success(weeks[index], 'Week updated successfully');
+        } catch (err) {
+            return this.error('Failed to update week: ' + err.message, 'UPDATE_ERROR');
         }
-
-        weeks[index] = {
-            ...weeks[index],
-            ...updates,
-            updatedAt: new Date().toISOString()
-        };
-
-        this.set(`module:${moduleId}:weeks`, weeks);
-        return weeks[index];
     }
 
     /**
      * Delete a week
      */
     deleteWeek(moduleId, weekId) {
-        const weeks = this.getWeeks(moduleId);
-        const filtered = weeks.filter(w => w.id !== parseInt(weekId));
+        try {
+            const weeks = this.getWeeks(moduleId);
+            const weekExists = weeks.some(w => w.id === parseInt(weekId));
 
-        this.set(`module:${moduleId}:weeks`, filtered);
+            if (!weekExists) {
+                return this.error(`Week ${weekId} not found`, 'NOT_FOUND');
+            }
 
-        // Clean up week-specific data
-        this.remove(`week:${weekId}:progress`);
-        this.remove(`week:${weekId}:completed`);
+            const filtered = weeks.filter(w => w.id !== parseInt(weekId));
+            const saved = this.set(`module:${moduleId}:weeks`, filtered);
 
-        return true;
+            if (!saved) {
+                return this.error('Failed to delete week from storage', 'STORAGE_ERROR');
+            }
+
+            // Clean up week-specific data
+            this.remove(`week:${weekId}:progress`);
+            this.remove(`week:${weekId}:completed`);
+
+            return this.success(null, 'Week deleted successfully');
+        } catch (err) {
+            return this.error('Failed to delete week: ' + err.message, 'DELETE_ERROR');
+        }
     }
 
     // ==================== Progress Operations ====================

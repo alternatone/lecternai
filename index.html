@@ -252,7 +252,12 @@
             const timeExpectations = document.getElementById('module-time-input').value.trim();
 
             if (!title) {
-                alert('Please enter a module title');
+                showNotification('Please enter a module title', 'error');
+                return;
+            }
+
+            if (title.length < 3) {
+                showNotification('Module title must be at least 3 characters', 'error');
                 return;
             }
 
@@ -269,12 +274,28 @@
 
             const validation = Validator.validateModule(moduleData);
             if (!validation.valid) {
-                alert('Validation errors:\n' + validation.errors.join('\n'));
+                showNotification('Validation errors: ' + validation.errors.join(', '), 'error');
                 return;
             }
 
+            // Show loading state
+            const saveBtn = document.querySelector('#create-module-modal .btn-primary');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+
             // Create new module using DataService
-            const newModule = dataService.createModule(moduleData);
+            const result = dataService.createModule(moduleData);
+
+            // Check if operation was successful
+            if (!result.success) {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+                showNotification(result.message || 'Failed to create module', 'error');
+                return;
+            }
+
+            const newModule = result.data;
 
             // Set as current module
             dataService.setCurrentModuleId(newModule.id);
@@ -294,16 +315,61 @@
             if (zoomInfo.url || zoomInfo.meetingId) {
                 const zoomValidation = Validator.validateZoomInfo(zoomInfo);
                 if (!zoomValidation.valid) {
-                    alert('Zoom validation errors:\n' + zoomValidation.errors.join('\n'));
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                    showNotification('Zoom validation errors: ' + zoomValidation.errors.join(', '), 'error');
                     return;
                 }
                 dataService.updateZoomInfo(newModule.id, zoomInfo);
             }
 
             closeCreateModuleModal();
+            showNotification('Module created successfully!', 'success');
 
             // Navigate to module overview page
-            location.href = 'module-overview.html';
+            setTimeout(() => {
+                location.href = 'module-overview.html';
+            }, 500);
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            // Remove existing notification
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+
+            if (type === 'success') {
+                notification.style.backgroundColor = '#28a745';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = '#dc3545';
+            } else {
+                notification.style.backgroundColor = '#17a2b8';
+            }
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
         }
 
         function renderModules() {
@@ -359,10 +425,15 @@
         function deleteModule(moduleId) {
             if (confirm('Are you sure you want to delete this module? This action cannot be undone.')) {
                 // Delete module using DataService (handles all related data)
-                dataService.deleteModule(moduleId);
+                const result = dataService.deleteModule(moduleId);
 
-                // Re-render modules
-                renderModules();
+                if (result.success) {
+                    showNotification('Module deleted successfully', 'success');
+                    // Re-render modules
+                    renderModules();
+                } else {
+                    showNotification(result.message || 'Failed to delete module', 'error');
+                }
             }
         }
 
