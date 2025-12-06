@@ -211,6 +211,7 @@
 
         function renderDiscussionPage(pageData, container) {
             const questions = pageData.questions || [];
+            const isTeacher = currentView === 'teacher';
             let html = '<div class="card">';
 
             if (questions.length > 0) {
@@ -218,15 +219,22 @@
                     html += `
                         <h3>${questions.length > 1 ? 'Question ' + (index + 1) : pageData.title}</h3>
                         <p style="margin-top: 1rem; margin-bottom: 1.5rem;">${question.text}</p>
-                        <div class="discussion-section">
-                            <div class="discussion-form">
-                                <textarea id="response-${index}" placeholder="Share your thoughts..." style="min-height: 120px; width: 100%;"></textarea>
-                                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
-                                    <button class="btn btn-primary" onclick="saveResponse(${index})">Post Response</button>
+                    `;
+
+                    // Only show input fields for students
+                    if (!isTeacher) {
+                        html += `
+                            <div class="discussion-section">
+                                <div class="discussion-form">
+                                    <textarea id="response-${index}" placeholder="Share your thoughts..." style="min-height: 120px; width: 100%;"></textarea>
+                                    <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                                        <button class="btn btn-primary" onclick="saveResponse(${index})">Post Response</button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    }
+
                     if (index < questions.length - 1) {
                         html += '<hr style="margin: 2rem 0;">';
                     }

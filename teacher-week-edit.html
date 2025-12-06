@@ -172,7 +172,6 @@
         <div style="margin-top: 2rem; display: flex; gap: 1rem;">
             <a href="module-overview.html" class="btn btn-secondary">Return to Module</a>
             <button class="btn btn-primary" onclick="saveWeek()">Save Week</button>
-            <button class="btn btn-primary" style="margin-left: auto;" onclick="previewAsStudent()">Preview as Student</button>
         </div>
     </div>
 
@@ -325,11 +324,15 @@
                 const item = document.createElement('div');
                 item.className = 'resource-item';
                 item.innerHTML = `
-                    <strong>${resource.title}</strong>
-                    <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>
-                    <div class="resource-item-actions">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <strong>${resource.title}</strong>
+                            <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
+                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
+                        </div>
                     </div>
                 `;
                 list.appendChild(item);
@@ -343,11 +346,15 @@
                 const item = document.createElement('div');
                 item.className = 'playlist-item';
                 item.innerHTML = `
-                    <strong>${video.title}</strong>
-                    <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">${video.duration}</p>
-                    <div class="resource-item-actions">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteVideo(${video.id})">Delete</button>
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <strong>${video.title}</strong>
+                            <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">${video.duration}</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
+                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteVideo(${video.id})">Delete</button>
+                        </div>
                     </div>
                 `;
                 list.appendChild(item);
@@ -364,10 +371,14 @@
                 item.style.borderRadius = '8px';
                 item.style.marginBottom = '1rem';
                 item.innerHTML = `
-                    <strong>Question ${index + 1}:</strong> ${question.text}
-                    <div class="resource-item-actions">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editQuestion(${question.id})">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteQuestion(${question.id})">Delete</button>
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <strong>Question ${index + 1}:</strong> ${question.text}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editQuestion(${question.id})">Edit</button>
+                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteQuestion(${question.id})">Delete</button>
+                        </div>
                     </div>
                 `;
                 list.appendChild(item);
@@ -381,11 +392,15 @@
                 const item = document.createElement('div');
                 item.className = 'resource-item';
                 item.innerHTML = `
-                    <strong>${resource.title}</strong>
-                    <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>
-                    <div class="resource-item-actions">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <strong>${resource.title}</strong>
+                            <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
+                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
+                        </div>
                     </div>
                 `;
                 list.appendChild(item);

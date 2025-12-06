@@ -287,6 +287,11 @@
                 <textarea id="week-description-input" style="min-height: 80px;"></textarea>
             </div>
 
+            <div class="form-group">
+                <label for="week-unlock-date-input">Unlock Date (Optional)</label>
+                <input type="date" id="week-unlock-date-input">
+            </div>
+
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h3 style="margin: 0;">Page 1: Opening Reflection Question</h3>
@@ -868,6 +873,7 @@
             // Clear form
             document.getElementById('week-title-input').value = '';
             document.getElementById('week-description-input').value = '';
+            document.getElementById('week-unlock-date-input').value = '';
             document.getElementById('page2-intro-text').value = '';
             weeklyReadings = [];
             furtherStudy = [];
@@ -1400,6 +1406,7 @@
         function saveNewWeek() {
             const title = document.getElementById('week-title-input').value.trim();
             const description = document.getElementById('week-description-input').value.trim();
+            const unlockDate = document.getElementById('week-unlock-date-input').value;
 
             if (!title) {
                 showNotification('Please enter a week title', 'error');
@@ -1480,6 +1487,7 @@
             const newWeekData = {
                 title: title,
                 description: description,
+                unlockDate: unlockDate || null,
                 status: weeks.length === 0 ? 'current' : 'locked',
                 pages: pages
             };
