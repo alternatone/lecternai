@@ -17,11 +17,14 @@ LecternAI is a seminary learning platform designed with a clean, scalable archit
 
 ```
 LecternAI/
-├── index.html                 # Homepage (module selection)
-├── module-overview.html       # Module management and week listing
-├── teacher-week-edit.html     # Week content editing (teacher)
+├── index.html                 # Homepage (module selection, admin/student views)
+├── module-overview.html       # Module template management and week listing
+├── admin-module-edit.html     # Module settings editing (admin)
+├── admin-week-edit.html       # Week content editing (admin)
 ├── week-viewer.html           # Week content viewing (student/preview)
-├── course-overview.html       # Course listing (legacy)
+├── module-access.html         # Active module viewing (admin read-only + discussions)
+├── week-access.html           # Week access with discussion participation (admin)
+├── module-archive.html        # Archived module viewer (read-only)
 ├── clear-data.html            # Data management utility
 │
 ├── js/                        # JavaScript modules
@@ -128,11 +131,11 @@ The `DataService` class provides a consistent API for all data operations:
 
 ## Data Flow
 
-### Creating a Module (Teacher)
+### Creating a Module Template (Admin)
 
 ```
-index.html (Teacher View)
-    ↓ [User clicks "New Module"]
+index.html (Admin View)
+    ↓ [User clicks "New Module Template"]
     ↓ [Fills out form]
     ↓ [Clicks "Save & Close"]
 dataService.createModule(moduleData)
@@ -144,10 +147,10 @@ dataService.createModule(moduleData)
     ↓ [Redirects to module-overview.html]
 ```
 
-### Editing Week Content (Teacher)
+### Editing Week Content (Admin)
 
 ```
-teacher-week-edit.html
+admin-week-edit.html
     ↓ [Loads week from URL param]
 loadWeekContent()
     ↓ dataService.getWeek(moduleId, weekId)
@@ -192,7 +195,7 @@ Each page type has a specific rendering function in week-viewer.html.
 ### Current State (localStorage)
 
 - Module list in memory
-- Current view (student/teacher)
+- Current view (student/admin)
 - Current module ID
 - Progress per week
 - Draft content
@@ -300,7 +303,7 @@ tests/
 │   ├── week-editing.test.js
 │   └── ...
 └── e2e/
-    ├── teacher-workflow.test.js
+    ├── admin-workflow.test.js
     ├── student-workflow.test.js
     └── ...
 ```
