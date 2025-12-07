@@ -211,7 +211,7 @@
 
         function renderDiscussionPage(pageData, container) {
             const questions = pageData.questions || [];
-            const isAdmin = currentView === 'admin';
+            const pageIndex = currentPage - 1;
             let html = '<div class="card" style="width: 100%;">';
 
             if (questions.length > 0) {
@@ -221,19 +221,22 @@
                         <p style="margin-top: 1rem; margin-bottom: 1.5rem; width: 100%;">${question.text}</p>
                     `;
 
-                    // Only show input fields for students (not in admin preview mode)
-                    if (!isAdmin) {
-                        html += `
-                            <div class="discussion-section">
-                                <div class="discussion-form">
-                                    <textarea id="response-${index}" placeholder="Share your thoughts..." style="min-height: 120px; width: 100%;"></textarea>
-                                    <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
-                                        <button class="btn btn-primary" onclick="saveResponse(${index})">Post Response</button>
-                                    </div>
+                    // Show discussion thread for everyone
+                    const posts = dataService.getDiscussionPosts(currentWeek.id, pageIndex, index);
+
+                    html += `
+                        <div class="discussion-section">
+                            <div class="discussion-form" style="margin-bottom: 2rem;">
+                                <textarea id="response-${index}" placeholder="Share your thoughts..." style="min-height: 120px; width: 100%;"></textarea>
+                                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                                    <button class="btn btn-primary" onclick="postDiscussion(${index})">Post Response</button>
                                 </div>
                             </div>
-                        `;
-                    }
+                            <div id="discussion-thread-${index}">
+                                ${renderDiscussionThread(posts, pageIndex, index)}
+                            </div>
+                        </div>
+                    `;
 
                     if (index < questions.length - 1) {
                         html += '<hr style="margin: 2rem 0;">';
@@ -245,6 +248,60 @@
 
             html += '</div>';
             container.innerHTML = html;
+        }
+
+        function renderDiscussionThread(posts, pageIndex, questionIndex) {
+            if (!posts || posts.length === 0) {
+                return '<p style="color: #6c757d; font-style: italic; margin-top: 1rem;">No discussion posts yet. Be the first to share!</p>';
+            }
+
+            let html = '<div style="margin-top: 1.5rem;">';
+            posts.forEach(post => {
+                const postDate = new Date(post.createdAt).toLocaleDateString();
+                const postTime = new Date(post.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                html += `
+                    <div style="background: #f8f9fa; border-left: 3px solid var(--primary-color); padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong style="color: var(--primary-color);">${post.author || 'Anonymous'}</strong>
+                            <span style="color: #6c757d; font-size: 0.85rem;">${postDate} at ${postTime}</span>
+                        </div>
+                        <p style="margin: 0.5rem 0; white-space: pre-wrap;">${post.content}</p>
+                        <button class="btn btn-secondary" onclick="toggleReplyForm(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem; margin-top: 0.5rem;">Reply</button>
+
+                        <div id="reply-form-${post.id}" style="display: none; margin-top: 1rem; padding-left: 1rem; border-left: 2px solid #dee2e6;">
+                            <textarea id="reply-text-${post.id}" placeholder="Write your reply..." style="width: 100%; min-height: 80px; margin-bottom: 0.5rem;"></textarea>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-primary" onclick="postReply(${pageIndex}, ${questionIndex}, ${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Post Reply</button>
+                                <button class="btn btn-secondary" onclick="toggleReplyForm(${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Cancel</button>
+                            </div>
+                        </div>
+                `;
+
+                // Render replies
+                if (post.replies && post.replies.length > 0) {
+                    html += '<div style="margin-top: 1rem; padding-left: 1.5rem; border-left: 2px solid #dee2e6;">';
+                    post.replies.forEach(reply => {
+                        const replyDate = new Date(reply.createdAt).toLocaleDateString();
+                        const replyTime = new Date(reply.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        html += `
+                            <div style="background: white; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 4px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <strong style="color: var(--teal); font-size: 0.9rem;">${reply.author || 'Anonymous'}</strong>
+                                    <span style="color: #6c757d; font-size: 0.8rem;">${replyDate} at ${replyTime}</span>
+                                </div>
+                                <p style="margin: 0; font-size: 0.9rem; white-space: pre-wrap;">${reply.content}</p>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            });
+            html += '</div>';
+
+            return html;
         }
 
         function renderIntroPage(pageData, container) {
@@ -342,21 +399,63 @@
             container.innerHTML = html;
         }
 
-        function saveResponse(questionIndex) {
+        function postDiscussion(questionIndex) {
             const textarea = document.getElementById(`response-${questionIndex}`);
-            const response = textarea.value.trim();
+            const content = textarea.value.trim();
 
-            if (!response) {
+            if (!content) {
                 alert('Please enter a response before posting.');
                 return;
             }
 
-            // Save response using DataService with pageIndex
-            const pageIndex = currentPage - 1; // Convert to 0-based index
-            dataService.saveResponse(currentWeek.id, pageIndex, questionIndex, response);
+            // Get current user (for now, use a simple prompt - in production this would come from auth)
+            const author = prompt('Enter your name:', 'Student') || 'Anonymous';
 
-            alert('Response saved successfully!');
+            // Add discussion post using DataService
+            const pageIndex = currentPage - 1; // Convert to 0-based index
+            dataService.addDiscussionPost(currentWeek.id, pageIndex, questionIndex, {
+                author: author,
+                content: content
+            });
+
+            alert('Response posted successfully!');
             textarea.value = '';
+
+            // Reload the page to show the new post
+            renderPage();
+        }
+
+        function toggleReplyForm(postId) {
+            const replyForm = document.getElementById(`reply-form-${postId}`);
+            if (replyForm.style.display === 'none') {
+                replyForm.style.display = 'block';
+            } else {
+                replyForm.style.display = 'none';
+            }
+        }
+
+        function postReply(pageIndex, questionIndex, postId) {
+            const textarea = document.getElementById(`reply-text-${postId}`);
+            const content = textarea.value.trim();
+
+            if (!content) {
+                alert('Please enter a reply before posting.');
+                return;
+            }
+
+            // Get current user
+            const author = prompt('Enter your name:', 'Student') || 'Anonymous';
+
+            // Add reply using DataService
+            dataService.addReply(currentWeek.id, pageIndex, questionIndex, postId, {
+                author: author,
+                content: content
+            });
+
+            alert('Reply posted successfully!');
+
+            // Reload the page to show the new reply
+            renderPage();
         }
 
         function previousPage() {

@@ -712,16 +712,16 @@ class DataService {
     /**
      * Get discussion posts for a question
      */
-    getDiscussionPosts(weekId, questionId) {
-        const key = `discussion:week:${weekId}:question:${questionId}`;
+    getDiscussionPosts(weekId, pageIndex, questionId) {
+        const key = `discussion:week:${weekId}:page:${pageIndex}:question:${questionId}`;
         return this.get(key, []);
     }
 
     /**
      * Add a discussion post
      */
-    addDiscussionPost(weekId, questionId, post) {
-        const posts = this.getDiscussionPosts(weekId, questionId);
+    addDiscussionPost(weekId, pageIndex, questionId, post) {
+        const posts = this.getDiscussionPosts(weekId, pageIndex, questionId);
         const newPost = {
             id: Date.now(),
             ...post,
@@ -729,7 +729,7 @@ class DataService {
         };
 
         posts.unshift(newPost);
-        this.set(`discussion:week:${weekId}:question:${questionId}`, posts);
+        this.set(`discussion:week:${weekId}:page:${pageIndex}:question:${questionId}`, posts);
 
         return newPost;
     }
@@ -737,8 +737,8 @@ class DataService {
     /**
      * Add a reply to a discussion post
      */
-    addReply(weekId, questionId, postId, reply) {
-        const posts = this.getDiscussionPosts(weekId, questionId);
+    addReply(weekId, pageIndex, questionId, postId, reply) {
+        const posts = this.getDiscussionPosts(weekId, pageIndex, questionId);
         const post = posts.find(p => p.id === postId);
 
         if (!post) {
@@ -756,7 +756,7 @@ class DataService {
         };
 
         post.replies.push(newReply);
-        this.set(`discussion:week:${weekId}:question:${questionId}`, posts);
+        this.set(`discussion:week:${weekId}:page:${pageIndex}:question:${questionId}`, posts);
 
         return newReply;
     }
