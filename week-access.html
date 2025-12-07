@@ -3,11 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week Viewer - LecternAI</title>
+    <title>Week Access - LecternAI</title>
     <link rel="stylesheet" href="styles.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
     <script src="js/data-service.js"></script>
+    <style>
+        .discussion-thread {
+            background: var(--background);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .discussion-post {
+            padding: 1rem;
+            background: var(--card-background);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid var(--primary-color);
+        }
+        .discussion-post.admin-post {
+            border-left-color: var(--teal);
+            background: #f0fffe;
+        }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .post-author {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .post-author.admin {
+            color: var(--teal);
+        }
+        .post-time {
+            color: #6c757d;
+        }
+        .reply-form {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -17,8 +57,8 @@
                 <h1>LecternAI</h1>
             </div>
             <div class="view-toggle">
-                <button class="active" onclick="setView('student')">Student View</button>
-                <button onclick="setView('admin')">Admin View</button>
+                <button onclick="setView('student')">Student View</button>
+                <button class="active" onclick="setView('admin')">Admin View</button>
             </div>
         </div>
     </header>
@@ -27,7 +67,7 @@
         <div class="breadcrumb">
             <a href="index.html">Home</a>
             <span>›</span>
-            <a href="module-overview.html">Module Overview</a>
+            <a href="module-access.html" id="breadcrumb-module">Module</a>
             <span>›</span>
             <span id="breadcrumb-week">Week</span>
         </div>
@@ -47,7 +87,7 @@
         <!-- Navigation -->
         <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
             <div style="display: flex; gap: 0.5rem;">
-                <button class="btn btn-secondary" onclick="location.href='module-overview.html'">← Back to Module Overview</button>
+                <button class="btn btn-secondary" onclick="location.href='module-access.html'">← Back to Module</button>
                 <button class="btn btn-secondary" id="prev-btn" onclick="previousPage()" style="display: none;">← Previous</button>
             </div>
             <button class="btn btn-primary" id="next-btn" onclick="nextPage()">Next →</button>
@@ -55,91 +95,40 @@
     </div>
 
     <script>
-        let currentView = 'student';
         let currentWeek = null;
         let currentPage = 1;
         const totalPages = 5;
 
+        function setView(view) {
+            if (view === 'student') {
+                dataService.setCurrentView('student');
+                location.href = 'index.html';
+            }
+        }
+
         // Convert video URLs to embed URLs
         function getVideoEmbedUrl(url) {
             if (!url) return null;
-
-            // YouTube URL patterns
             const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/;
             const youtubeMatch = url.match(youtubeRegex);
             if (youtubeMatch) {
                 return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
             }
-
-            // Vimeo URL patterns
             const vimeoRegex = /vimeo\.com\/(\d+)/;
             const vimeoMatch = url.match(vimeoRegex);
             if (vimeoMatch) {
                 return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
             }
-
-            // If already an embed URL, return it
             if (url.includes('youtube.com/embed/') || url.includes('player.vimeo.com/video/')) {
                 return url;
             }
-
-            // Not a supported video platform
             return null;
         }
 
-        // Format text with basic markdown support (line breaks, bullet points)
         function formatText(text) {
             if (!text) return '';
-
-            // Escape HTML to prevent XSS
             const escaped = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-            // Convert line breaks to <br>
-            let formatted = escaped.replace(/\n/g, '<br>');
-
-            // Convert markdown-style bullets to HTML list items
-            const lines = formatted.split('<br>');
-            let inList = false;
-            let result = [];
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                const isBullet = /^[\*\-\•]\s/.test(line);
-
-                if (isBullet) {
-                    if (!inList) {
-                        result.push('<ul style="margin: 0.5rem 0; padding-left: 1.5rem;">');
-                        inList = true;
-                    }
-                    const content = line.replace(/^[\*\-\•]\s/, '');
-                    result.push(`<li>${content}</li>`);
-                } else {
-                    if (inList) {
-                        result.push('</ul>');
-                        inList = false;
-                    }
-                    result.push(line + '<br>');
-                }
-            }
-
-            if (inList) {
-                result.push('</ul>');
-            }
-
-            return result.join('');
-        }
-
-        function setView(view) {
-            currentView = view;
-            const buttons = document.querySelectorAll('.view-toggle button');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            if (view === 'student') {
-                buttons[0].classList.add('active');
-            } else {
-                buttons[1].classList.add('active');
-            }
-            dataService.setCurrentView(view);
-            renderPage();
+            return escaped.replace(/\n/g, '<br>');
         }
 
         function getWeekIdFromURL() {
@@ -154,9 +143,8 @@
 
         function loadWeekData() {
             const weekId = getWeekIdFromURL();
-
-            // Load weeks using DataService
             const currentModuleId = dataService.getCurrentModuleId();
+
             if (currentModuleId) {
                 currentWeek = dataService.getWeek(currentModuleId, weekId);
             }
@@ -195,7 +183,6 @@
 
             const content = document.getElementById('page-content');
 
-            // Render based on page type
             if (pageData.type === 'discussion') {
                 renderDiscussionPage(pageData, content);
             } else if (pageData.type === 'intro') {
@@ -204,36 +191,56 @@
                 renderReadingPage(pageData, content);
             }
 
-            // Update navigation buttons
             document.getElementById('prev-btn').style.display = currentPage === 1 ? 'none' : 'block';
             document.getElementById('next-btn').textContent = currentPage === totalPages ? 'Finish →' : 'Next →';
         }
 
         function renderDiscussionPage(pageData, container) {
             const questions = pageData.questions || [];
-            const isAdmin = currentView === 'admin';
+            const discussions = currentWeek.discussions || [];
             let html = '<div class="card">';
 
             if (questions.length > 0) {
                 questions.forEach((question, index) => {
+                    const questionDiscussions = discussions.filter(d => d.questionIndex === index);
+
                     html += `
                         <h3>${questions.length > 1 ? 'Question ' + (index + 1) : pageData.title}</h3>
                         <p style="margin-top: 1rem; margin-bottom: 1.5rem;">${question.text}</p>
                     `;
 
-                    // Only show input fields for students (not in admin preview mode)
-                    if (!isAdmin) {
-                        html += `
-                            <div class="discussion-section">
-                                <div class="discussion-form">
-                                    <textarea id="response-${index}" placeholder="Share your thoughts..." style="min-height: 120px; width: 100%;"></textarea>
-                                    <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
-                                        <button class="btn btn-primary" onclick="saveResponse(${index})">Post Response</button>
+                    // Show existing discussions
+                    html += `<div class="discussion-thread" id="thread-${index}">`;
+                    html += `<h4 style="margin-bottom: 1rem; font-size: 0.95rem; color: #6c757d;">Discussion (${questionDiscussions.length} responses)</h4>`;
+
+                    if (questionDiscussions.length > 0) {
+                        questionDiscussions.forEach(post => {
+                            const isAdmin = post.author === 'Admin' || post.isAdmin;
+                            html += `
+                                <div class="discussion-post ${isAdmin ? 'admin-post' : ''}">
+                                    <div class="post-header">
+                                        <span class="post-author ${isAdmin ? 'admin' : ''}">${post.author}${isAdmin ? ' (Admin)' : ''}</span>
+                                        <span class="post-time">${new Date(post.timestamp).toLocaleString()}</span>
                                     </div>
+                                    <div class="post-content">${formatText(post.content)}</div>
                                 </div>
-                            </div>
-                        `;
+                            `;
+                        });
+                    } else {
+                        html += '<p style="color: #6c757d; font-style: italic;">No responses yet.</p>';
                     }
+
+                    // Admin reply form
+                    html += `
+                        <div class="reply-form">
+                            <textarea id="admin-reply-${index}" placeholder="Add your response as Admin..." style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 8px;"></textarea>
+                            <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+                                <button class="btn btn-primary" style="background: var(--teal);" onclick="postAdminReply(${index})">Post as Admin</button>
+                            </div>
+                        </div>
+                    `;
+
+                    html += '</div>';
 
                     if (index < questions.length - 1) {
                         html += '<hr style="margin: 2rem 0;">';
@@ -251,12 +258,10 @@
             let html = '<div class="card">';
             html += `<h3>${pageData.title}</h3>`;
 
-            // Show intro text
             if (pageData.content) {
                 html += `<div style="margin-top: 1rem;">${formatText(pageData.content)}</div>`;
             }
 
-            // Show videos if any
             const videos = pageData.videos || [];
             if (videos.length > 0) {
                 html += '<div class="video-playlist" style="margin-top: 2rem;">';
@@ -272,8 +277,8 @@
                                     <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                                 </div>
                             ` : `
-                                <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
-                                    <a href="${video.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Watch Video</a>
+                                <div style="margin-top: 0.5rem;">
+                                    <a href="${video.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Watch Video</a>
                                 </div>
                             `}
                         </div>
@@ -294,7 +299,7 @@
             html += `<h3>${pageData.title}</h3>`;
 
             if (resources.length === 0 && videos.length === 0) {
-                html += '<p style="color: #6c757d; text-align: center; padding: 2rem;">No resources available yet.</p>';
+                html += '<p style="color: #6c757d; text-align: center; padding: 2rem;">No resources available.</p>';
             } else {
                 if (resources.length > 0) {
                     html += '<div class="resource-list" style="margin-top: 1.5rem;">';
@@ -303,34 +308,9 @@
                             <div class="resource-item">
                                 <strong>${resource.title}</strong>
                                 ${resource.description ? `<p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>` : ''}
-                                <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
-                                    <a href="${resource.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Access Resource</a>
+                                <div style="margin-top: 0.5rem;">
+                                    <a href="${resource.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Access Resource</a>
                                 </div>
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
-                }
-
-                if (videos.length > 0) {
-                    html += '<h4 style="margin-top: 2rem;">Videos</h4>';
-                    html += '<div class="video-playlist" style="margin-top: 1rem;">';
-                    videos.forEach(video => {
-                        const durationText = video.duration ? ` (${video.duration})` : '';
-                        const embedUrl = getVideoEmbedUrl(video.url);
-
-                        html += `
-                            <div class="playlist-item">
-                                <strong>${video.title}${durationText}</strong>
-                                ${embedUrl ? `
-                                    <div style="margin-top: 1rem; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
-                                        <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                                    </div>
-                                ` : `
-                                    <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
-                                        <a href="${video.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Watch Video</a>
-                                    </div>
-                                `}
                             </div>
                         `;
                     });
@@ -342,52 +322,81 @@
             container.innerHTML = html;
         }
 
-        function saveResponse(questionIndex) {
-            const textarea = document.getElementById(`response-${questionIndex}`);
-            const response = textarea.value.trim();
+        function postAdminReply(questionIndex) {
+            const textarea = document.getElementById(`admin-reply-${questionIndex}`);
+            const content = textarea.value.trim();
 
-            if (!response) {
-                alert('Please enter a response before posting.');
+            if (!content) {
+                showNotification('Please enter a response', 'error');
                 return;
             }
 
-            // Save response using DataService
-            dataService.saveResponse(currentWeek.id, questionIndex, response);
+            // Initialize discussions array if needed
+            if (!currentWeek.discussions) {
+                currentWeek.discussions = [];
+            }
 
-            alert('Response saved successfully!');
+            // Add the admin post
+            const newPost = {
+                id: Date.now(),
+                questionIndex: questionIndex,
+                author: 'Admin',
+                isAdmin: true,
+                content: content,
+                timestamp: new Date().toISOString()
+            };
+
+            currentWeek.discussions.push(newPost);
+
+            // Save the updated week
+            const currentModuleId = dataService.getCurrentModuleId();
+            dataService.updateWeek(currentModuleId, currentWeek.id, { discussions: currentWeek.discussions });
+
+            showNotification('Response posted successfully!', 'success');
             textarea.value = '';
+            renderPage(); // Re-render to show new post
         }
 
         function previousPage() {
             if (currentPage > 1) {
                 currentPage--;
-                window.location.href = `week-viewer.html?week=${currentWeek.id}&page=${currentPage}`;
+                window.location.href = `week-access.html?week=${currentWeek.id}&page=${currentPage}`;
             }
         }
 
         function nextPage() {
             if (currentPage < totalPages) {
                 currentPage++;
-                window.location.href = `week-viewer.html?week=${currentWeek.id}&page=${currentPage}`;
+                window.location.href = `week-access.html?week=${currentWeek.id}&page=${currentPage}`;
             } else {
-                // Finish - mark week as completed for students, just navigate for admins
-                const currentView = dataService.getCurrentView();
-                if (currentView === 'student') {
-                    dataService.completeWeek(currentWeek.id);
-                    alert('Week completed!');
-                }
-                window.location.href = 'module-overview.html';
+                location.href = 'module-access.html';
             }
         }
 
+        function showNotification(message, type = 'info') {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 9999;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                background-color: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 4000);
+        }
+
         window.onload = function() {
-            let savedView = dataService.getCurrentView() || 'student';
-            // Migrate old 'teacher' value to 'admin'
-            if (savedView === 'teacher') {
-                savedView = 'admin';
-                dataService.setCurrentView('admin');
-            }
-            setView(savedView);
             if (loadWeekData()) {
                 renderPage();
             }

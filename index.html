@@ -77,7 +77,7 @@
             </div>
             <div class="view-toggle">
                 <button class="active" onclick="setView('student')">Student View</button>
-                <button onclick="setView('teacher')">Teacher View</button>
+                <button onclick="setView('admin')">Admin View</button>
             </div>
         </div>
     </header>
@@ -93,19 +93,51 @@
             </div>
         </div>
 
-        <div id="teacher-view" style="display: none;">
-            <div class="course-grid" id="modules-grid">
-                <div class="course-card" id="create-module-card">
-                    <div class="course-header">
-                        <h3>Create New Module</h3>
-                        <p style="opacity: 0.8;">Start building a new learning experience</p>
-                    </div>
-                    <div class="course-body">
-                        <p>Design module structure, add weeks, and upload content for your students.</p>
-                        <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
-                            <button class="btn btn-primary" onclick="openCreateModuleModal()">New Module</button>
+        <div id="admin-view" style="display: none;">
+            <!-- Active Modules Section -->
+            <div id="active-modules-section" style="margin-bottom: 3rem;">
+                <h3 style="color: var(--teal); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="width: 12px; height: 12px; background: var(--teal); border-radius: 50%; display: inline-block;"></span>
+                    Active Modules
+                </h3>
+                <p style="color: #6c757d; margin-bottom: 1rem; font-size: 0.95rem;">Currently running modules with active student participation</p>
+                <div class="course-grid" id="active-modules-grid">
+                    <p style="text-align: center; color: #6c757d; padding: 2rem;">No active modules. Launch a template to start.</p>
+                </div>
+            </div>
+
+            <!-- Module Templates Section -->
+            <div id="templates-section" style="margin-bottom: 3rem;">
+                <h3 style="color: var(--secondary-color); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="width: 12px; height: 12px; background: var(--secondary-color); border-radius: 50%; display: inline-block;"></span>
+                    Module Templates
+                </h3>
+                <p style="color: #6c757d; margin-bottom: 1rem; font-size: 0.95rem;">Draft modules ready to be edited and launched</p>
+                <div class="course-grid" id="templates-grid">
+                    <div class="course-card" id="create-module-card">
+                        <div class="course-header">
+                            <h3>New Module Template</h3>
+                            <p style="opacity: 0.8;">Start building a new learning experience</p>
+                        </div>
+                        <div class="course-body">
+                            <p>Design module structure, add weeks, and prepare content for your students.</p>
+                            <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
+                                <button class="btn btn-primary" onclick="openCreateModuleModal()">Create Template</button>
+                            </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Archived Modules Section -->
+            <div id="archived-section">
+                <h3 style="color: var(--gray); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="width: 12px; height: 12px; background: var(--gray); border-radius: 50%; display: inline-block;"></span>
+                    Archived Modules
+                </h3>
+                <p style="color: #6c757d; margin-bottom: 1rem; font-size: 0.95rem;">Completed modules with preserved discussions and content (read-only)</p>
+                <div class="course-grid" id="archived-modules-grid">
+                    <p style="text-align: center; color: #6c757d; padding: 2rem;">No archived modules yet.</p>
                 </div>
             </div>
         </div>
@@ -197,7 +229,7 @@
 
         function setView(view) {
             const studentView = document.getElementById('student-view');
-            const teacherView = document.getElementById('teacher-view');
+            const adminView = document.getElementById('admin-view');
             const viewTitle = document.getElementById('view-title');
             const buttons = document.querySelectorAll('.view-toggle button');
 
@@ -205,16 +237,17 @@
 
             if (view === 'student') {
                 studentView.style.display = 'block';
-                teacherView.style.display = 'none';
+                adminView.style.display = 'none';
                 viewTitle.textContent = 'My Modules';
                 buttons[0].classList.add('active');
                 dataService.setCurrentView('student');
+                renderStudentModules();
             } else {
                 studentView.style.display = 'none';
-                teacherView.style.display = 'block';
-                viewTitle.textContent = 'Modules I Teach';
+                adminView.style.display = 'block';
+                viewTitle.textContent = 'Module Management';
                 buttons[1].classList.add('active');
-                dataService.setCurrentView('teacher');
+                dataService.setCurrentView('admin');
                 renderModules();
             }
         }
@@ -373,48 +406,153 @@
         }
 
         function renderModules() {
-            const grid = document.getElementById('modules-grid');
-
-            // Keep the "Create New Module" card and add saved modules before it
-            const createCard = document.getElementById('create-module-card');
-            grid.innerHTML = '';
-
-            // Get modules from DataService
+            // Get all modules from DataService
             modules = dataService.getModules();
 
-            modules.forEach(module => {
-                const moduleCard = document.createElement('div');
-                moduleCard.className = 'course-card';
-                moduleCard.style.position = 'relative';
-                // Lighter opacity for draft modules
-                if (module.status === 'draft') {
-                    moduleCard.style.opacity = '0.85';
-                }
+            // Separate modules by status
+            const activeModules = modules.filter(m => m.status === 'launched');
+            const templateModules = modules.filter(m => m.status === 'draft' || !m.status);
+            const archivedModules = modules.filter(m => m.status === 'archived');
 
-                const statusBadge = module.status === 'draft' ? '<span class="status-badge status-incomplete" style="position: absolute; top: 1rem; right: 1rem; font-size: 0.8rem; padding: 0.25rem 0.5rem;">Draft</span>' : '';
+            // Render Active Modules
+            const activeGrid = document.getElementById('active-modules-grid');
+            activeGrid.innerHTML = '';
+            if (activeModules.length === 0) {
+                activeGrid.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">No active modules. Launch a template to start.</p>';
+            } else {
+                activeModules.forEach(module => {
+                    const moduleCard = createActiveModuleCard(module);
+                    activeGrid.appendChild(moduleCard);
+                });
+            }
 
-                moduleCard.innerHTML = `
-                    ${statusBadge}
-                    <div class="course-header">
-                        <h3>${module.title}</h3>
-                    </div>
-                    <div class="course-body">
-                        <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
-                            ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
-                            ${module.duration ? `<span><strong>Duration:</strong> ${module.duration}</span>` : ''}
-                        </div>
-                        <div style="display: flex; gap: 0.5rem; justify-content: flex-start;">
-                            <button class="btn btn-primary" onclick="editModule(${module.id})">Edit Module</button>
-                            <button class="btn btn-secondary" onclick="deleteModule(${module.id})">Delete Module</button>
-                        </div>
-                    </div>
-                `;
-
-                grid.appendChild(moduleCard);
+            // Render Template Modules
+            const templatesGrid = document.getElementById('templates-grid');
+            const createCard = document.getElementById('create-module-card');
+            templatesGrid.innerHTML = '';
+            templateModules.forEach(module => {
+                const moduleCard = createTemplateModuleCard(module);
+                templatesGrid.appendChild(moduleCard);
             });
+            // Add the "Create New Template" card at the end
+            templatesGrid.appendChild(createCard);
 
-            // Add the "Create New Module" card at the end
-            grid.appendChild(createCard);
+            // Render Archived Modules
+            const archivedGrid = document.getElementById('archived-modules-grid');
+            archivedGrid.innerHTML = '';
+            if (archivedModules.length === 0) {
+                archivedGrid.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">No archived modules yet.</p>';
+            } else {
+                archivedModules.forEach(module => {
+                    const moduleCard = createArchivedModuleCard(module);
+                    archivedGrid.appendChild(moduleCard);
+                });
+            }
+        }
+
+        function createActiveModuleCard(module) {
+            const moduleCard = document.createElement('div');
+            moduleCard.className = 'course-card';
+            moduleCard.style.borderLeft = '4px solid var(--teal)';
+
+            const launchedDate = module.launchedAt ? new Date(module.launchedAt).toLocaleDateString() : '';
+
+            moduleCard.innerHTML = `
+                <div class="course-header" style="background: linear-gradient(135deg, var(--teal) 0%, #006d63 100%);">
+                    <h3>${module.title}</h3>
+                    ${launchedDate ? `<p style="opacity: 0.8; font-size: 0.9rem;">Launched: ${launchedDate}</p>` : ''}
+                </div>
+                <div class="course-body">
+                    <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
+                        ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
+                        ${module.duration ? `<span><strong>Duration:</strong> ${module.duration}</span>` : ''}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" style="background: var(--teal);" onclick="accessModule(${module.id})">Access Module</button>
+                        <button class="btn btn-secondary" onclick="archiveModule(${module.id})">Archive</button>
+                    </div>
+                </div>
+            `;
+
+            return moduleCard;
+        }
+
+        function createTemplateModuleCard(module) {
+            const moduleCard = document.createElement('div');
+            moduleCard.className = 'course-card';
+            moduleCard.style.borderLeft = '4px solid var(--secondary-color)';
+
+            moduleCard.innerHTML = `
+                <span class="status-badge status-incomplete" style="position: absolute; top: 1rem; right: 1rem; font-size: 0.8rem; padding: 0.25rem 0.5rem;">Template</span>
+                <div class="course-header">
+                    <h3>${module.title}</h3>
+                </div>
+                <div class="course-body">
+                    <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
+                        ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
+                        ${module.duration ? `<span><strong>Duration:</strong> ${module.duration}</span>` : ''}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="editModule(${module.id})">Edit Template</button>
+                        <button class="btn btn-secondary" onclick="deleteModule(${module.id})">Delete</button>
+                    </div>
+                </div>
+            `;
+            moduleCard.style.position = 'relative';
+
+            return moduleCard;
+        }
+
+        function createArchivedModuleCard(module) {
+            const moduleCard = document.createElement('div');
+            moduleCard.className = 'course-card';
+            moduleCard.style.borderLeft = '4px solid var(--gray)';
+            moduleCard.style.opacity = '0.85';
+
+            const archivedDate = module.archivedAt ? new Date(module.archivedAt).toLocaleDateString() : '';
+
+            moduleCard.innerHTML = `
+                <div class="course-header" style="background: linear-gradient(135deg, var(--gray) 0%, #5a5a5a 100%);">
+                    <h3>${module.title}</h3>
+                    ${archivedDate ? `<p style="opacity: 0.8; font-size: 0.9rem;">Archived: ${archivedDate}</p>` : ''}
+                </div>
+                <div class="course-body">
+                    <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
+                        ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="viewArchivedModule(${module.id})">View Archive</button>
+                    </div>
+                </div>
+            `;
+
+            return moduleCard;
+        }
+
+        function accessModule(moduleId) {
+            dataService.setCurrentModuleId(moduleId);
+            // Navigate to a module access page (read-only structure, can interact with discussions)
+            location.href = 'module-access.html';
+        }
+
+        function archiveModule(moduleId) {
+            if (!confirm('Archive this module?\\n\\nThis will end the active session and preserve all discussions and content in read-only format.')) {
+                return;
+            }
+
+            const result = dataService.archiveModule(moduleId);
+            if (result.success) {
+                showNotification('Module archived successfully', 'success');
+                renderModules();
+            } else {
+                showNotification(result.message || 'Failed to archive module', 'error');
+            }
+        }
+
+        function viewArchivedModule(moduleId) {
+            dataService.setCurrentModuleId(moduleId);
+            // Navigate to archived module view (completely read-only)
+            location.href = 'module-archive.html';
         }
 
         function editModule(moduleId) {
@@ -442,10 +580,56 @@
             modules = dataService.getModules();
         }
 
+        function renderStudentModules() {
+            const grid = document.getElementById('student-modules-grid');
+            grid.innerHTML = '';
+
+            // Get only launched modules that have at least one unlocked week
+            const studentModules = dataService.getStudentModules();
+
+            if (studentModules.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">No modules available yet. Check back later!</p>';
+                return;
+            }
+
+            studentModules.forEach(module => {
+                const moduleCard = document.createElement('div');
+                moduleCard.className = 'course-card';
+                moduleCard.style.cursor = 'pointer';
+                moduleCard.onclick = () => {
+                    dataService.setCurrentModuleId(module.id);
+                    location.href = 'module-overview.html';
+                };
+
+                // Get visible weeks count
+                const visibleWeeks = dataService.getVisibleWeeks(module.id);
+
+                moduleCard.innerHTML = `
+                    <div class="course-header">
+                        <h3>${module.title}</h3>
+                    </div>
+                    <div class="course-body">
+                        <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
+                            ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
+                            <span><strong>Available Weeks:</strong> ${visibleWeeks.length}</span>
+                        </div>
+                        <button class="btn btn-primary" onclick="event.stopPropagation(); dataService.setCurrentModuleId(${module.id}); location.href='module-overview.html';">View Module</button>
+                    </div>
+                `;
+
+                grid.appendChild(moduleCard);
+            });
+        }
+
         // Restore view preference
         window.onload = function() {
             loadModules();
-            const savedView = dataService.getCurrentView() || 'student';
+            let savedView = dataService.getCurrentView() || 'student';
+            // Migrate old 'teacher' value to 'admin'
+            if (savedView === 'teacher') {
+                savedView = 'admin';
+                dataService.setCurrentView('admin');
+            }
             setView(savedView);
         };
     </script>

@@ -148,6 +148,53 @@ class DataService {
     }
 
     /**
+     * Get modules filtered by status
+     * @param {string} status - 'draft', 'launched', or 'archived'
+     */
+    getModulesByStatus(status) {
+        const modules = this.getModules();
+        return modules.filter(m => m.status === status);
+    }
+
+    /**
+     * Get template modules (draft status)
+     */
+    getTemplateModules() {
+        return this.getModulesByStatus('draft');
+    }
+
+    /**
+     * Get active (launched) modules
+     */
+    getActiveModules() {
+        return this.getModulesByStatus('launched');
+    }
+
+    /**
+     * Get archived modules
+     */
+    getArchivedModules() {
+        return this.getModulesByStatus('archived');
+    }
+
+    /**
+     * Get launched modules visible to students (with unlocked weeks)
+     */
+    getStudentModules() {
+        const launchedModules = this.getActiveModules();
+        const today = new Date().toISOString().split('T')[0];
+
+        // Filter to only modules that have at least one unlocked week
+        return launchedModules.filter(module => {
+            const weeks = this.getWeeks(module.id);
+            return weeks.some(week => {
+                if (!week.unlockDate) return true; // No unlock date means always visible
+                return week.unlockDate <= today;
+            });
+        });
+    }
+
+    /**
      * Get a single module by ID
      */
     getModule(moduleId) {
@@ -258,6 +305,103 @@ class DataService {
         } catch (err) {
             return this.error('Failed to delete module: ' + err.message, 'DELETE_ERROR');
         }
+    }
+
+    /**
+     * Launch a module - creates a copy with 'launched' status
+     * The original template remains as a draft for future use
+     */
+    launchModule(templateId) {
+        try {
+            const template = this.getModule(templateId);
+            if (!template) {
+                return this.error(`Template module ${templateId} not found`, 'NOT_FOUND');
+            }
+
+            // Get template weeks
+            const templateWeeks = this.getWeeks(templateId);
+
+            // Check all weeks have unlock dates
+            const missingUnlockDates = templateWeeks.filter(w => !w.unlockDate);
+            if (missingUnlockDates.length > 0) {
+                return this.error('All weeks must have unlock dates before launching', 'VALIDATION_ERROR');
+            }
+
+            // Create a new module with launched status
+            const modules = this.getModules();
+            const newModuleId = this.generateNumericId(modules);
+
+            const launchedModule = {
+                ...template,
+                id: newModuleId,
+                status: 'launched',
+                templateId: templateId, // Reference to original template
+                launchedAt: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            modules.push(launchedModule);
+            this.set('modules', modules);
+
+            // Copy weeks to new module
+            const copiedWeeks = templateWeeks.map((week, index) => ({
+                ...week,
+                id: index + 1,
+                moduleId: newModuleId,
+                discussions: [] // Initialize empty discussions for the launched module
+            }));
+            this.set(`module:${newModuleId}:weeks`, copiedWeeks);
+
+            // Copy zoom info
+            const zoomInfo = this.getZoomInfo(templateId);
+            if (zoomInfo && Object.keys(zoomInfo).length > 0) {
+                this.set(`module:${newModuleId}:zoom`, zoomInfo);
+            }
+
+            return this.success(launchedModule, 'Module launched successfully');
+        } catch (err) {
+            return this.error('Failed to launch module: ' + err.message, 'LAUNCH_ERROR');
+        }
+    }
+
+    /**
+     * Archive a launched module - preserves all content and discussions
+     */
+    archiveModule(moduleId) {
+        try {
+            const module = this.getModule(moduleId);
+            if (!module) {
+                return this.error(`Module ${moduleId} not found`, 'NOT_FOUND');
+            }
+
+            if (module.status !== 'launched') {
+                return this.error('Only launched modules can be archived', 'INVALID_STATUS');
+            }
+
+            // Update module status to archived
+            const result = this.updateModule(moduleId, {
+                status: 'archived',
+                archivedAt: new Date().toISOString()
+            });
+
+            return result;
+        } catch (err) {
+            return this.error('Failed to archive module: ' + err.message, 'ARCHIVE_ERROR');
+        }
+    }
+
+    /**
+     * Get visible weeks for a student (based on unlock dates)
+     */
+    getVisibleWeeks(moduleId) {
+        const weeks = this.getWeeks(moduleId);
+        const today = new Date().toISOString().split('T')[0];
+
+        return weeks.filter(week => {
+            if (!week.unlockDate) return true; // No unlock date means always visible
+            return week.unlockDate <= today;
+        });
     }
 
     // ==================== Week Operations ====================

@@ -66,7 +66,7 @@
             </div>
             <div class="view-toggle">
                 <button class="active" onclick="setView('student')">Student View</button>
-                <button onclick="setView('teacher')">Teacher View</button>
+                <button onclick="setView('admin')">Admin View</button>
             </div>
         </div>
     </header>
@@ -134,8 +134,11 @@
         </div>
 
         <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
-            <a href="index.html" class="btn btn-secondary" style="line-height: 1.5;">← Back to My Modules</a>
-            <button id="save-module-btn" class="btn btn-primary" style="display: none; line-height: 1.5;" onclick="saveModuleProgress()">Save Module</button>
+            <a href="index.html" class="btn btn-secondary" style="line-height: 1.5;">← Back to Modules</a>
+            <div id="admin-action-btns" style="display: none; gap: 1rem;">
+                <button class="btn btn-primary" style="line-height: 1.5; background: var(--teal);" onclick="launchModule()">Launch Module</button>
+                <button class="btn btn-primary" style="line-height: 1.5;" onclick="saveModuleProgress()">Save Template</button>
+            </div>
         </div>
     </div>
 
@@ -288,8 +291,9 @@
             </div>
 
             <div class="form-group">
-                <label for="week-unlock-date-input">Unlock Date (Optional)</label>
-                <input type="date" id="week-unlock-date-input">
+                <label for="week-unlock-date-input">Unlock Date <span style="color: var(--primary-color);">*</span></label>
+                <input type="date" id="week-unlock-date-input" required>
+                <small style="color: #6c757d; margin-top: 0.25rem; display: block;">Required. This date determines when students can access this week.</small>
             </div>
 
             <div class="card">
@@ -479,13 +483,13 @@
                 dataService.setCurrentView('student');
                 document.getElementById('edit-description-btn').style.display = 'none';
                 document.getElementById('create-week-btn').style.display = 'none';
-                document.getElementById('save-module-btn').style.display = 'none';
+                document.getElementById('admin-action-btns').style.display = 'none';
             } else {
                 buttons[1].classList.add('active');
-                dataService.setCurrentView('teacher');
+                dataService.setCurrentView('admin');
                 document.getElementById('edit-description-btn').style.display = 'inline-block';
                 document.getElementById('create-week-btn').style.display = 'inline-block';
-                document.getElementById('save-module-btn').style.display = 'inline-block';
+                document.getElementById('admin-action-btns').style.display = 'flex';
             }
 
             checkForDraft();
@@ -501,18 +505,34 @@
                 return;
             }
 
+            const today = new Date().toISOString().split('T')[0];
+
             weeks.forEach((week, index) => {
-                // Hide locked weeks from students
-                if (currentView === 'student' && week.status === 'locked') {
-                    return;
+                // For student view, check unlock date
+                if (currentView === 'student') {
+                    // Hide weeks with future unlock dates
+                    if (week.unlockDate && week.unlockDate > today) {
+                        return;
+                    }
+                    // Also hide old-style locked weeks
+                    if (week.status === 'locked' && !week.unlockDate) {
+                        return;
+                    }
                 }
 
                 const weekItem = document.createElement('div');
                 weekItem.className = 'module-item';
 
                 const weekInfo = document.createElement('div');
+
+                // Show unlock date info for admins
+                const unlockInfo = currentView === 'admin' && week.unlockDate ?
+                    `<span style="color: ${week.unlockDate <= today ? 'var(--teal)' : 'var(--secondary-color)'}; font-size: 0.85rem;">
+                        (Unlocks: ${new Date(week.unlockDate).toLocaleDateString()})
+                    </span>` : '';
+
                 weekInfo.innerHTML = `
-                    <strong>Week ${week.id}: ${week.title}</strong>
+                    <strong>Week ${week.id}: ${week.title}</strong> ${unlockInfo}
                     <p style="margin-top: 0.5rem; color: #6c757d;">${week.description}</p>
                 `;
 
@@ -527,11 +547,11 @@
                 weekAction.style.alignItems = 'center';
                 weekAction.style.gap = '1rem';
 
-                if (currentView === 'teacher') {
-                    // Teacher view: Show Preview Week and Edit Week buttons for all weeks (no status badges)
+                if (currentView === 'admin') {
+                    // Admin view: Show Preview Week and Edit Week buttons for all weeks (no status badges)
                     weekAction.innerHTML = `
                         <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Preview Week</button>
-                        <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="location.href='teacher-week-edit.html?week=${week.id}'">Edit Week</button>
+                        <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="location.href='admin-week-edit.html?week=${week.id}'">Edit Week</button>
                     `;
                 } else {
                     // Student view: Show status and View Week button
@@ -540,15 +560,13 @@
                             <button class="status-badge status-complete" style="cursor: default;">Completed</button>
                             <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
                         `;
-                    } else if (week.status === 'current' || hasProgress) {
+                    } else {
                         const statusText = hasProgress && !isComplete ? 'In Progress' : 'Not Started';
                         const statusClass = hasProgress && !isComplete ? 'status-inprogress' : 'status-incomplete';
                         weekAction.innerHTML = `
                             <button class="status-badge ${statusClass}" style="cursor: default;">${statusText}</button>
                             <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
                         `;
-                    } else if (week.status === 'locked') {
-                        weekAction.innerHTML = `<button class="status-badge status-incomplete" style="cursor: default;">Locked</button>`;
                     }
                 }
 
@@ -556,6 +574,11 @@
                 weekItem.appendChild(weekAction);
                 weeksList.appendChild(weekItem);
             });
+
+            // If student view and no visible weeks, show message
+            if (currentView === 'student' && weeksList.children.length === 0) {
+                weeksList.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">No weeks available yet. Check back later!</p>';
+            }
         }
 
         function openEditDescriptionModal() {
@@ -1423,6 +1446,11 @@
                 return;
             }
 
+            if (!unlockDate) {
+                showNotification('Please set an unlock date for this week', 'error');
+                return;
+            }
+
             // Collect page data for all 5 pages
             const page2IntroText = document.getElementById('page2-intro-text').value.trim();
 
@@ -1487,7 +1515,7 @@
             const newWeekData = {
                 title: title,
                 description: description,
-                unlockDate: unlockDate || null,
+                unlockDate: unlockDate, // Required field
                 status: weeks.length === 0 ? 'current' : 'locked',
                 pages: pages
             };
@@ -1530,7 +1558,7 @@
             const draft = dataService.getDraft('createWeek');
             const draftNotice = document.getElementById('draft-week-notice');
 
-            if (draft && currentView === 'teacher') {
+            if (draft && currentView === 'admin') {
                 draftNotice.style.display = 'block';
             } else {
                 draftNotice.style.display = 'none';
@@ -1572,7 +1600,12 @@
         }
 
         window.onload = function() {
-            const savedView = dataService.getCurrentView() || 'student';
+            let savedView = dataService.getCurrentView() || 'student';
+            // Migrate old 'teacher' value to 'admin'
+            if (savedView === 'teacher') {
+                savedView = 'admin';
+                dataService.setCurrentView('admin');
+            }
             loadWeeks();
             setView(savedView);
             loadModuleInfo();
@@ -1743,21 +1776,49 @@
             const currentModule = dataService.getModule(currentModuleId);
 
             if (currentModule) {
-                // Module data is already saved via DataService in saveDescription()
-                // This function is mainly for manual "Save Progress" button if needed
-                const hasContent = currentModule.description || weeks.length > 0;
-
-                if (hasContent && currentModule.status === 'draft') {
-                    const result = dataService.updateModule(currentModuleId, { status: 'published' });
-                    if (!result.success) {
-                        showNotification(result.message || 'Failed to save module', 'error');
-                        return;
-                    }
-                }
-
-                showNotification('Module progress saved successfully!', 'success');
+                // Keep module as draft (template) status
+                showNotification('Module template saved successfully!', 'success');
             } else {
                 showNotification('Module not found', 'error');
+            }
+        }
+
+        function launchModule() {
+            const currentModuleId = dataService.getCurrentModuleId();
+
+            if (!currentModuleId) {
+                showNotification('No module selected', 'error');
+                return;
+            }
+
+            // Check if there are any weeks
+            if (weeks.length === 0) {
+                showNotification('Please add at least one week before launching the module', 'error');
+                return;
+            }
+
+            // Check all weeks have unlock dates
+            const missingUnlockDates = weeks.filter(w => !w.unlockDate);
+            if (missingUnlockDates.length > 0) {
+                showNotification('All weeks must have unlock dates before launching. Missing: Week(s) ' + missingUnlockDates.map(w => w.id).join(', '), 'error');
+                return;
+            }
+
+            // Confirm launch
+            if (!confirm('Launch this module?\n\nThis will create a copy of your template that students can access. Your original template will remain editable for future use.')) {
+                return;
+            }
+
+            // Launch module using DataService
+            const result = dataService.launchModule(currentModuleId);
+
+            if (result.success) {
+                showNotification('Module launched successfully! Students can now access it based on unlock dates.', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
+            } else {
+                showNotification(result.message || 'Failed to launch module', 'error');
             }
         }
     </script>

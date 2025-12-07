@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Archive - LecternAI</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/db-schema.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/data-service.js"></script>
+    <style>
+        .archived-banner {
+            background: linear-gradient(135deg, var(--gray) 0%, #5a5a5a 100%);
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .discussion-thread {
+            background: var(--background);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .discussion-post {
+            padding: 1rem;
+            background: var(--card-background);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid var(--primary-color);
+        }
+        .discussion-post.admin-post {
+            border-left-color: var(--teal);
+            background: #f0fffe;
+        }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .post-author {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .post-author.admin {
+            color: var(--teal);
+        }
+        .post-time {
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <h1>LecternAI</h1>
+            </div>
+            <div class="view-toggle">
+                <button onclick="setView('student')">Student View</button>
+                <button class="active" onclick="setView('admin')">Admin View</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="index.html">Home</a>
+            <span>›</span>
+            <span>Archived Modules</span>
+            <span>›</span>
+            <span id="breadcrumb-module">Module</span>
+        </div>
+
+        <div class="archived-banner">
+            <strong>Archived Module</strong>
+            <p style="margin-top: 0.5rem; opacity: 0.9; font-size: 0.95rem;">This module is read-only. All content and discussions have been preserved.</p>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 class="page-title" id="module-title" style="margin-bottom: 0;">Loading...</h2>
+            <span class="status-badge" style="background: var(--gray); color: white;">Archived</span>
+        </div>
+
+        <div class="card" id="module-info">
+            <p id="module-description" style="margin-bottom: 1rem;">Loading module information...</p>
+            <div style="display: flex; gap: 2rem; color: #6c757d; font-size: 0.9rem;">
+                <span id="module-instructor"></span>
+                <span id="module-duration"></span>
+                <span id="module-archived-date"></span>
+            </div>
+        </div>
+
+        <!-- Weeks List -->
+        <div class="card">
+            <h3 style="margin-bottom: 1.5rem;">Module Weeks</h3>
+            <div class="module-list" id="weeks-list">
+                <!-- Weeks will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <a href="index.html" class="btn btn-secondary">← Back to Modules</a>
+        </div>
+    </div>
+
+    <img src="brand-assets/aquinas-seal.svg" alt="" class="decorative-cross" style="width: 20rem; height: 20rem; opacity: 0.05;">
+
+    <!-- Week Detail Modal -->
+    <div id="week-detail-modal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); overflow-y: auto;">
+        <div style="background: white; margin: 2% auto; padding: 2rem; border-radius: 12px; max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 id="modal-week-title">Week Details</h2>
+                <button onclick="closeWeekModal()" style="font-size: 1.5rem; border: none; background: none; cursor: pointer;">&times;</button>
+            </div>
+            <div id="week-detail-content">
+                <!-- Week content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentModule = null;
+        let weeks = [];
+
+        function setView(view) {
+            if (view === 'student') {
+                dataService.setCurrentView('student');
+                location.href = 'index.html';
+            }
+        }
+
+        function loadModuleData() {
+            const currentModuleId = dataService.getCurrentModuleId();
+            if (!currentModuleId) {
+                location.href = 'index.html';
+                return;
+            }
+
+            currentModule = dataService.getModule(currentModuleId);
+            if (!currentModule || currentModule.status !== 'archived') {
+                location.href = 'index.html';
+                return;
+            }
+
+            weeks = dataService.getWeeks(currentModuleId);
+
+            // Update page content
+            document.getElementById('module-title').textContent = currentModule.title;
+            document.getElementById('breadcrumb-module').textContent = currentModule.title;
+            document.getElementById('module-description').textContent = currentModule.description || 'No description available.';
+
+            if (currentModule.instructor) {
+                document.getElementById('module-instructor').innerHTML = `<strong>Instructor:</strong> ${currentModule.instructor}`;
+            }
+            if (currentModule.duration) {
+                document.getElementById('module-duration').innerHTML = `<strong>Duration:</strong> ${currentModule.duration}`;
+            }
+            if (currentModule.archivedAt) {
+                document.getElementById('module-archived-date').innerHTML = `<strong>Archived:</strong> ${new Date(currentModule.archivedAt).toLocaleDateString()}`;
+            }
+
+            renderWeeks();
+        }
+
+        function renderWeeks() {
+            const weeksList = document.getElementById('weeks-list');
+            weeksList.innerHTML = '';
+
+            if (weeks.length === 0) {
+                weeksList.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">No weeks in this module.</p>';
+                return;
+            }
+
+            weeks.forEach(week => {
+                const weekItem = document.createElement('div');
+                weekItem.className = 'module-item';
+
+                const discussionCount = (week.discussions || []).length;
+
+                weekItem.innerHTML = `
+                    <div>
+                        <strong style="color: var(--primary-color);">Week ${week.id}: ${week.title}</strong>
+                        <p style="color: #6c757d; margin-top: 0.25rem; font-size: 0.9rem;">${week.description || ''}</p>
+                        <p style="color: #6c757d; font-size: 0.85rem; margin-top: 0.25rem;">
+                            ${discussionCount} discussion post${discussionCount !== 1 ? 's' : ''}
+                        </p>
+                    </div>
+                    <button class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="viewWeekDetails(${week.id})">View Details</button>
+                `;
+
+                weeksList.appendChild(weekItem);
+            });
+        }
+
+        function viewWeekDetails(weekId) {
+            const week = weeks.find(w => w.id === weekId);
+            if (!week) return;
+
+            document.getElementById('modal-week-title').textContent = `Week ${week.id}: ${week.title}`;
+
+            let html = '';
+
+            // Display each page content
+            const pages = week.pages || [];
+            pages.forEach((page, pageIndex) => {
+                html += `<div class="card" style="margin-bottom: 1rem;">`;
+                html += `<h3 style="color: var(--primary-color); margin-bottom: 1rem;">Page ${pageIndex + 1}: ${page.title}</h3>`;
+
+                if (page.type === 'discussion') {
+                    const questions = page.questions || [];
+                    const discussions = week.discussions || [];
+
+                    questions.forEach((question, qIndex) => {
+                        const questionDiscussions = discussions.filter(d => d.questionIndex === qIndex);
+
+                        html += `<p style="font-weight: 500; margin-bottom: 0.5rem;">${question.text}</p>`;
+
+                        if (questionDiscussions.length > 0) {
+                            html += `<div class="discussion-thread">`;
+                            questionDiscussions.forEach(post => {
+                                const isAdmin = post.isAdmin || post.author === 'Admin';
+                                html += `
+                                    <div class="discussion-post ${isAdmin ? 'admin-post' : ''}">
+                                        <div class="post-header">
+                                            <span class="post-author ${isAdmin ? 'admin' : ''}">${post.author}${isAdmin ? ' (Admin)' : ''}</span>
+                                            <span class="post-time">${new Date(post.timestamp).toLocaleString()}</span>
+                                        </div>
+                                        <div>${post.content}</div>
+                                    </div>
+                                `;
+                            });
+                            html += `</div>`;
+                        } else {
+                            html += `<p style="color: #6c757d; font-style: italic;">No responses recorded.</p>`;
+                        }
+                    });
+                } else if (page.type === 'intro') {
+                    if (page.content) {
+                        html += `<p>${page.content.replace(/\n/g, '<br>')}</p>`;
+                    }
+                    const videos = page.videos || [];
+                    if (videos.length > 0) {
+                        html += `<div style="margin-top: 1rem;">`;
+                        videos.forEach(v => {
+                            html += `<p><strong>Video:</strong> ${v.title}${v.duration ? ` (${v.duration})` : ''}</p>`;
+                        });
+                        html += `</div>`;
+                    }
+                } else if (page.type === 'reading') {
+                    const resources = page.resources || [];
+                    if (resources.length > 0) {
+                        resources.forEach(r => {
+                            html += `<p><strong>${r.title}</strong>${r.description ? ` - ${r.description}` : ''}</p>`;
+                        });
+                    } else {
+                        html += `<p style="color: #6c757d;">No resources.</p>`;
+                    }
+                }
+
+                html += `</div>`;
+            });
+
+            document.getElementById('week-detail-content').innerHTML = html;
+            document.getElementById('week-detail-modal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeWeekModal() {
+            document.getElementById('week-detail-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('week-detail-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeWeekModal();
+            }
+        });
+
+        window.onload = function() {
+            loadModuleData();
+        };
+    </script>
+</body>
+</html>
