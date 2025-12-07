@@ -104,12 +104,16 @@
 
             <!-- Module Templates Section -->
             <div id="templates-section" style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(255, 184, 28, 0.08) 0%, rgba(255, 184, 28, 0.03) 100%); border-radius: 16px; padding: 1.5rem; border-left: 4px solid var(--secondary-color);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-                    <h3 style="color: var(--secondary-color); margin: 0;">Module Templates</h3>
-                    <button class="btn btn-primary" onclick="openCreateModuleModal()">Create Template</button>
-                </div>
+                <h3 style="color: var(--secondary-color); margin-bottom: 1.25rem;">Module Templates</h3>
                 <div class="course-grid" id="templates-grid">
                     <!-- Templates will be populated here -->
+                    <!-- Create Template Card -->
+                    <div id="create-module-card" class="course-card" style="border: 2px dashed var(--secondary-color); cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 200px; background: rgba(255, 184, 28, 0.05);" onclick="openCreateModuleModal()">
+                        <div style="text-align: center; color: var(--secondary-color);">
+                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">+</div>
+                            <div style="font-weight: 600; font-size: 1.1rem;">Create New Template</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -409,13 +413,25 @@
             // Render Template Modules
             const templatesGrid = document.getElementById('templates-grid');
             const createCard = document.getElementById('create-module-card');
+            // Clear grid but keep create card
             templatesGrid.innerHTML = '';
             templateModules.forEach(module => {
                 const moduleCard = createTemplateModuleCard(module);
                 templatesGrid.appendChild(moduleCard);
             });
             // Add the "Create New Template" card at the end
-            templatesGrid.appendChild(createCard);
+            const newCreateCard = document.createElement('div');
+            newCreateCard.id = 'create-module-card';
+            newCreateCard.className = 'course-card';
+            newCreateCard.style.cssText = 'border: 2px dashed var(--secondary-color); cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 200px; background: rgba(255, 184, 28, 0.05);';
+            newCreateCard.onclick = openCreateModuleModal;
+            newCreateCard.innerHTML = `
+                <div style="text-align: center; color: var(--secondary-color);">
+                    <div style="font-size: 3rem; margin-bottom: 0.5rem;">+</div>
+                    <div style="font-weight: 600; font-size: 1.1rem;">Create New Template</div>
+                </div>
+            `;
+            templatesGrid.appendChild(newCreateCard);
 
             // Render Archived Modules
             const archivedGrid = document.getElementById('archived-modules-grid');
