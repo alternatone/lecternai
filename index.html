@@ -469,12 +469,19 @@
                     </div>
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         <button class="btn btn-primary" style="background: var(--teal);" onclick="accessModule(${module.id})">Access Module</button>
+                        <button class="btn btn-secondary" onclick="editActiveModule(${module.id})">Edit Module</button>
                         <button class="btn btn-secondary" onclick="archiveModule(${module.id})">Archive</button>
                     </div>
                 </div>
             `;
 
             return moduleCard;
+        }
+
+        function editActiveModule(moduleId) {
+            // Set current module and navigate to module overview for editing
+            dataService.setCurrentModuleId(moduleId);
+            location.href = 'module-overview.html';
         }
 
         function createTemplateModuleCard(module) {
@@ -522,11 +529,25 @@
                     </div>
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         <button class="btn btn-secondary" onclick="viewArchivedModule(${module.id})">View Archive</button>
+                        <button class="btn btn-secondary" style="background: #dc3545; color: white;" onclick="deleteArchivedModule(${module.id})">Delete</button>
                     </div>
                 </div>
             `;
 
             return moduleCard;
+        }
+
+        function deleteArchivedModule(moduleId) {
+            if (!confirm('Permanently delete this archived module?\\n\\nThis action cannot be undone. All module data, weeks, and discussions will be lost.')) {
+                return;
+            }
+
+            const result = dataService.deleteModule(moduleId);
+            if (result.success) {
+                renderModules();
+            } else {
+                alert(result.message || 'Failed to delete module');
+            }
         }
 
         function accessModule(moduleId) {
