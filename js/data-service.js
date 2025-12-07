@@ -557,6 +557,35 @@ class DataService {
     }
 
     /**
+     * Save student's current page position for a week
+     */
+    savePagePosition(moduleId, weekId, pageNumber) {
+        const key = `module:${moduleId}:week:${weekId}:pagePosition`;
+        const position = {
+            page: pageNumber,
+            savedAt: new Date().toISOString()
+        };
+        this.set(key, position);
+        return position;
+    }
+
+    /**
+     * Get student's saved page position for a week
+     */
+    getPagePosition(moduleId, weekId) {
+        const key = `module:${moduleId}:week:${weekId}:pagePosition`;
+        return this.get(key, null);
+    }
+
+    /**
+     * Clear page position (when week is completed)
+     */
+    clearPagePosition(moduleId, weekId) {
+        const key = `module:${moduleId}:week:${weekId}:pagePosition`;
+        this.delete(key);
+    }
+
+    /**
      * Mark a week as completed
      */
     completeWeek(weekId) {

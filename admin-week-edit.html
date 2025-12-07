@@ -123,7 +123,7 @@
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0;">Page 2: Intro to the Week</h3>
-                <button class="btn btn-secondary" onclick="openAddVideoModal()">+ Add Video</button>
+                <button class="btn btn-secondary" onclick="openAddContentModal('video')">+ Add Content</button>
             </div>
             <div class="form-group">
                 <label for="week-intro">Week Introduction</label>
@@ -140,7 +140,7 @@
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0;">Page 3: Weekly Readings</h3>
-                <button class="btn btn-secondary" onclick="openAddResourceModal()">+ Add Resource</button>
+                <button class="btn btn-secondary" onclick="openAddContentModal('reading')">+ Add Content</button>
             </div>
 
             <div class="resource-list" id="weekly-readings-list">
@@ -149,8 +149,17 @@
         </div>
 
         <div class="card">
+            <h3>Page 4: Preparation for Zoom Session</h3>
+            <p style="color: #6c757d; margin-bottom: 1rem;">Instructions or notes for students to review before the Zoom session</p>
+            <div class="form-group">
+                <label for="zoom-prep">Zoom Preparation Content</label>
+                <textarea id="zoom-prep" rows="6" placeholder="Enter instructions, agenda, or any preparation content for the upcoming Zoom session..."></textarea>
+            </div>
+        </div>
+
+        <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0;">Page 4: Post-Zoom Reflection Questions</h3>
+                <h3 style="margin: 0;">Page 5: Post-Zoom Reflection Questions</h3>
                 <button class="btn btn-secondary" onclick="openAddQuestionModal()">+ Add Question</button>
             </div>
 
@@ -161,8 +170,8 @@
 
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0;">Page 5: Further Study</h3>
-                <button class="btn btn-secondary" onclick="openAddStudyResourceModal()">+ Add Resource</button>
+                <h3 style="margin: 0;">Page 6: Further Study</h3>
+                <button class="btn btn-secondary" onclick="openAddContentModal('study')">+ Add Content</button>
             </div>
 
             <div class="resource-list" id="further-study-list">
@@ -207,58 +216,36 @@
 
     <img src="brand-assets/aquinas-seal.svg" alt="" class="decorative-cross" style="width: 20rem; height: 20rem; opacity: 0.05;">
 
-    <!-- Add Resource Modal -->
-    <div id="add-resource-modal" class="modal">
+    <!-- Unified Add Content Modal -->
+    <div id="add-content-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Add Resource</h3>
-                <button class="modal-close" onclick="closeAddResourceModal()">&times;</button>
+                <h3 id="content-modal-title">Add Content</h3>
+                <button class="modal-close" onclick="closeAddContentModal()">&times;</button>
             </div>
             <div class="form-group">
-                <label for="resource-title">Resource Title</label>
-                <input type="text" id="resource-title">
+                <label for="content-title">Title</label>
+                <input type="text" id="content-title">
             </div>
             <div class="form-group">
-                <label for="resource-url">URL</label>
-                <input type="text" id="resource-url">
+                <label for="content-url">URL (Optional)</label>
+                <input type="text" id="content-url" oninput="detectContentType()">
+                <small id="content-type-hint" style="margin-top: 0.5rem; display: block; color: #6c757d;">Videos (YouTube, Vimeo) auto-detected. Leave blank for text-only content.</small>
             </div>
             <div class="form-group">
-                <label for="resource-description">Description (Optional)</label>
-                <textarea id="resource-description"></textarea>
+                <label for="content-description">Description (Optional)</label>
+                <textarea id="content-description" rows="4"></textarea>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeAddResourceModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="addResource()">Add Resource</button>
+                <button class="btn btn-secondary" onclick="closeAddContentModal()">Cancel</button>
+                <button class="btn btn-primary" id="content-modal-submit" onclick="addContent()">Add Content</button>
             </div>
         </div>
     </div>
 
-    <!-- Add Video Modal -->
-    <div id="add-video-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add Video</h3>
-                <button class="modal-close" onclick="closeAddVideoModal()">&times;</button>
-            </div>
-            <div class="form-group">
-                <label for="video-title">Video Title</label>
-                <input type="text" id="video-title">
-            </div>
-            <div class="form-group">
-                <label for="video-url">Video URL</label>
-                <input type="text" id="video-url">
-                <small style="color: #6c757d; margin-top: 0.5rem; display: block;">Supported: YouTube, Vimeo, or direct video file URLs</small>
-            </div>
-            <div class="form-group">
-                <label for="video-duration">Duration (Optional)</label>
-                <input type="text" id="video-duration">
-            </div>
-            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeAddVideoModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="addVideo()">Add Video</button>
-            </div>
-        </div>
-    </div>
+    <!-- Legacy modals kept for backward compatibility -->
+    <div id="add-resource-modal" class="modal" style="display: none;"></div>
+    <div id="add-video-modal" class="modal" style="display: none;"></div>
 
     <!-- Add Question Modal -->
     <div id="add-question-modal" class="modal">
@@ -325,16 +312,17 @@
             weeklyReadings.forEach(resource => {
                 const item = document.createElement('div');
                 item.className = 'resource-item';
+                item.style.position = 'relative';
+                const hasUrl = resource.url && resource.url.trim();
                 item.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div style="flex: 1;">
-                            <strong>${resource.title}</strong>
-                            <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>
-                        </div>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
-                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
-                        </div>
+                    ${hasUrl ? `<a href="${resource.url}" target="_blank" style="position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Access Resource →</a>` : ''}
+                    <div style="padding-right: ${hasUrl ? '140px' : '0'};">
+                        <strong>${resource.title}</strong>
+                        ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -393,135 +381,169 @@
             furtherStudy.forEach(resource => {
                 const item = document.createElement('div');
                 item.className = 'resource-item';
+                item.style.position = 'relative';
+                const hasUrl = resource.url && resource.url.trim();
                 item.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div style="flex: 1;">
-                            <strong>${resource.title}</strong>
-                            <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>
-                        </div>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
-                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
-                        </div>
+                    ${hasUrl ? `<a href="${resource.url}" target="_blank" style="position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Access Resource →</a>` : ''}
+                    <div style="padding-right: ${hasUrl ? '140px' : '0'};">
+                        <strong>${resource.title}</strong>
+                        ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
+                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
             });
         }
 
-        // Modal functions
-        function openAddResourceModal() {
-            document.getElementById('resource-title').value = '';
-            document.getElementById('resource-url').value = '';
-            document.getElementById('resource-description').value = '';
-            document.getElementById('add-resource-modal').style.display = 'block';
+        // Content type detection
+        function isVideoUrl(url) {
+            if (!url) return false;
+            const videoPatterns = [
+                /youtube\.com\/watch/i,
+                /youtu\.be\//i,
+                /youtube\.com\/embed/i,
+                /vimeo\.com\//i,
+                /player\.vimeo\.com/i,
+                /\.(mp4|webm|ogg|mov)$/i
+            ];
+            return videoPatterns.some(pattern => pattern.test(url));
+        }
+
+        function detectContentType() {
+            const url = document.getElementById('content-url').value.trim();
+            const hint = document.getElementById('content-type-hint');
+            const submitBtn = document.getElementById('content-modal-submit');
+
+            if (isVideoUrl(url)) {
+                hint.innerHTML = '<span style="color: var(--teal);">✓ Video detected (YouTube/Vimeo)</span>';
+                submitBtn.textContent = window.editingContentId ? 'Save Video' : 'Add Video';
+            } else if (url) {
+                hint.innerHTML = '<span style="color: var(--primary-color);">✓ Resource/Document link detected</span>';
+                submitBtn.textContent = window.editingContentId ? 'Save Resource' : 'Add Resource';
+            } else {
+                hint.textContent = 'Videos (YouTube, Vimeo) auto-detected. Leave blank for text-only content.';
+                submitBtn.textContent = window.editingContentId ? 'Save Content' : 'Add Content';
+            }
+        }
+
+        // Unified content modal functions
+        function openAddContentModal(targetList) {
+            document.getElementById('content-title').value = '';
+            document.getElementById('content-url').value = '';
+            document.getElementById('content-description').value = '';
+            document.getElementById('content-duration').value = '';
+            document.getElementById('content-modal-title').textContent = 'Add Content';
+            window.contentTargetList = targetList || 'reading'; // 'reading', 'study', or 'video'
+            window.editingContentId = null;
+            detectContentType();
+            document.getElementById('add-content-modal').style.display = 'block';
             document.body.classList.add('modal-open');
+        }
+
+        function closeAddContentModal() {
+            document.getElementById('add-content-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+            window.editingContentId = null;
+            window.contentTargetList = null;
+        }
+
+        function addContent() {
+            const title = document.getElementById('content-title').value.trim();
+            const url = document.getElementById('content-url').value.trim();
+            const description = document.getElementById('content-description').value.trim();
+
+            if (!title) {
+                showNotification('Please enter a title', 'error');
+                return;
+            }
+
+            const isVideo = url && isVideoUrl(url);
+            const targetList = window.contentTargetList || 'reading';
+
+            // Handle video content
+            if (isVideo) {
+                if (window.editingContentId) {
+                    const video = videos.find(v => v.id === window.editingContentId);
+                    if (video) {
+                        video.title = title;
+                        video.url = url;
+                        video.duration = '';
+                    }
+                    window.editingContentId = null;
+                    showNotification('Video updated successfully', 'success');
+                } else {
+                    const maxId = videos.length > 0 ? Math.max(...videos.map(v => v.id)) : 0;
+                    const newVideo = {
+                        id: maxId + 1,
+                        title: title,
+                        url: url,
+                        duration: ''
+                    };
+                    videos.push(newVideo);
+                    showNotification('Video added successfully', 'success');
+                }
+                renderVideos();
+            } else {
+                // Handle resource content (with or without URL)
+                if (targetList === 'study') {
+                    const maxId = furtherStudy.length > 0 ? Math.max(...furtherStudy.map(r => r.id)) : 0;
+                    const newResource = {
+                        id: maxId + 1,
+                        title: title,
+                        url: url || '',
+                        description: description || ''
+                    };
+                    furtherStudy.push(newResource);
+                    renderFurtherStudy();
+                    showNotification('Resource added to Further Study', 'success');
+                } else {
+                    const maxId = weeklyReadings.length > 0 ? Math.max(...weeklyReadings.map(r => r.id)) : 0;
+                    const newResource = {
+                        id: maxId + 1,
+                        title: title,
+                        url: url || '',
+                        description: description || ''
+                    };
+                    weeklyReadings.push(newResource);
+                    renderWeeklyReadings();
+                    showNotification('Resource added to Weekly Readings', 'success');
+                }
+            }
+
+            closeAddContentModal();
+            triggerAutoSave();
+        }
+
+        // Legacy modal functions (redirect to unified modal)
+        function openAddResourceModal() {
+            openAddContentModal('reading');
         }
 
         function closeAddResourceModal() {
-            document.getElementById('add-resource-modal').style.display = 'none';
-            document.body.classList.remove('modal-open');
+            closeAddContentModal();
         }
 
         function addResource() {
-            const title = document.getElementById('resource-title').value.trim();
-            const url = document.getElementById('resource-url').value.trim();
-            const description = document.getElementById('resource-description').value.trim();
-
-            if (!title || !url) {
-                showNotification('Please enter both title and URL', 'error');
-                return;
-            }
-
-            // Validate URL format
-            if (typeof Validator !== 'undefined') {
-                const validation = Validator.validateResource({ title, url });
-                if (!validation.valid) {
-                    showNotification(validation.errors.join(', '), 'error');
-                    return;
-                }
-            }
-
-            // Check if we're adding to Further Study or Weekly Readings
-            if (window.tempAddFunction === 'study') {
-                const maxId = furtherStudy.length > 0 ? Math.max(...furtherStudy.map(r => r.id)) : 0;
-                const newResource = {
-                    id: maxId + 1,
-                    title: title,
-                    url: url,
-                    description: description || ''
-                };
-                furtherStudy.push(newResource);
-                renderFurtherStudy();
-                window.tempAddFunction = null;
-                showNotification('Resource added to Further Study', 'success');
-                triggerAutoSave();
-            } else {
-                const maxId = weeklyReadings.length > 0 ? Math.max(...weeklyReadings.map(r => r.id)) : 0;
-                const newResource = {
-                    id: maxId + 1,
-                    title: title,
-                    url: url,
-                    description: description || ''
-                };
-                weeklyReadings.push(newResource);
-                renderWeeklyReadings();
-                showNotification('Resource added to Weekly Readings', 'success');
-                triggerAutoSave();
-            }
-            closeAddResourceModal();
+            addContent();
         }
 
         function openAddVideoModal() {
-            document.getElementById('video-title').value = '';
-            document.getElementById('video-url').value = '';
-            document.getElementById('video-duration').value = '';
-            document.getElementById('add-video-modal').style.display = 'block';
-            document.body.classList.add('modal-open');
+            openAddContentModal('video');
         }
 
         function closeAddVideoModal() {
-            document.getElementById('add-video-modal').style.display = 'none';
-            document.body.classList.remove('modal-open');
-            // Clear editing state to prevent stale data
-            window.editingVideoId = null;
+            closeAddContentModal();
         }
 
         function addVideo() {
-            const title = document.getElementById('video-title').value.trim();
-            const url = document.getElementById('video-url').value.trim();
-            const duration = document.getElementById('video-duration').value.trim();
+            addContent();
+        }
 
-            if (!title || !url) {
-                showNotification('Please enter both title and URL', 'error');
-                return;
-            }
-
-            // Check if we're editing an existing video
-            if (window.editingVideoId) {
-                const video = videos.find(v => v.id === window.editingVideoId);
-                if (video) {
-                    video.title = title;
-                    video.url = url;
-                    video.duration = duration || '';
-                }
-                window.editingVideoId = null;
-                showNotification('Video updated successfully', 'success');
-            } else {
-                // Adding new video - use safe ID generation
-                const maxId = videos.length > 0 ? Math.max(...videos.map(v => v.id)) : 0;
-                const newVideo = {
-                    id: maxId + 1,
-                    title: title,
-                    url: url,
-                    duration: duration || ''
-                };
-                videos.push(newVideo);
-                showNotification('Video added successfully', 'success');
-            }
-            renderVideos();
-            closeAddVideoModal();
-            triggerAutoSave();
+        function openAddStudyResourceModal() {
+            openAddContentModal('study');
         }
 
         // Notification system
@@ -684,12 +706,15 @@
         function editVideo(id) {
             const video = videos.find(v => v.id === id);
             if (video) {
-                document.getElementById('video-title').value = video.title;
-                document.getElementById('video-url').value = video.url;
-                document.getElementById('video-duration').value = video.duration || '';
-                // Store the ID being edited - don't delete the video
-                window.editingVideoId = id;
-                openAddVideoModal();
+                document.getElementById('content-title').value = video.title;
+                document.getElementById('content-url').value = video.url;
+                document.getElementById('content-duration').value = video.duration || '';
+                document.getElementById('content-modal-title').textContent = 'Edit Video';
+                window.editingContentId = id;
+                window.contentTargetList = 'video';
+                detectContentType();
+                document.getElementById('add-content-modal').style.display = 'block';
+                document.body.classList.add('modal-open');
             }
         }
 
@@ -733,6 +758,7 @@
             const unlockDate = document.getElementById('unlock-date').value;
             const preQuestion = document.getElementById('pre-question').value.trim();
             const weekIntro = document.getElementById('week-intro').value.trim();
+            const zoomPrep = document.getElementById('zoom-prep').value.trim();
 
             // Validate required fields
             if (!title) {
@@ -768,6 +794,11 @@
                     title: 'Weekly Reading',
                     type: 'reading',
                     resources: [...weeklyReadings]
+                },
+                {
+                    title: 'Preparation for Zoom Session',
+                    type: 'intro',
+                    content: zoomPrep
                 },
                 {
                     title: 'Post-Zoom Reflection',
@@ -975,14 +1006,34 @@
                         weeklyReadings = week.pages[2].resources || [];
                     }
 
-                    // Page 4: Post-Zoom Reflection
-                    if (week.pages[3]) {
-                        reflectionQuestions = week.pages[3].questions || [];
-                    }
+                    // Handle both old (5-page) and new (6-page) format
+                    if (week.pages.length >= 6) {
+                        // New format with Zoom Prep page
+                        // Page 4: Preparation for Zoom Session
+                        if (week.pages[3]) {
+                            document.getElementById('zoom-prep').value = week.pages[3].content || '';
+                        }
 
-                    // Page 5: Further Study
-                    if (week.pages[4]) {
-                        furtherStudy = week.pages[4].resources || [];
+                        // Page 5: Post-Zoom Reflection
+                        if (week.pages[4]) {
+                            reflectionQuestions = week.pages[4].questions || [];
+                        }
+
+                        // Page 6: Further Study
+                        if (week.pages[5]) {
+                            furtherStudy = week.pages[5].resources || [];
+                        }
+                    } else {
+                        // Old format without Zoom Prep page
+                        // Page 4: Post-Zoom Reflection
+                        if (week.pages[3]) {
+                            reflectionQuestions = week.pages[3].questions || [];
+                        }
+
+                        // Page 5: Further Study
+                        if (week.pages[4]) {
+                            furtherStudy = week.pages[4].resources || [];
+                        }
                     }
                 }
 
@@ -1014,6 +1065,7 @@
             const unlockDate = document.getElementById('unlock-date').value;
             const preQuestion = document.getElementById('pre-question').value.trim();
             const weekIntro = document.getElementById('week-intro').value.trim();
+            const zoomPrep = document.getElementById('zoom-prep').value.trim();
 
             // Build pages structure
             const pages = [
@@ -1032,6 +1084,11 @@
                     title: 'Weekly Reading',
                     type: 'reading',
                     resources: [...weeklyReadings]
+                },
+                {
+                    title: 'Preparation for Zoom Session',
+                    type: 'intro',
+                    content: zoomPrep
                 },
                 {
                     title: 'Post-Zoom Reflection',

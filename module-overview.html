@@ -84,7 +84,7 @@
 
         <div class="card">
             <h3 style="margin-bottom: 1.5rem;">Module Info</h3>
-            <p id="module-description"></p>
+            <div id="module-description" style="line-height: 1.6;"></div>
 
             <div style="margin-top: 1.5rem;">
                 <p><strong>Instructor:</strong> <span id="module-instructor"></span></p>
@@ -99,11 +99,11 @@
             </div>
 
             <div id="additional-info" style="margin-top: 1.5rem; display: none;">
-                <p style="margin-top: 1rem;"><strong>Participation Requirements:</strong></p>
-                <p id="participation-requirements" style="margin-top: 0.5rem;"></p>
+                <div style="margin-top: 1rem;"><strong>Participation Requirements:</strong></div>
+                <div id="participation-requirements" style="margin-top: 0.5rem; line-height: 1.6;"></div>
 
-                <p style="margin-top: 1rem;"><strong>Time Expectations:</strong></p>
-                <p id="time-expectations" style="margin-top: 0.5rem;"></p>
+                <div style="margin-top: 1rem;"><strong>Time Expectations:</strong></div>
+                <div id="time-expectations" style="margin-top: 0.5rem; line-height: 1.6;"></div>
             </div>
 
             <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
@@ -331,8 +331,17 @@
             </div>
 
             <div class="card">
+                <h3 style="margin-bottom: 1rem;">Page 4: Preparation for Zoom Session</h3>
+                <p style="color: #6c757d; margin-bottom: 1rem;">Instructions or notes for students to review before the Zoom session</p>
+                <div class="form-group">
+                    <label for="zoom-prep-text">Zoom Preparation Content</label>
+                    <textarea id="zoom-prep-text" style="min-height: 120px;" placeholder="Enter instructions, agenda, or any preparation content for the upcoming Zoom session..."></textarea>
+                </div>
+            </div>
+
+            <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="margin: 0;">Page 4: Post-Zoom Reflection</h3>
+                    <h3 style="margin: 0;">Page 5: Post-Zoom Reflection</h3>
                     <button class="btn btn-secondary" onclick="openAddQuestionModal()">+ Add Question</button>
                 </div>
                 <div id="reflection-questions-list">
@@ -342,7 +351,7 @@
 
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="margin: 0;">Page 5: Further Study</h3>
+                    <h3 style="margin: 0;">Page 6: Further Study</h3>
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="btn btn-secondary" onclick="openAddStudyResourceModal()">+ Add Resource</button>
                         <button class="btn btn-secondary" onclick="openAddPage5VideoModal()">+ Add Video</button>
@@ -904,6 +913,7 @@
             document.getElementById('week-description-input').value = '';
             document.getElementById('week-unlock-date-input').value = '';
             document.getElementById('page2-intro-text').value = '';
+            document.getElementById('zoom-prep-text').value = '';
             weeklyReadings = [];
             furtherStudy = [];
             videos = [];
@@ -1457,8 +1467,9 @@
                 return;
             }
 
-            // Collect page data for all 5 pages
+            // Collect page data for all 6 pages
             const page2IntroText = document.getElementById('page2-intro-text').value.trim();
+            const zoomPrepText = document.getElementById('zoom-prep-text').value.trim();
 
             // Validate required fields
             if (page1Questions.length === 0) {
@@ -1470,7 +1481,7 @@
                 return;
             }
             if (reflectionQuestions.length === 0) {
-                showNotification('Please add at least one post-zoom reflection question (Page 4)', 'error');
+                showNotification('Please add at least one post-zoom reflection question (Page 5)', 'error');
                 return;
             }
 
@@ -1486,7 +1497,7 @@
             saveBtn.textContent = 'Creating...';
             saveBtn.disabled = true;
 
-            // Create page data array with fixed 5-page structure
+            // Create page data array with fixed 6-page structure
             const pages = [
                 {
                     title: 'Opening Reflection Question',
@@ -1503,6 +1514,11 @@
                     title: 'Weekly Reading',
                     type: 'reading',
                     resources: [...weeklyReadings]
+                },
+                {
+                    title: 'Preparation for Zoom Session',
+                    type: 'intro',
+                    content: zoomPrepText
                 },
                 {
                     title: 'Post-Zoom Reflection',
@@ -1585,6 +1601,7 @@
                 document.getElementById('week-title-input').value = draft.title || '';
                 document.getElementById('week-description-input').value = draft.description || '';
                 document.getElementById('page2-intro-text').value = draft.page2IntroText || '';
+                document.getElementById('zoom-prep-text').value = draft.zoomPrepText || '';
                 weeklyReadings = draft.weeklyReadings || [];
                 furtherStudy = draft.furtherStudy || [];
                 videos = draft.videos || [];
@@ -1633,7 +1650,7 @@
             });
 
             // Auto-save for Create Week modal
-            const weekFields = ['week-title-input', 'week-description-input', 'page2-intro-text'];
+            const weekFields = ['week-title-input', 'week-description-input', 'page2-intro-text', 'zoom-prep-text'];
             weekFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
                 if (field) {
@@ -1719,6 +1736,7 @@
                 title: document.getElementById('week-title-input').value,
                 description: document.getElementById('week-description-input').value,
                 page2IntroText: document.getElementById('page2-intro-text').value,
+                zoomPrepText: document.getElementById('zoom-prep-text').value,
                 weeklyReadings: [...weeklyReadings],
                 furtherStudy: [...furtherStudy],
                 videos: [...videos],
@@ -1738,6 +1756,7 @@
                     document.getElementById('week-title-input').value = draft.title || '';
                     document.getElementById('week-description-input').value = draft.description || '';
                     document.getElementById('page2-intro-text').value = draft.page2IntroText || '';
+                    document.getElementById('zoom-prep-text').value = draft.zoomPrepText || '';
                     weeklyReadings = draft.weeklyReadings || [];
                     furtherStudy = draft.furtherStudy || [];
                     videos = draft.videos || [];

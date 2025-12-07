@@ -50,7 +50,10 @@
                 <button class="btn btn-secondary" onclick="location.href='module-overview.html'">← Back to Module Overview</button>
                 <button class="btn btn-secondary" id="prev-btn" onclick="previousPage()" style="display: none;">← Previous</button>
             </div>
-            <button class="btn btn-primary" id="next-btn" onclick="nextPage()">Next →</button>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-secondary" id="save-exit-btn" onclick="saveProgressAndExit()" style="display: none;">Save Progress & Exit</button>
+                <button class="btn btn-primary" id="next-btn" onclick="nextPage()">Next →</button>
+            </div>
         </div>
     </div>
 
@@ -59,7 +62,7 @@
         let currentWeek = null;
         let currentPage = 1;
         let currentModuleId = null;
-        const totalPages = 5;
+        let totalPages = 6; // Now 6 pages with Zoom Prep
 
         // Convert video URLs to embed URLs
         function getVideoEmbedUrl(url) {
@@ -208,6 +211,14 @@
             // Update navigation buttons
             document.getElementById('prev-btn').style.display = currentPage === 1 ? 'none' : 'block';
             document.getElementById('next-btn').textContent = currentPage === totalPages ? 'Finish →' : 'Next →';
+
+            // Show Save Progress & Exit button only for students (not on last page)
+            const saveExitBtn = document.getElementById('save-exit-btn');
+            if (currentView === 'student' && currentPage < totalPages) {
+                saveExitBtn.style.display = 'block';
+            } else {
+                saveExitBtn.style.display = 'none';
+            }
         }
 
         function renderDiscussionPage(pageData, container) {
@@ -384,12 +395,13 @@
                 if (resources.length > 0) {
                     html += '<div class="resource-list" style="margin-top: 1.5rem;">';
                     resources.forEach(resource => {
+                        const hasUrl = resource.url && resource.url.trim();
                         html += `
-                            <div class="resource-item">
-                                <strong>${resource.title}</strong>
-                                ${resource.description ? `<p style="color: #6c757d; margin-top: 0.25rem;">${resource.description}</p>` : ''}
-                                <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
-                                    <a href="${resource.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">Access Resource</a>
+                            <div class="resource-item" style="position: relative;">
+                                ${hasUrl ? `<a href="${resource.url}" target="_blank" style="position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Access Resource →</a>` : ''}
+                                <div style="padding-right: ${hasUrl ? '140px' : '0'};">
+                                    <strong>${resource.title}</strong>
+                                    ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
                                 </div>
                             </div>
                         `;
@@ -489,6 +501,10 @@
         function previousPage() {
             if (currentPage > 1) {
                 currentPage--;
+                // Auto-save position for students
+                if (currentView === 'student' && currentModuleId) {
+                    dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
+                }
                 window.location.href = `week-viewer.html?week=${currentWeek.id}&page=${currentPage}`;
             }
         }
@@ -496,15 +512,57 @@
         function nextPage() {
             if (currentPage < totalPages) {
                 currentPage++;
+                // Auto-save position for students
+                if (currentView === 'student' && currentModuleId) {
+                    dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
+                }
                 window.location.href = `week-viewer.html?week=${currentWeek.id}&page=${currentPage}`;
             } else {
                 // Finish - mark week as completed for students, just navigate for admins
                 const currentView = dataService.getCurrentView();
                 if (currentView === 'student') {
                     dataService.completeWeek(currentWeek.id);
+                    // Clear saved position since week is complete
+                    if (currentModuleId) {
+                        dataService.clearPagePosition(currentModuleId, currentWeek.id);
+                    }
                     alert('Week completed!');
                 }
                 window.location.href = 'module-overview.html';
+            }
+        }
+
+        // Save progress when user leaves page
+        function saveProgressOnExit() {
+            if (currentView === 'student' && currentModuleId && currentWeek) {
+                dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
+            }
+        }
+
+        // Explicit save and exit button handler
+        function saveProgressAndExit() {
+            if (currentModuleId && currentWeek) {
+                dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
+            }
+            alert('Progress saved! You can resume from this page next time.');
+            window.location.href = 'module-overview.html';
+        }
+
+        // Check for saved position and offer to resume
+        function checkForSavedPosition() {
+            if (currentView !== 'student' || !currentModuleId || !currentWeek) return;
+
+            const savedPosition = dataService.getPagePosition(currentModuleId, currentWeek.id);
+            const urlPage = getPageFromURL();
+
+            // Only prompt if there's a saved position different from current page
+            // and the user didn't explicitly navigate to a specific page
+            if (savedPosition && savedPosition.page > 1 && urlPage === 1 && savedPosition.page !== currentPage) {
+                const resume = confirm(`You left off on page ${savedPosition.page} of ${totalPages}. Would you like to resume from there?`);
+                if (resume) {
+                    currentPage = savedPosition.page;
+                    window.location.href = `week-viewer.html?week=${currentWeek.id}&page=${currentPage}`;
+                }
             }
         }
 
@@ -518,8 +576,14 @@
             setView(savedView);
             if (loadWeekData()) {
                 renderPage();
+                // Check for saved position after loading
+                checkForSavedPosition();
             }
         };
+
+        // Save progress when page is closed/navigated away
+        window.addEventListener('beforeunload', saveProgressOnExit);
+        window.addEventListener('pagehide', saveProgressOnExit);
     </script>
 </body>
 </html>

@@ -96,11 +96,7 @@
         <div id="admin-view" style="display: none;">
             <!-- Active Modules Section -->
             <div id="active-modules-section" style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(0, 147, 135, 0.08) 0%, rgba(0, 147, 135, 0.03) 100%); border-radius: 16px; padding: 1.5rem; border-left: 4px solid var(--teal);">
-                <h3 style="color: var(--teal); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="width: 12px; height: 12px; background: var(--teal); border-radius: 50%; display: inline-block;"></span>
-                    Active Modules
-                </h3>
-                <p style="color: #6c757d; margin-bottom: 1.25rem; font-size: 0.95rem;">Currently running modules with active student participation</p>
+                <h3 style="color: var(--teal); margin-bottom: 1.25rem;">Active Modules</h3>
                 <div class="course-grid" id="active-modules-grid">
                     <p style="text-align: center; color: #6c757d; padding: 2rem; background: rgba(255,255,255,0.5); border-radius: 8px;">No active modules. Launch a template to start.</p>
                 </div>
@@ -108,34 +104,18 @@
 
             <!-- Module Templates Section -->
             <div id="templates-section" style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(255, 184, 28, 0.08) 0%, rgba(255, 184, 28, 0.03) 100%); border-radius: 16px; padding: 1.5rem; border-left: 4px solid var(--secondary-color);">
-                <h3 style="color: var(--secondary-color); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="width: 12px; height: 12px; background: var(--secondary-color); border-radius: 50%; display: inline-block;"></span>
-                    Module Templates
-                </h3>
-                <p style="color: #6c757d; margin-bottom: 1.25rem; font-size: 0.95rem;">Draft modules ready to be edited and launched</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <h3 style="color: var(--secondary-color); margin: 0;">Module Templates</h3>
+                    <button class="btn btn-primary" onclick="openCreateModuleModal()">Create Template</button>
+                </div>
                 <div class="course-grid" id="templates-grid">
-                    <div class="course-card" id="create-module-card">
-                        <div class="course-header">
-                            <h3>New Module Template</h3>
-                            <p style="opacity: 0.8;">Start building a new learning experience</p>
-                        </div>
-                        <div class="course-body">
-                            <p>Design module structure, add weeks, and prepare content for your students.</p>
-                            <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
-                                <button class="btn btn-primary" onclick="openCreateModuleModal()">Create Template</button>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Templates will be populated here -->
                 </div>
             </div>
 
             <!-- Archived Modules Section -->
             <div id="archived-section" style="background: linear-gradient(135deg, rgba(132, 131, 131, 0.08) 0%, rgba(132, 131, 131, 0.03) 100%); border-radius: 16px; padding: 1.5rem; border-left: 4px solid var(--gray);">
-                <h3 style="color: var(--gray); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="width: 12px; height: 12px; background: var(--gray); border-radius: 50%; display: inline-block;"></span>
-                    Archived Modules
-                </h3>
-                <p style="color: #6c757d; margin-bottom: 1.25rem; font-size: 0.95rem;">Completed modules with preserved discussions and content (read-only)</p>
+                <h3 style="color: var(--gray); margin-bottom: 1.25rem;">Archived Modules</h3>
                 <div class="course-grid" id="archived-modules-grid">
                     <p style="text-align: center; color: #6c757d; padding: 2rem; background: rgba(255,255,255,0.5); border-radius: 8px;">No archived modules yet.</p>
                 </div>
@@ -490,22 +470,23 @@
             moduleCard.style.borderLeft = '4px solid var(--secondary-color)';
 
             moduleCard.innerHTML = `
-                <span class="status-badge status-incomplete" style="position: absolute; top: 1rem; right: 1rem; font-size: 0.8rem; padding: 0.25rem 0.5rem;">Template</span>
                 <div class="course-header">
-                    <h3>${module.title}</h3>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <h3 style="margin: 0;">${module.title}</h3>
+                        <span class="status-badge status-incomplete" style="opacity: 0.6; font-size: 0.75rem; padding: 0.25rem 0.6rem;">TEMPLATE</span>
+                    </div>
                 </div>
                 <div class="course-body">
                     <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
                         ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
                         ${module.duration ? `<span><strong>Duration:</strong> ${module.duration}</span>` : ''}
                     </div>
-                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-primary" onclick="editModule(${module.id})">Edit Template</button>
+                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap;">
                         <button class="btn btn-secondary" onclick="deleteModule(${module.id})">Delete</button>
+                        <button class="btn btn-primary" onclick="editModule(${module.id})">Edit Template</button>
                     </div>
                 </div>
             `;
-            moduleCard.style.position = 'relative';
 
             return moduleCard;
         }
