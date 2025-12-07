@@ -313,10 +313,14 @@ class DataService {
      */
     launchModule(templateId) {
         try {
-            const template = this.getModule(templateId);
-            if (!template) {
+            const modules = this.getModules();
+            const templateIndex = modules.findIndex(m => m.id === parseInt(templateId));
+
+            if (templateIndex === -1) {
                 return this.error(`Template module ${templateId} not found`, 'NOT_FOUND');
             }
+
+            const template = modules[templateIndex];
 
             // Get template weeks
             const templateWeeks = this.getWeeks(templateId);
@@ -327,15 +331,20 @@ class DataService {
                 return this.error('All weeks must have unlock dates before launching', 'VALIDATION_ERROR');
             }
 
+            // Ensure the template keeps its draft status
+            modules[templateIndex] = {
+                ...template,
+                status: 'draft'
+            };
+
             // Create a new module with launched status
-            const modules = this.getModules();
             const newModuleId = this.generateNumericId(modules);
 
             const launchedModule = {
                 ...template,
                 id: newModuleId,
                 status: 'launched',
-                templateId: templateId, // Reference to original template
+                templateId: parseInt(templateId), // Reference to original template
                 launchedAt: new Date().toISOString(),
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
