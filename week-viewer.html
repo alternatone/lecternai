@@ -58,6 +58,7 @@
         let currentView = 'student';
         let currentWeek = null;
         let currentPage = 1;
+        let currentModuleId = null;
         const totalPages = 5;
 
         // Convert video URLs to embed URLs
@@ -156,7 +157,7 @@
             const weekId = getWeekIdFromURL();
 
             // Load weeks using DataService
-            const currentModuleId = dataService.getCurrentModuleId();
+            currentModuleId = dataService.getCurrentModuleId();
             if (currentModuleId) {
                 currentWeek = dataService.getWeek(currentModuleId, weekId);
             }
@@ -212,7 +213,15 @@
         function renderDiscussionPage(pageData, container) {
             const questions = pageData.questions || [];
             const pageIndex = currentPage - 1;
+            const isAdminPreview = currentView === 'admin';
             let html = '<div class="card" style="width: 100%;">';
+
+            // Show admin preview notice
+            if (isAdminPreview) {
+                html += `<div style="background: #fff3cd; border: 1px solid #ffc107; padding: 0.75rem; margin-bottom: 1rem; border-radius: 4px; font-size: 0.9rem;">
+                    <strong>Preview Mode:</strong> This is a read-only preview. Discussion posts and replies are disabled.
+                </div>`;
+            }
 
             if (questions.length > 0) {
                 questions.forEach((question, index) => {
@@ -221,22 +230,34 @@
                         <p style="margin-top: 1rem; margin-bottom: 1.5rem; width: 100%;">${question.text}</p>
                     `;
 
-                    // Show discussion thread for everyone
-                    const posts = dataService.getDiscussionPosts(currentWeek.id, pageIndex, index);
+                    // Show discussion thread for everyone (isolated per module)
+                    const posts = dataService.getDiscussionPosts(currentModuleId, currentWeek.id, pageIndex, index);
 
-                    html += `
-                        <div class="discussion-section">
-                            <div class="discussion-form" style="margin-bottom: 2rem;">
-                                <textarea id="response-${index}" placeholder="Share your thoughts..." style="min-height: 120px; width: 100%;"></textarea>
-                                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
-                                    <button class="btn btn-primary" onclick="postDiscussion(${index})">Post Response</button>
+                    // Only show input form for students, not admin preview
+                    if (!isAdminPreview) {
+                        html += `
+                            <div class="discussion-section">
+                                <div class="discussion-form" style="margin-bottom: 2rem;">
+                                    <textarea id="response-${index}" placeholder="Share your thoughts..." style="min-height: 120px; width: 100%;"></textarea>
+                                    <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                                        <button class="btn btn-primary" onclick="postDiscussion(${index})">Post Response</button>
+                                    </div>
+                                </div>
+                                <div id="discussion-thread-${index}">
+                                    ${renderDiscussionThread(posts, pageIndex, index)}
                                 </div>
                             </div>
-                            <div id="discussion-thread-${index}">
-                                ${renderDiscussionThread(posts, pageIndex, index)}
+                        `;
+                    } else {
+                        // Admin preview - show threads but no input
+                        html += `
+                            <div class="discussion-section">
+                                <div id="discussion-thread-${index}">
+                                    ${renderDiscussionThread(posts, pageIndex, index, true)}
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    }
 
                     if (index < questions.length - 1) {
                         html += '<hr style="margin: 2rem 0;">';
@@ -250,9 +271,10 @@
             container.innerHTML = html;
         }
 
-        function renderDiscussionThread(posts, pageIndex, questionIndex) {
+        function renderDiscussionThread(posts, pageIndex, questionIndex, readOnly = false) {
             if (!posts || posts.length === 0) {
-                return '<p style="color: #6c757d; font-style: italic; margin-top: 1rem;">No discussion posts yet. Be the first to share!</p>';
+                const msg = readOnly ? 'No discussion posts yet.' : 'No discussion posts yet. Be the first to share!';
+                return `<p style="color: #6c757d; font-style: italic; margin-top: 1rem;">${msg}</p>`;
             }
 
             let html = '<div style="margin-top: 1.5rem;">';
@@ -267,6 +289,11 @@
                             <span style="color: #6c757d; font-size: 0.85rem;">${postDate} at ${postTime}</span>
                         </div>
                         <p style="margin: 0.5rem 0; white-space: pre-wrap;">${post.content}</p>
+                `;
+
+                // Only show reply button and form for non-read-only mode
+                if (!readOnly) {
+                    html += `
                         <button class="btn btn-secondary" onclick="toggleReplyForm(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem; margin-top: 0.5rem;">Reply</button>
 
                         <div id="reply-form-${post.id}" style="display: none; margin-top: 1rem; padding-left: 1rem; border-left: 2px solid #dee2e6;">
@@ -276,7 +303,8 @@
                                 <button class="btn btn-secondary" onclick="toggleReplyForm(${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Cancel</button>
                             </div>
                         </div>
-                `;
+                    `;
+                }
 
                 // Render replies
                 if (post.replies && post.replies.length > 0) {
@@ -411,9 +439,9 @@
             // Get current user (for now, use a simple prompt - in production this would come from auth)
             const author = prompt('Enter your name:', 'Student') || 'Anonymous';
 
-            // Add discussion post using DataService
+            // Add discussion post using DataService (isolated per module)
             const pageIndex = currentPage - 1; // Convert to 0-based index
-            dataService.addDiscussionPost(currentWeek.id, pageIndex, questionIndex, {
+            dataService.addDiscussionPost(currentModuleId, currentWeek.id, pageIndex, questionIndex, {
                 author: author,
                 content: content
             });
@@ -446,8 +474,8 @@
             // Get current user
             const author = prompt('Enter your name:', 'Student') || 'Anonymous';
 
-            // Add reply using DataService
-            dataService.addReply(currentWeek.id, pageIndex, questionIndex, postId, {
+            // Add reply using DataService (isolated per module)
+            dataService.addReply(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, {
                 author: author,
                 content: content
             });

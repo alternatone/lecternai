@@ -678,15 +678,17 @@ class DataService {
     // ==================== Response Operations ====================
 
     /**
-     * Save a response to a question
+     * Save a response to a question (isolated per module)
+     * @param {number} moduleId - Module ID
      * @param {number} weekId - Week ID
      * @param {number} pageIndex - Page index (0-based)
      * @param {number} questionId - Question index within the page
      * @param {string} content - Response content
      */
-    saveResponse(weekId, pageIndex, questionId, content) {
-        const key = `response:week:${weekId}:page:${pageIndex}:question:${questionId}`;
+    saveResponse(moduleId, weekId, pageIndex, questionId, content) {
+        const key = `response:module:${moduleId}:week:${weekId}:page:${pageIndex}:question:${questionId}`;
         const response = {
+            moduleId: parseInt(moduleId),
             weekId: parseInt(weekId),
             pageIndex: parseInt(pageIndex),
             questionId: parseInt(questionId),
@@ -700,28 +702,28 @@ class DataService {
     }
 
     /**
-     * Get a response
+     * Get a response (isolated per module)
      */
-    getResponse(weekId, pageIndex, questionId) {
-        const key = `response:week:${weekId}:page:${pageIndex}:question:${questionId}`;
+    getResponse(moduleId, weekId, pageIndex, questionId) {
+        const key = `response:module:${moduleId}:week:${weekId}:page:${pageIndex}:question:${questionId}`;
         return this.get(key, null);
     }
 
     // ==================== Discussion Operations ====================
 
     /**
-     * Get discussion posts for a question
+     * Get discussion posts for a question (isolated per module)
      */
-    getDiscussionPosts(weekId, pageIndex, questionId) {
-        const key = `discussion:week:${weekId}:page:${pageIndex}:question:${questionId}`;
+    getDiscussionPosts(moduleId, weekId, pageIndex, questionId) {
+        const key = `discussion:module:${moduleId}:week:${weekId}:page:${pageIndex}:question:${questionId}`;
         return this.get(key, []);
     }
 
     /**
-     * Add a discussion post
+     * Add a discussion post (isolated per module)
      */
-    addDiscussionPost(weekId, pageIndex, questionId, post) {
-        const posts = this.getDiscussionPosts(weekId, pageIndex, questionId);
+    addDiscussionPost(moduleId, weekId, pageIndex, questionId, post) {
+        const posts = this.getDiscussionPosts(moduleId, weekId, pageIndex, questionId);
         const newPost = {
             id: Date.now(),
             ...post,
@@ -729,16 +731,16 @@ class DataService {
         };
 
         posts.unshift(newPost);
-        this.set(`discussion:week:${weekId}:page:${pageIndex}:question:${questionId}`, posts);
+        this.set(`discussion:module:${moduleId}:week:${weekId}:page:${pageIndex}:question:${questionId}`, posts);
 
         return newPost;
     }
 
     /**
-     * Add a reply to a discussion post
+     * Add a reply to a discussion post (isolated per module)
      */
-    addReply(weekId, pageIndex, questionId, postId, reply) {
-        const posts = this.getDiscussionPosts(weekId, pageIndex, questionId);
+    addReply(moduleId, weekId, pageIndex, questionId, postId, reply) {
+        const posts = this.getDiscussionPosts(moduleId, weekId, pageIndex, questionId);
         const post = posts.find(p => p.id === postId);
 
         if (!post) {
@@ -756,7 +758,7 @@ class DataService {
         };
 
         post.replies.push(newReply);
-        this.set(`discussion:week:${weekId}:page:${pageIndex}:question:${questionId}`, posts);
+        this.set(`discussion:module:${moduleId}:week:${weekId}:page:${pageIndex}:question:${questionId}`, posts);
 
         return newReply;
     }
