@@ -212,13 +212,13 @@
         function renderDiscussionPage(pageData, container) {
             const questions = pageData.questions || [];
             const isAdmin = currentView === 'admin';
-            let html = '<div class="card">';
+            let html = '<div class="card" style="width: 100%;">';
 
             if (questions.length > 0) {
                 questions.forEach((question, index) => {
                     html += `
                         <h3>${questions.length > 1 ? 'Question ' + (index + 1) : pageData.title}</h3>
-                        <p style="margin-top: 1rem; margin-bottom: 1.5rem;">${question.text}</p>
+                        <p style="margin-top: 1rem; margin-bottom: 1.5rem; width: 100%;">${question.text}</p>
                     `;
 
                     // Only show input fields for students (not in admin preview mode)
@@ -253,7 +253,7 @@
 
             // Show intro text
             if (pageData.content) {
-                html += `<div style="margin-top: 1rem;">${formatText(pageData.content)}</div>`;
+                html += `<div style="margin-top: 1rem; width: 100%;">${formatText(pageData.content)}</div>`;
             }
 
             // Show videos if any
@@ -351,8 +351,9 @@
                 return;
             }
 
-            // Save response using DataService
-            dataService.saveResponse(currentWeek.id, questionIndex, response);
+            // Save response using DataService with pageIndex
+            const pageIndex = currentPage - 1; // Convert to 0-based index
+            dataService.saveResponse(currentWeek.id, pageIndex, questionIndex, response);
 
             alert('Response saved successfully!');
             textarea.value = '';

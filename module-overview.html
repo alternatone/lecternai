@@ -553,10 +553,11 @@
                 weekAction.style.gap = '1rem';
 
                 if (currentView === 'admin') {
-                    // Admin view: Show Preview Week and Edit Week buttons for all weeks (no status badges)
+                    // Admin view: Show Preview Week, Edit Week, and Delete Week buttons for all weeks
                     weekAction.innerHTML = `
                         <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Preview Week</button>
                         <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="location.href='admin-week-edit.html?week=${week.id}'">Edit Week</button>
+                        <button class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteWeek(${week.id})">Delete</button>
                     `;
                 } else {
                     // Student view: Show status and View Week button
@@ -1824,6 +1825,30 @@
                 }, 1500);
             } else {
                 showNotification(result.message || 'Failed to launch module', 'error');
+            }
+        }
+
+        function deleteWeek(weekId) {
+            if (!confirm('Are you sure you want to delete this week?\n\nThis action cannot be undone.')) {
+                return;
+            }
+
+            const currentModuleId = dataService.getCurrentModuleId();
+            if (!currentModuleId) {
+                showNotification('No module selected', 'error');
+                return;
+            }
+
+            const result = dataService.deleteWeek(currentModuleId, weekId);
+
+            if (result.success) {
+                showNotification('Week deleted successfully', 'success');
+                // Reload the page to refresh the week list
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            } else {
+                showNotification(result.message || 'Failed to delete week', 'error');
             }
         }
     </script>

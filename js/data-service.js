@@ -679,11 +679,16 @@ class DataService {
 
     /**
      * Save a response to a question
+     * @param {number} weekId - Week ID
+     * @param {number} pageIndex - Page index (0-based)
+     * @param {number} questionId - Question index within the page
+     * @param {string} content - Response content
      */
-    saveResponse(weekId, questionId, content) {
-        const key = `response:week:${weekId}:question:${questionId}`;
+    saveResponse(weekId, pageIndex, questionId, content) {
+        const key = `response:week:${weekId}:page:${pageIndex}:question:${questionId}`;
         const response = {
             weekId: parseInt(weekId),
+            pageIndex: parseInt(pageIndex),
             questionId: parseInt(questionId),
             content: content,
             createdAt: new Date().toISOString(),
@@ -697,8 +702,8 @@ class DataService {
     /**
      * Get a response
      */
-    getResponse(weekId, questionId) {
-        const key = `response:week:${weekId}:question:${questionId}`;
+    getResponse(weekId, pageIndex, questionId) {
+        const key = `response:week:${weekId}:page:${pageIndex}:question:${questionId}`;
         return this.get(key, null);
     }
 
