@@ -1558,6 +1558,10 @@
             // Clear the draft since we successfully saved
             dataService.deleteDraft('createWeek');
 
+            // Reset button state
+            saveBtn.textContent = originalText;
+            saveBtn.disabled = false;
+
             // Close modal and refresh
             closeCreateWeekModal();
             renderWeeks();
