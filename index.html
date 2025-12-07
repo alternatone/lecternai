@@ -88,8 +88,8 @@
         </h2>
 
         <div id="student-view">
-            <div class="course-grid">
-                <p style="text-align: center; color: #6c757d; padding: 2rem;">No modules enrolled yet.</p>
+            <div class="course-grid" id="student-modules-grid">
+                <p style="text-align: center; color: #6c757d; padding: 2rem;">No modules available yet. Check back later!</p>
             </div>
         </div>
 
@@ -536,7 +536,7 @@
         }
 
         function archiveModule(moduleId) {
-            if (!confirm('Archive this module?\\n\\nThis will end the active session and preserve all discussions and content in read-only format.')) {
+            if (!confirm('Archive this module?\n\nThis will end the active session and preserve all discussions and content in read-only format.')) {
                 return;
             }
 
