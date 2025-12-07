@@ -526,9 +526,14 @@
                 const weekInfo = document.createElement('div');
 
                 // Show unlock date info for admins
+                // Parse date as local timezone to avoid off-by-one day issue
+                const formatUnlockDate = (dateStr) => {
+                    const [year, month, day] = dateStr.split('-').map(Number);
+                    return new Date(year, month - 1, day).toLocaleDateString();
+                };
                 const unlockInfo = currentView === 'admin' && week.unlockDate ?
                     `<span style="color: ${week.unlockDate <= today ? 'var(--teal)' : 'var(--secondary-color)'}; font-size: 0.85rem;">
-                        (Unlocks: ${new Date(week.unlockDate).toLocaleDateString()})
+                        (Unlocks: ${formatUnlockDate(week.unlockDate)})
                     </span>` : '';
 
                 weekInfo.innerHTML = `
