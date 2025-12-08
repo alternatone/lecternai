@@ -291,6 +291,27 @@
                 return;
             }
 
+            // Collect zoom info first and validate BEFORE creating module
+            const zoomInfo = {
+                url: document.getElementById('module-zoom-url-input').value.trim(),
+                meetingId: document.getElementById('module-zoom-id-input').value.trim(),
+                passcode: document.getElementById('module-zoom-passcode-input').value.trim(),
+                schedule: {
+                    day: document.getElementById('module-zoom-day-input').value,
+                    time: document.getElementById('module-zoom-time-input').value,
+                    timezone: document.getElementById('module-zoom-timezone-input').value
+                }
+            };
+
+            // Validate zoom info before creating module (to prevent orphaned modules)
+            if (zoomInfo.url || zoomInfo.meetingId) {
+                const zoomValidation = Validator.validateZoomInfo(zoomInfo);
+                if (!zoomValidation.valid) {
+                    showNotification('Zoom validation errors: ' + zoomValidation.errors.join(', '), 'error');
+                    return;
+                }
+            }
+
             // Show loading state
             const saveBtn = document.querySelector('#create-module-modal .btn-primary');
             const originalText = saveBtn.textContent;
@@ -313,26 +334,8 @@
             // Set as current module
             dataService.setCurrentModuleId(newModule.id);
 
-            // Save zoom info using DataService
-            const zoomInfo = {
-                url: document.getElementById('module-zoom-url-input').value.trim(),
-                meetingId: document.getElementById('module-zoom-id-input').value.trim(),
-                passcode: document.getElementById('module-zoom-passcode-input').value.trim(),
-                schedule: {
-                    day: document.getElementById('module-zoom-day-input').value,
-                    time: document.getElementById('module-zoom-time-input').value,
-                    timezone: document.getElementById('module-zoom-timezone-input').value
-                }
-            };
-
+            // Save zoom info (already validated above)
             if (zoomInfo.url || zoomInfo.meetingId) {
-                const zoomValidation = Validator.validateZoomInfo(zoomInfo);
-                if (!zoomValidation.valid) {
-                    saveBtn.textContent = originalText;
-                    saveBtn.disabled = false;
-                    showNotification('Zoom validation errors: ' + zoomValidation.errors.join(', '), 'error');
-                    return;
-                }
                 dataService.updateZoomInfo(newModule.id, zoomInfo);
             }
 

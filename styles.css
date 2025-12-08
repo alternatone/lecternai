@@ -606,19 +606,73 @@ header {
     filter: opacity(0.05);
 }
 
-/* Scroll freeze prevention */
-body.modal-open {
-    overflow: hidden !important;
+/* Modal styles */
+.modal {
+    display: none;
     position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 2rem 1rem;
+}
+
+.modal-content {
+    background: white;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6c757d;
+    padding: 0.5rem;
+}
+
+.modal-close:hover {
+    color: var(--primary-color);
+}
+
+/* Scroll freeze prevention - prevent background scrolling when modal is open */
+body.modal-open {
+    overflow: hidden !important;
+    height: 100vh !important;
+    touch-action: none;
+}
+
+html.modal-open {
+    overflow: hidden !important;
 }
 
 /* Force scrolling when no modal is open */
 body:not(.modal-open) {
     overflow-x: hidden !important;
     overflow-y: auto !important;
-    position: static !important;
 }
 
 html {

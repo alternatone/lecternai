@@ -588,20 +588,20 @@ class DataService {
     /**
      * Mark a week as completed
      */
-    completeWeek(weekId) {
-        this.set(`week:${weekId}:completed`, true);
-        this.updateProgress(weekId, {
-            status: 'completed',
-            completedAt: new Date().toISOString()
-        });
+    completeWeek(moduleId, weekId) {
+        const key = `module:${moduleId}:week:${weekId}:completed`;
+        this.set(key, true);
+        // Clear the page position when week is completed
+        this.clearPagePosition(moduleId, weekId);
         return true;
     }
 
     /**
      * Check if a week is completed
      */
-    isWeekCompleted(weekId) {
-        return this.get(`week:${weekId}:completed`, false);
+    isWeekCompleted(moduleId, weekId) {
+        const key = `module:${moduleId}:week:${weekId}:completed`;
+        return this.get(key, false);
     }
 
     // ==================== Zoom Operations ====================
@@ -790,6 +790,47 @@ class DataService {
         this.set(`discussion:module:${moduleId}:week:${weekId}:page:${pageIndex}:question:${questionId}`, posts);
 
         return newReply;
+    }
+
+    /**
+     * Edit a discussion post
+     */
+    editDiscussionPost(moduleId, weekId, pageIndex, questionId, postId, newContent) {
+        const posts = this.getDiscussionPosts(moduleId, weekId, pageIndex, questionId);
+        const post = posts.find(p => p.id === postId);
+
+        if (!post) {
+            throw new Error(`Post ${postId} not found`);
+        }
+
+        post.content = newContent;
+        post.editedAt = new Date().toISOString();
+
+        this.set(`discussion:module:${moduleId}:week:${weekId}:page:${pageIndex}:question:${questionId}`, posts);
+        return post;
+    }
+
+    /**
+     * Edit a reply
+     */
+    editReply(moduleId, weekId, pageIndex, questionId, postId, replyId, newContent) {
+        const posts = this.getDiscussionPosts(moduleId, weekId, pageIndex, questionId);
+        const post = posts.find(p => p.id === postId);
+
+        if (!post) {
+            throw new Error(`Post ${postId} not found`);
+        }
+
+        const reply = post.replies ? post.replies.find(r => r.id === replyId) : null;
+        if (!reply) {
+            throw new Error(`Reply ${replyId} not found`);
+        }
+
+        reply.content = newContent;
+        reply.editedAt = new Date().toISOString();
+
+        this.set(`discussion:module:${moduleId}:week:${weekId}:page:${pageIndex}:question:${questionId}`, posts);
+        return reply;
     }
 
     // ==================== Utility Methods ====================

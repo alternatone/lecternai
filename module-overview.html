@@ -309,7 +309,7 @@
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h3 style="margin: 0;">Page 2: Intro to the Week</h3>
-                    <button class="btn btn-secondary" onclick="openAddVideoModal()">+ Add Video</button>
+                    <button class="btn btn-secondary" onclick="openAddResourceModal('intro')">+ Add Resource</button>
                 </div>
                 <div class="form-group">
                     <label for="page2-intro-text">Week Introduction</label>
@@ -323,7 +323,7 @@
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h3 style="margin: 0;">Page 3: Weekly Readings</h3>
-                    <button class="btn btn-secondary" onclick="openAddResourceModal()">+ Add Resource</button>
+                    <button class="btn btn-secondary" onclick="openAddResourceModal('readings')">+ Add Resource</button>
                 </div>
                 <div class="resource-list" id="weekly-readings-list">
                     <!-- Resources will be populated here -->
@@ -332,9 +332,7 @@
 
             <div class="card">
                 <h3 style="margin-bottom: 1rem;">Page 4: Preparation for Zoom Session</h3>
-                <p style="color: #6c757d; margin-bottom: 1rem;">Instructions or notes for students to review before the Zoom session</p>
                 <div class="form-group">
-                    <label for="zoom-prep-text">Zoom Preparation Content</label>
                     <textarea id="zoom-prep-text" style="min-height: 120px;" placeholder="Enter instructions, agenda, or any preparation content for the upcoming Zoom session..."></textarea>
                 </div>
             </div>
@@ -352,10 +350,7 @@
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h3 style="margin: 0;">Page 6: Further Study</h3>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn btn-secondary" onclick="openAddStudyResourceModal()">+ Add Resource</button>
-                        <button class="btn btn-secondary" onclick="openAddPage5VideoModal()">+ Add Video</button>
-                    </div>
+                    <button class="btn btn-secondary" onclick="openAddResourceModal('furtherStudy')">+ Add Resource</button>
                 </div>
                 <div class="resource-list" id="further-study-list">
                     <!-- Further study resources will be populated here -->
@@ -367,25 +362,32 @@
 
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeCreateWeekModal()">Cancel</button>
+                <button class="btn btn-secondary" onclick="saveWeekAsDraft()" style="background: #6c757d; color: white;">Save as Draft</button>
                 <button class="btn btn-primary" onclick="saveNewWeek()">Create Week</button>
             </div>
         </div>
     </div>
 
-    <!-- Add Resource Modal -->
+    <!-- Add Resource Modal (supports both documents and videos) -->
     <div id="add-resource-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Add Resource</h3>
+                <h3 id="resource-modal-title">Add Resource</h3>
                 <button class="modal-close" onclick="closeAddResourceModal()">&times;</button>
             </div>
+            <input type="hidden" id="resource-target-type" value="readings">
             <div class="form-group">
-                <label for="resource-title">Resource Title</label>
+                <label for="resource-title">Title</label>
                 <input type="text" id="resource-title">
             </div>
             <div class="form-group">
                 <label for="resource-url">URL</label>
-                <input type="text" id="resource-url">
+                <input type="text" id="resource-url" oninput="checkResourceUrl()">
+                <small style="color: #6c757d; margin-top: 0.5rem; display: block;">Videos (YouTube, Vimeo) will be embedded. Other links will open in a new tab.</small>
+            </div>
+            <div class="form-group" id="resource-duration-group" style="display: none;">
+                <label for="resource-duration">Duration (Optional)</label>
+                <input type="text" id="resource-duration" placeholder="e.g., 12:45">
             </div>
             <div class="form-group">
                 <label for="resource-description">Description (Optional)</label>
@@ -483,23 +485,20 @@
         let currentView = 'student';
 
         function setView(view) {
+            if (view === 'student') {
+                dataService.setCurrentView('student');
+                window.location.href = 'index.html';
+                return;
+            }
+            // Admin view stays on current page
             currentView = view;
             const buttons = document.querySelectorAll('.view-toggle button');
             buttons.forEach(btn => btn.classList.remove('active'));
-
-            if (view === 'student') {
-                buttons[0].classList.add('active');
-                dataService.setCurrentView('student');
-                document.getElementById('edit-description-btn').style.display = 'none';
-                document.getElementById('create-week-btn').style.display = 'none';
-                document.getElementById('admin-action-btns').style.display = 'none';
-            } else {
-                buttons[1].classList.add('active');
-                dataService.setCurrentView('admin');
-                document.getElementById('edit-description-btn').style.display = 'inline-block';
-                document.getElementById('create-week-btn').style.display = 'inline-block';
-                document.getElementById('admin-action-btns').style.display = 'flex';
-            }
+            buttons[1].classList.add('active');
+            dataService.setCurrentView('admin');
+            document.getElementById('edit-description-btn').style.display = 'inline-block';
+            document.getElementById('create-week-btn').style.display = 'inline-block';
+            document.getElementById('admin-action-btns').style.display = 'flex';
 
             checkForDraft();
             renderWeeks();
@@ -514,6 +513,7 @@
                 return;
             }
 
+            const currentModuleId = dataService.getCurrentModuleId();
             const today = new Date().toISOString().split('T')[0];
 
             weeks.forEach((week, index) => {
@@ -553,9 +553,9 @@
                 const weekAction = document.createElement('div');
 
                 // Check progress using DataService (dynamic based on week ID)
-                const progress = dataService.getProgress(week.id) || {};
-                const isComplete = dataService.isWeekCompleted(week.id);
-                const hasProgress = progress.week === `week${week.id}` && progress.page;
+                const pagePosition = dataService.getPagePosition(currentModuleId, week.id);
+                const isComplete = dataService.isWeekCompleted(currentModuleId, week.id);
+                const hasProgress = pagePosition && pagePosition.page && pagePosition.page > 1;
 
                 weekAction.style.display = 'flex';
                 weekAction.style.alignItems = 'center';
@@ -620,12 +620,12 @@
             loadModuleInfoDraft();
 
             document.getElementById('edit-description-modal').style.display = 'block';
-            document.body.classList.add('modal-open');
+            document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
 
         function closeEditDescriptionModal() {
             document.getElementById('edit-description-modal').style.display = 'none';
-            document.body.classList.remove('modal-open');
+            document.body.classList.remove('modal-open'); document.documentElement.classList.remove('modal-open');
         }
 
         function saveDescription() {
@@ -653,8 +653,8 @@
                 instructor: instructor,
                 duration: duration,
                 participation: participation,
-                timeExpectations: timeExp,
-                status: 'published' // Mark as no longer draft
+                timeExpectations: timeExp
+                // Keep status unchanged - templates remain 'draft' until launched
             };
 
             const result = dataService.updateModule(currentModuleId, updates);
@@ -760,12 +760,12 @@
             document.getElementById('zoom-timezone-input').value = zoomInfo.timezone || 'EST';
 
             document.getElementById('zoom-setup-modal').style.display = 'block';
-            document.body.classList.add('modal-open');
+            document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
 
         function closeZoomSetupModal() {
             document.getElementById('zoom-setup-modal').style.display = 'none';
-            document.body.classList.remove('modal-open');
+            document.body.classList.remove('modal-open'); document.documentElement.classList.remove('modal-open');
         }
 
         function saveZoomSetup() {
@@ -902,12 +902,12 @@
             renderReflectionQuestions();
 
             document.getElementById('create-week-modal').style.display = 'block';
-            document.body.classList.add('modal-open');
+            document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
 
         function closeCreateWeekModal() {
             document.getElementById('create-week-modal').style.display = 'none';
-            document.body.classList.remove('modal-open');
+            document.body.classList.remove('modal-open'); document.documentElement.classList.remove('modal-open');
             // Clear form
             document.getElementById('week-title-input').value = '';
             document.getElementById('week-description-input').value = '';
@@ -970,59 +970,86 @@
             autoSaveCreateWeekDraft();
         }
 
-        function openAddResourceModal() {
-            document.getElementById('resource-title').value = '';
-            document.getElementById('resource-url').value = '';
-            document.getElementById('resource-description').value = '';
-            document.getElementById('add-resource-modal').style.display = 'block';
-            document.body.classList.add('modal-open');
-            window.tempAddFunction = 'reading';
+        // Check if URL is a video (YouTube or Vimeo)
+        function isVideoUrl(url) {
+            if (!url) return false;
+            const videoPatterns = [
+                /youtube\.com\/watch/i,
+                /youtu\.be\//i,
+                /youtube\.com\/embed/i,
+                /vimeo\.com\//i
+            ];
+            return videoPatterns.some(pattern => pattern.test(url));
         }
 
-        function openAddStudyResourceModal() {
+        function checkResourceUrl() {
+            const url = document.getElementById('resource-url').value;
+            const durationGroup = document.getElementById('resource-duration-group');
+            if (isVideoUrl(url)) {
+                durationGroup.style.display = 'block';
+            } else {
+                durationGroup.style.display = 'none';
+            }
+        }
+
+        function openAddResourceModal(targetType) {
             document.getElementById('resource-title').value = '';
             document.getElementById('resource-url').value = '';
             document.getElementById('resource-description').value = '';
+            document.getElementById('resource-duration').value = '';
+            document.getElementById('resource-duration-group').style.display = 'none';
+            document.getElementById('resource-target-type').value = targetType || 'readings';
             document.getElementById('add-resource-modal').style.display = 'block';
-            document.body.classList.add('modal-open');
-            window.tempAddFunction = 'study';
+            document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
 
         function closeAddResourceModal() {
             document.getElementById('add-resource-modal').style.display = 'none';
-            document.body.classList.remove('modal-open');
+            document.body.classList.remove('modal-open'); document.documentElement.classList.remove('modal-open');
         }
 
         function addResource() {
             const title = document.getElementById('resource-title').value.trim();
             const url = document.getElementById('resource-url').value.trim();
             const description = document.getElementById('resource-description').value.trim();
+            const duration = document.getElementById('resource-duration').value.trim();
+            const targetType = document.getElementById('resource-target-type').value;
 
             if (!title || !url) {
                 alert('Please enter both title and URL');
                 return;
             }
 
-            if (window.tempAddFunction === 'study') {
-                const newResource = {
-                    id: furtherStudy.length + 1,
-                    title: title,
-                    url: url,
-                    description: description
-                };
-                furtherStudy.push(newResource);
-                renderFurtherStudy();
-            } else {
-                const newResource = {
-                    id: weeklyReadings.length + 1,
-                    title: title,
-                    url: url,
-                    description: description
-                };
-                weeklyReadings.push(newResource);
-                renderWeeklyReadings();
+            const newResource = {
+                id: Date.now(),
+                title: title,
+                url: url,
+                description: description
+            };
+
+            // Add duration if it's a video
+            if (isVideoUrl(url) && duration) {
+                newResource.duration = duration;
             }
+
+            // Add to appropriate list based on target type
+            switch (targetType) {
+                case 'intro':
+                    videos.push(newResource);
+                    renderVideos();
+                    break;
+                case 'readings':
+                    weeklyReadings.push(newResource);
+                    renderWeeklyReadings();
+                    break;
+                case 'furtherStudy':
+                    furtherStudy.push(newResource);
+                    renderFurtherStudy();
+                    break;
+            }
+
             closeAddResourceModal();
+            autoSaveCreateWeekDraft();
         }
 
         function editResource(id, type) {
@@ -1035,13 +1062,13 @@
                 document.getElementById('edit-resource-url').value = resource.url;
                 document.getElementById('edit-resource-description').value = resource.description || '';
                 document.getElementById('edit-resource-modal').style.display = 'block';
-                document.body.classList.add('modal-open');
+                document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
             }
         }
 
         function closeEditResourceModal() {
             document.getElementById('edit-resource-modal').style.display = 'none';
-            document.body.classList.remove('modal-open');
+            document.body.classList.remove('modal-open'); document.documentElement.classList.remove('modal-open');
         }
 
         function saveResourceEdit() {
@@ -1118,7 +1145,7 @@
             document.getElementById('question-modal-title').textContent = 'Add Question';
             document.getElementById('question-modal-submit-btn').textContent = 'Add Question';
             document.getElementById('add-question-modal').style.display = 'block';
-            document.body.classList.add('modal-open');
+            document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
 
         function editPage1Question(id) {
@@ -1130,7 +1157,7 @@
                 document.getElementById('question-modal-title').textContent = 'Edit Question';
                 document.getElementById('question-modal-submit-btn').textContent = 'Save Question';
                 document.getElementById('add-question-modal').style.display = 'block';
-                document.body.classList.add('modal-open');
+                document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
             }
         }
 
@@ -1173,12 +1200,12 @@
             document.getElementById('video-modal-title').textContent = 'Add Video';
             document.getElementById('video-modal-submit-btn').textContent = 'Add Video';
             document.getElementById('add-video-modal').style.display = 'block';
-            document.body.classList.add('modal-open');
+            document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
 
         function closeAddVideoModal() {
             document.getElementById('add-video-modal').style.display = 'none';
-            document.body.classList.remove('modal-open');
+            document.body.classList.remove('modal-open'); document.documentElement.classList.remove('modal-open');
         }
 
         function addVideo() {
@@ -1231,7 +1258,7 @@
                 document.getElementById('video-modal-title').textContent = 'Edit Video';
                 document.getElementById('video-modal-submit-btn').textContent = 'Save Video';
                 document.getElementById('add-video-modal').style.display = 'block';
-                document.body.classList.add('modal-open');
+                document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
             }
         }
 
@@ -1276,7 +1303,7 @@
             document.getElementById('video-modal-title').textContent = 'Add Video';
             document.getElementById('video-modal-submit-btn').textContent = 'Add Video';
             document.getElementById('add-video-modal').style.display = 'block';
-            document.body.classList.add('modal-open');
+            document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
 
         function addPage5Video() {
@@ -1324,7 +1351,7 @@
                 document.getElementById('video-modal-title').textContent = 'Edit Video';
                 document.getElementById('video-modal-submit-btn').textContent = 'Save Video';
                 document.getElementById('add-video-modal').style.display = 'block';
-                document.body.classList.add('modal-open');
+                document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
             }
         }
 
@@ -1368,12 +1395,12 @@
             document.getElementById('question-modal-title').textContent = 'Add Question';
             document.getElementById('question-modal-submit-btn').textContent = 'Add Question';
             document.getElementById('add-question-modal').style.display = 'block';
-            document.body.classList.add('modal-open');
+            document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
 
         function closeAddQuestionModal() {
             document.getElementById('add-question-modal').style.display = 'none';
-            document.body.classList.remove('modal-open');
+            document.body.classList.remove('modal-open'); document.documentElement.classList.remove('modal-open');
         }
 
         function addQuestion() {
@@ -1431,7 +1458,7 @@
                 document.getElementById('question-modal-title').textContent = 'Edit Question';
                 document.getElementById('question-modal-submit-btn').textContent = 'Save Question';
                 document.getElementById('add-question-modal').style.display = 'block';
-                document.body.classList.add('modal-open');
+                document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
             }
         }
 
@@ -1566,6 +1593,9 @@
             closeCreateWeekModal();
             renderWeeks();
 
+            // Hide the draft notice since we just saved it
+            document.getElementById('draft-week-notice').style.display = 'none';
+
             showNotification(`Week ${newWeek.id}: ${title} created successfully!`, 'success');
         }
 
@@ -1623,7 +1653,7 @@
             }
 
             document.getElementById('create-week-modal').style.display = 'block';
-            document.body.classList.add('modal-open');
+            document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
 
         window.onload = function() {
@@ -1751,6 +1781,14 @@
             };
             dataService.saveDraft('createWeek', weekDraft);
             console.log('Create week draft auto-saved');
+        }
+
+        function saveWeekAsDraft() {
+            // Manually save current form state as draft
+            autoSaveCreateWeekDraft();
+            showNotification('Week saved as draft! You can resume editing later.', 'success');
+            closeCreateWeekModal();
+            checkForDraft(); // Show the draft notice
         }
 
         function loadCreateWeekDraft() {

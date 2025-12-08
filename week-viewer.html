@@ -91,6 +91,12 @@
             return null;
         }
 
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
         // Format text with basic markdown support (line breaks, bullet points)
         function formatText(text) {
             if (!text) return '';
@@ -134,14 +140,16 @@
         }
 
         function setView(view) {
+            if (view === 'student') {
+                dataService.setCurrentView('student');
+                window.location.href = 'index.html';
+                return;
+            }
+            // Admin view stays on current page
             currentView = view;
             const buttons = document.querySelectorAll('.view-toggle button');
             buttons.forEach(btn => btn.classList.remove('active'));
-            if (view === 'student') {
-                buttons[0].classList.add('active');
-            } else {
-                buttons[1].classList.add('active');
-            }
+            buttons[1].classList.add('active');
             dataService.setCurrentView(view);
             renderPage();
         }
@@ -224,13 +232,23 @@
         function renderDiscussionPage(pageData, container) {
             const questions = pageData.questions || [];
             const pageIndex = currentPage - 1;
-            const isAdminPreview = currentView === 'admin';
+
+            // Determine read-only based on module status, not view type
+            // Read-only when: draft (preview mode) or archived
+            // Full read/write when: launched (both admin and students can participate)
+            const module = dataService.getModule(currentModuleId);
+            const moduleStatus = module ? module.status : 'draft';
+            const isReadOnly = moduleStatus === 'draft' || moduleStatus === 'archived';
+
             let html = '<div class="card" style="width: 100%;">';
 
-            // Show admin preview notice
-            if (isAdminPreview) {
+            // Show read-only notice for draft (preview) or archived modules
+            if (isReadOnly) {
+                const noticeText = moduleStatus === 'archived'
+                    ? '<strong>Archived Module:</strong> This module is archived. Discussion posts and replies are disabled.'
+                    : '<strong>Preview Mode:</strong> This is a read-only preview. Discussion posts and replies are disabled.';
                 html += `<div style="background: #fff3cd; border: 1px solid #ffc107; padding: 0.75rem; margin-bottom: 1rem; border-radius: 4px; font-size: 0.9rem;">
-                    <strong>Preview Mode:</strong> This is a read-only preview. Discussion posts and replies are disabled.
+                    ${noticeText}
                 </div>`;
             }
 
@@ -244,8 +262,8 @@
                     // Show discussion thread for everyone (isolated per module)
                     const posts = dataService.getDiscussionPosts(currentModuleId, currentWeek.id, pageIndex, index);
 
-                    // Only show input form for students, not admin preview
-                    if (!isAdminPreview) {
+                    // Show input form when module is launched (not read-only)
+                    if (!isReadOnly) {
                         html += `
                             <div class="discussion-section">
                                 <div class="discussion-form" style="margin-bottom: 2rem;">
@@ -260,7 +278,7 @@
                             </div>
                         `;
                     } else {
-                        // Admin preview - show threads but no input
+                        // Read-only mode (draft preview or archived) - show threads but no input
                         html += `
                             <div class="discussion-section">
                                 <div id="discussion-thread-${index}">
@@ -293,19 +311,32 @@
                 const postDate = new Date(post.createdAt).toLocaleDateString();
                 const postTime = new Date(post.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
+                const editedText = post.editedAt ? ' <span style="font-size: 0.75rem; color: #6c757d;">(edited)</span>' : '';
                 html += `
                     <div style="background: #f8f9fa; border-left: 3px solid var(--primary-color); padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <strong style="color: var(--primary-color);">${post.author || 'Anonymous'}</strong>
+                            <strong style="color: var(--primary-color);">${escapeHtml(post.author) || 'Anonymous'}${editedText}</strong>
                             <span style="color: #6c757d; font-size: 0.85rem;">${postDate} at ${postTime}</span>
                         </div>
-                        <p style="margin: 0.5rem 0; white-space: pre-wrap;">${post.content}</p>
+                        <div id="post-content-${post.id}">
+                            <p style="margin: 0.5rem 0; white-space: pre-wrap;">${escapeHtml(post.content)}</p>
+                        </div>
+                        <div id="post-edit-form-${post.id}" style="display: none; margin-top: 0.5rem;">
+                            <textarea id="post-edit-text-${post.id}" style="width: 100%; min-height: 80px; margin-bottom: 0.5rem;">${escapeHtml(post.content)}</textarea>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-primary" onclick="savePostEdit(${pageIndex}, ${questionIndex}, ${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Save</button>
+                                <button class="btn btn-secondary" onclick="cancelPostEdit(${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Cancel</button>
+                            </div>
+                        </div>
                 `;
 
-                // Only show reply button and form for non-read-only mode
+                // Only show reply and edit buttons for non-read-only mode
                 if (!readOnly) {
                     html += `
-                        <button class="btn btn-secondary" onclick="toggleReplyForm(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem; margin-top: 0.5rem;">Reply</button>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <button class="btn btn-secondary" onclick="toggleReplyForm(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Reply</button>
+                            <button class="btn btn-secondary" onclick="editPost(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Edit</button>
+                        </div>
 
                         <div id="reply-form-${post.id}" style="display: none; margin-top: 1rem; padding-left: 1rem; border-left: 2px solid #dee2e6;">
                             <textarea id="reply-text-${post.id}" placeholder="Write your reply..." style="width: 100%; min-height: 80px; margin-bottom: 0.5rem;"></textarea>
@@ -323,13 +354,24 @@
                     post.replies.forEach(reply => {
                         const replyDate = new Date(reply.createdAt).toLocaleDateString();
                         const replyTime = new Date(reply.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        const replyEditedText = reply.editedAt ? ' <span style="font-size: 0.7rem; color: #6c757d;">(edited)</span>' : '';
                         html += `
                             <div style="background: white; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 4px;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <strong style="color: var(--teal); font-size: 0.9rem;">${reply.author || 'Anonymous'}</strong>
+                                    <strong style="color: var(--teal); font-size: 0.9rem;">${escapeHtml(reply.author) || 'Anonymous'}${replyEditedText}</strong>
                                     <span style="color: #6c757d; font-size: 0.8rem;">${replyDate} at ${replyTime}</span>
                                 </div>
-                                <p style="margin: 0; font-size: 0.9rem; white-space: pre-wrap;">${reply.content}</p>
+                                <div id="reply-content-${reply.id}">
+                                    <p style="margin: 0; font-size: 0.9rem; white-space: pre-wrap;">${escapeHtml(reply.content)}</p>
+                                </div>
+                                <div id="reply-edit-form-${reply.id}" style="display: none; margin-top: 0.5rem;">
+                                    <textarea id="reply-edit-text-${reply.id}" style="width: 100%; min-height: 60px; margin-bottom: 0.5rem; font-size: 0.9rem;">${escapeHtml(reply.content)}</textarea>
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button class="btn btn-primary" onclick="saveReplyEdit(${pageIndex}, ${questionIndex}, ${post.id}, ${reply.id})" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Save</button>
+                                        <button class="btn btn-secondary" onclick="cancelReplyEdit(${reply.id})" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Cancel</button>
+                                    </div>
+                                </div>
+                                ${!readOnly ? `<button class="btn btn-secondary" onclick="editReply(${reply.id})" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; margin-top: 0.5rem;">Edit</button>` : ''}
                             </div>
                         `;
                     });
@@ -396,15 +438,31 @@
                     html += '<div class="resource-list" style="margin-top: 1.5rem;">';
                     resources.forEach(resource => {
                         const hasUrl = resource.url && resource.url.trim();
-                        html += `
-                            <div class="resource-item" style="position: relative;">
-                                ${hasUrl ? `<a href="${resource.url}" target="_blank" style="position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Access Resource →</a>` : ''}
-                                <div style="padding-right: ${hasUrl ? '140px' : '0'};">
-                                    <strong>${resource.title}</strong>
-                                    ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
+                        if (hasUrl && currentView === 'student') {
+                            // In student view, make entire box clickable
+                            html += `
+                                <a href="${resource.url}" target="_blank" style="text-decoration: none; color: inherit; display: block;">
+                                    <div class="resource-item" style="position: relative; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                        <div style="padding-right: 140px;">
+                                            <strong>${resource.title}</strong>
+                                            ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
+                                        </div>
+                                        <span style="position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary-color); font-size: 0.9rem;">Access Resource →</span>
+                                    </div>
+                                </a>
+                            `;
+                        } else {
+                            // In admin view or no URL, keep original style
+                            html += `
+                                <div class="resource-item" style="position: relative;">
+                                    ${hasUrl ? `<a href="${resource.url}" target="_blank" style="position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Access Resource →</a>` : ''}
+                                    <div style="padding-right: ${hasUrl ? '140px' : '0'};">
+                                        <strong>${resource.title}</strong>
+                                        ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
+                                    </div>
                                 </div>
-                            </div>
-                        `;
+                            `;
+                        }
                     });
                     html += '</div>';
                 }
@@ -498,6 +556,54 @@
             renderPage();
         }
 
+        function editPost(postId) {
+            document.getElementById(`post-content-${postId}`).style.display = 'none';
+            document.getElementById(`post-edit-form-${postId}`).style.display = 'block';
+        }
+
+        function cancelPostEdit(postId) {
+            document.getElementById(`post-content-${postId}`).style.display = 'block';
+            document.getElementById(`post-edit-form-${postId}`).style.display = 'none';
+        }
+
+        function savePostEdit(pageIndex, questionIndex, postId) {
+            const textarea = document.getElementById(`post-edit-text-${postId}`);
+            const content = textarea.value.trim();
+
+            if (!content) {
+                alert('Post content cannot be empty.');
+                return;
+            }
+
+            dataService.editDiscussionPost(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, content);
+            alert('Post updated successfully!');
+            renderPage();
+        }
+
+        function editReply(replyId) {
+            document.getElementById(`reply-content-${replyId}`).style.display = 'none';
+            document.getElementById(`reply-edit-form-${replyId}`).style.display = 'block';
+        }
+
+        function cancelReplyEdit(replyId) {
+            document.getElementById(`reply-content-${replyId}`).style.display = 'block';
+            document.getElementById(`reply-edit-form-${replyId}`).style.display = 'none';
+        }
+
+        function saveReplyEdit(pageIndex, questionIndex, postId, replyId) {
+            const textarea = document.getElementById(`reply-edit-text-${replyId}`);
+            const content = textarea.value.trim();
+
+            if (!content) {
+                alert('Reply content cannot be empty.');
+                return;
+            }
+
+            dataService.editReply(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, replyId, content);
+            alert('Reply updated successfully!');
+            renderPage();
+        }
+
         function previousPage() {
             if (currentPage > 1) {
                 currentPage--;
@@ -520,12 +626,8 @@
             } else {
                 // Finish - mark week as completed for students, just navigate for admins
                 const currentView = dataService.getCurrentView();
-                if (currentView === 'student') {
-                    dataService.completeWeek(currentWeek.id);
-                    // Clear saved position since week is complete
-                    if (currentModuleId) {
-                        dataService.clearPagePosition(currentModuleId, currentWeek.id);
-                    }
+                if (currentView === 'student' && currentModuleId) {
+                    dataService.completeWeek(currentModuleId, currentWeek.id);
                     alert('Week completed!');
                 }
                 window.location.href = 'module-overview.html';
