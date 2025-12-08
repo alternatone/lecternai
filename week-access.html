@@ -57,8 +57,8 @@
                 <h1>LecternAI</h1>
             </div>
             <div class="view-toggle">
-                <button onclick="setView('student')">Student View</button>
-                <button class="active" onclick="setView('admin')">Admin View</button>
+                <button onclick="setView('student', true)">Student View</button>
+                <button class="active" onclick="setView('admin', true)">Admin View</button>
             </div>
         </div>
     </header>
@@ -99,10 +99,18 @@
         let currentPage = 1;
         const totalPages = 5;
 
-        function setView(view) {
-            if (view === 'student') {
+        function setView(view, fromToggle = false) {
+            // Only redirect to index.html if explicitly toggling to student view (not on page load)
+            if (view === 'student' && fromToggle) {
                 dataService.setCurrentView('student');
                 location.href = 'index.html';
+                return;
+            }
+
+            if (view === 'student') {
+                dataService.setCurrentView('student');
+            } else {
+                dataService.setCurrentView('admin');
             }
         }
 

@@ -17,8 +17,8 @@
                 <h1>LecternAI</h1>
             </div>
             <div class="view-toggle">
-                <button onclick="setView('student')">Student View</button>
-                <button class="active" onclick="setView('admin')">Admin View</button>
+                <button onclick="setView('student', true)">Student View</button>
+                <button class="active" onclick="setView('admin', true)">Admin View</button>
             </div>
         </div>
     </header>
@@ -152,17 +152,23 @@
     <img src="brand-assets/aquinas-seal.svg" alt="" class="decorative-cross" style="width: 20rem; height: 20rem; opacity: 0.05;">
 
     <script>
-        function setView(view) {
+        function setView(view, fromToggle = false) {
+            // Only redirect to index.html if explicitly toggling to student view (not on page load)
+            if (view === 'student' && fromToggle) {
+                dataService.setCurrentView('student');
+                window.location.href = 'index.html';
+                return;
+            }
+
             const buttons = document.querySelectorAll('.view-toggle button');
             buttons.forEach(btn => btn.classList.remove('active'));
 
             if (view === 'student') {
                 buttons[0].classList.add('active');
                 dataService.setCurrentView('student');
-                window.location.href = 'index.html';
             } else {
                 buttons[1].classList.add('active');
-                dataService.setCurrentView('teacher');
+                dataService.setCurrentView('admin');
             }
         }
 
@@ -176,10 +182,12 @@
         }
 
         window.onload = function() {
-            const savedView = dataService.getCurrentView() || 'student';
-            if (savedView === 'student') {
-                window.location.href = 'index.html';
+            const savedView = dataService.getCurrentView() || 'admin';
+            // Migrate old 'teacher' value to 'admin'
+            if (savedView === 'teacher') {
+                dataService.setCurrentView('admin');
             }
+            setView(savedView === 'student' ? 'student' : 'admin');
         };
     </script>
 </body>
