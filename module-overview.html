@@ -136,8 +136,9 @@
         <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
             <a href="index.html" class="btn btn-secondary" style="line-height: 1.5;">← Back to Modules</a>
             <div id="admin-action-btns" style="display: none; gap: 1rem;">
-                <button class="btn btn-primary" style="line-height: 1.5; background: var(--teal);" onclick="launchModule()">Launch Module</button>
-                <button class="btn btn-primary" style="line-height: 1.5;" onclick="saveModuleProgress()">Save Template</button>
+                <button id="update-from-template-btn" class="btn btn-secondary" style="line-height: 1.5; display: none;" onclick="updateFromTemplate()">Update Active Module</button>
+                <button id="launch-module-btn" class="btn btn-primary" style="line-height: 1.5; background: var(--teal);" onclick="launchModule()">Launch Module</button>
+                <button id="save-template-btn" class="btn btn-primary" style="line-height: 1.5;" onclick="saveModuleProgress()">Save Template</button>
             </div>
         </div>
     </div>
@@ -510,6 +511,29 @@
                 document.getElementById('edit-description-btn').style.display = 'inline-block';
                 document.getElementById('create-week-btn').style.display = 'inline-block';
                 document.getElementById('admin-action-btns').style.display = 'flex';
+
+                // Show/hide buttons based on module status
+                const currentModuleId = dataService.getCurrentModuleId();
+                const currentModule = currentModuleId ? dataService.getModule(currentModuleId) : null;
+
+                if (currentModule && currentModule.status === 'launched') {
+                    // Launched module: show Update button (if template exists), hide Launch/Save buttons
+                    document.getElementById('launch-module-btn').style.display = 'none';
+                    document.getElementById('save-template-btn').style.display = 'none';
+
+                    // Show Update button only if template still exists
+                    if (currentModule.templateId && dataService.getModule(currentModule.templateId)) {
+                        document.getElementById('update-from-template-btn').style.display = 'inline-block';
+                    } else {
+                        document.getElementById('update-from-template-btn').style.display = 'none';
+                    }
+                } else {
+                    // Draft/template module: show Launch/Save buttons, hide Update button
+                    document.getElementById('launch-module-btn').style.display = 'inline-block';
+                    document.getElementById('save-template-btn').style.display = 'inline-block';
+                    document.getElementById('update-from-template-btn').style.display = 'none';
+                }
+
                 checkForDraft();
             }
 
@@ -1899,6 +1923,52 @@
                 }, 1500);
             } else {
                 showNotification(result.message || 'Failed to launch module', 'error');
+            }
+        }
+
+        function updateFromTemplate() {
+            const currentModuleId = dataService.getCurrentModuleId();
+
+            if (!currentModuleId) {
+                showNotification('No module selected', 'error');
+                return;
+            }
+
+            const currentModule = dataService.getModule(currentModuleId);
+            if (!currentModule || currentModule.status !== 'launched') {
+                showNotification('This feature is only available for launched modules', 'error');
+                return;
+            }
+
+            if (!currentModule.templateId) {
+                showNotification('This module has no linked template', 'error');
+                return;
+            }
+
+            // Check if template still exists
+            const template = dataService.getModule(currentModule.templateId);
+            if (!template) {
+                showNotification('Source template no longer exists', 'error');
+                return;
+            }
+
+            // Confirm sync
+            if (!confirm('Update this module from its template?\n\nThis will sync all content (module info, weeks, resources) from the template.\n\nStudent discussions and progress will be preserved.')) {
+                return;
+            }
+
+            // Sync from template
+            const result = dataService.syncFromTemplate(currentModuleId);
+
+            if (result.success) {
+                showNotification('Module updated from template successfully!', 'success');
+                // Reload the page to show updated content
+                loadWeeks();
+                loadModuleInfo();
+                displayZoomInfo();
+                renderWeeks();
+            } else {
+                showNotification(result.message || 'Failed to update from template', 'error');
             }
         }
 

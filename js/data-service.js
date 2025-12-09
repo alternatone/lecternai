@@ -401,6 +401,84 @@ class DataService {
     }
 
     /**
+     * Sync an active (launched) module from its source template
+     * Preserves: student discussions, progress, completion status
+     * Updates: module info, week content, zoom info
+     */
+    syncFromTemplate(activeModuleId) {
+        try {
+            const activeModule = this.getModule(activeModuleId);
+            if (!activeModule) {
+                return this.error('Active module not found', 'NOT_FOUND');
+            }
+
+            if (activeModule.status !== 'launched') {
+                return this.error('Can only sync launched modules', 'INVALID_STATUS');
+            }
+
+            if (!activeModule.templateId) {
+                return this.error('Module has no linked template', 'NO_TEMPLATE');
+            }
+
+            const template = this.getModule(activeModule.templateId);
+            if (!template) {
+                return this.error('Source template no longer exists', 'TEMPLATE_NOT_FOUND');
+            }
+
+            // Update module-level fields (preserve id, status, templateId, launchedAt, createdAt)
+            const modules = this.getModules();
+            const moduleIndex = modules.findIndex(m => m.id === parseInt(activeModuleId));
+
+            modules[moduleIndex] = {
+                ...modules[moduleIndex],
+                title: template.title,
+                description: template.description,
+                instructor: template.instructor,
+                duration: template.duration,
+                participation: template.participation,
+                timeExpectations: template.timeExpectations,
+                updatedAt: new Date().toISOString()
+            };
+            this.set('modules', modules);
+
+            // Sync weeks - preserve discussions array on each week
+            const templateWeeks = this.getWeeks(activeModule.templateId);
+            const activeWeeks = this.getWeeks(activeModuleId);
+
+            const syncedWeeks = templateWeeks.map((templateWeek, index) => {
+                // Find matching active week by index to preserve its discussions
+                const existingActiveWeek = activeWeeks[index];
+                return {
+                    ...templateWeek,
+                    id: index + 1,
+                    moduleId: parseInt(activeModuleId),
+                    // Preserve discussions from active week if it exists
+                    discussions: existingActiveWeek ? existingActiveWeek.discussions || [] : []
+                };
+            });
+
+            // If active module had more weeks than template, keep them
+            if (activeWeeks.length > templateWeeks.length) {
+                for (let i = templateWeeks.length; i < activeWeeks.length; i++) {
+                    syncedWeeks.push(activeWeeks[i]);
+                }
+            }
+
+            this.set(`module:${activeModuleId}:weeks`, syncedWeeks);
+
+            // Sync zoom info
+            const templateZoom = this.getZoomInfo(activeModule.templateId);
+            if (templateZoom && Object.keys(templateZoom).length > 0) {
+                this.set(`module:${activeModuleId}:zoom`, templateZoom);
+            }
+
+            return this.success(modules[moduleIndex], 'Module synced from template successfully');
+        } catch (err) {
+            return this.error('Failed to sync from template: ' + err.message, 'SYNC_ERROR');
+        }
+    }
+
+    /**
      * Get visible weeks for a student (based on unlock dates)
      */
     getVisibleWeeks(moduleId) {
