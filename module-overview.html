@@ -567,7 +567,8 @@
                 // Check progress using DataService (dynamic based on week ID)
                 const pagePosition = dataService.getPagePosition(currentModuleId, week.id);
                 const isComplete = dataService.isWeekCompleted(currentModuleId, week.id);
-                const hasProgress = pagePosition && pagePosition.page && pagePosition.page > 1;
+                // Any saved page position means the student has started the week
+                const hasProgress = pagePosition && pagePosition.page;
 
                 weekAction.style.display = 'flex';
                 weekAction.style.alignItems = 'center';

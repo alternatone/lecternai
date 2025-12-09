@@ -202,7 +202,9 @@
         }
 
         function renderPage() {
-            if (!currentWeek) return;
+            if (!currentWeek) {
+                return;
+            }
 
             const pageData = currentWeek.pages[currentPage - 1];
             if (!pageData) {
@@ -268,9 +270,7 @@
                     `;
 
                     // Show discussion thread for everyone (isolated per module)
-                    console.log('Discussion Debug:', { currentModuleId, weekId: currentWeek.id, pageIndex, questionIndex: index, currentView });
                     const posts = dataService.getDiscussionPosts(currentModuleId, currentWeek.id, pageIndex, index);
-                    console.log('Posts fetched:', posts.length, posts);
 
                     // Show input form when module is launched (not read-only)
                     if (!isReadOnly) {
@@ -521,7 +521,6 @@
 
             // Add discussion post using DataService (isolated per module)
             const pageIndex = currentPage - 1; // Convert to 0-based index
-            console.log('Posting discussion:', { currentModuleId, weekId: currentWeek.id, pageIndex, questionIndex, currentView });
             dataService.addDiscussionPost(currentModuleId, currentWeek.id, pageIndex, questionIndex, {
                 author: author,
                 content: content

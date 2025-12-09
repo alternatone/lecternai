@@ -143,8 +143,8 @@
         }
 
         function accessWeek(weekId) {
-            // Navigate to week access view with discussion capability
-            location.href = `week-access.html?week=${weekId}&page=1`;
+            // Navigate to week viewer (same page for both student and admin)
+            location.href = `week-viewer.html?week=${weekId}&page=1`;
         }
 
         function showNotification(message, type = 'info') {
