@@ -63,6 +63,7 @@
         let currentWeek = null;
         let currentPage = 1;
         let currentModuleId = null;
+        let isParticipantMode = false;
         let totalPages = 6; // Now 6 pages with Zoom Prep
 
         // Convert video URLs to embed URLs
@@ -450,31 +451,15 @@
                     html += '<div class="resource-list" style="margin-top: 1.5rem;">';
                     resources.forEach(resource => {
                         const hasUrl = resource.url && resource.url.trim();
-                        if (hasUrl && currentView === 'student') {
-                            // In student view, make entire box clickable
-                            html += `
-                                <a href="${resource.url}" target="_blank" style="text-decoration: none; color: inherit; display: block;">
-                                    <div class="resource-item" style="position: relative; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                                        <div style="padding-right: 140px;">
-                                            <strong>${resource.title}</strong>
-                                            ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
-                                        </div>
-                                        <span style="position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary-color); font-size: 0.9rem;">Access Resource →</span>
-                                    </div>
-                                </a>
-                            `;
-                        } else {
-                            // In admin view or no URL, keep original style
-                            html += `
-                                <div class="resource-item" style="position: relative;">
-                                    ${hasUrl ? `<a href="${resource.url}" target="_blank" style="position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Access Resource →</a>` : ''}
-                                    <div style="padding-right: ${hasUrl ? '140px' : '0'};">
-                                        <strong>${resource.title}</strong>
-                                        ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
-                                    </div>
+                        html += `
+                            <div class="resource-item" style="position: relative;">
+                                <div style="padding-right: ${hasUrl ? '140px' : '0'};">
+                                    <strong>${resource.title}</strong>
+                                    ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
                                 </div>
-                            `;
-                        }
+                                ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn btn-secondary" style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">View Resource</a>` : ''}
+                            </div>
+                        `;
                     });
                     html += '</div>';
                 }
@@ -684,12 +669,23 @@
         }
 
         window.onload = async function() {
+            // Check for participant mode
+            const urlParams = new URLSearchParams(window.location.search);
+            isParticipantMode = urlParams.get('participant') === 'true';
+
             let savedView = dataService.getCurrentView() || 'student';
             // Migrate old 'teacher' value to 'admin'
             if (savedView === 'teacher') {
                 savedView = 'admin';
                 dataService.setCurrentView('admin');
             }
+
+            // In participant mode, force student view
+            if (isParticipantMode) {
+                savedView = 'student';
+                showParticipantModeBanner();
+            }
+
             await setView(savedView);
             if (await loadWeekData()) {
                 await renderPage();
@@ -698,12 +694,35 @@
             }
         };
 
+        function showParticipantModeBanner() {
+            const banner = document.createElement('div');
+            banner.id = 'participant-mode-banner';
+            banner.style.cssText = 'background: var(--teal); color: white; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;';
+            banner.innerHTML = `
+                <span><strong>Participant Mode</strong> - You are viewing this module as a participant</span>
+                <button class="btn" style="background: white; color: var(--teal); padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="exitParticipantMode()">Exit to Admin View</button>
+            `;
+            document.body.insertBefore(banner, document.body.firstChild);
+
+            // Hide view toggle in participant mode
+            const viewToggle = document.querySelector('.view-toggle');
+            if (viewToggle) {
+                viewToggle.style.display = 'none';
+            }
+        }
+
+        function exitParticipantMode() {
+            // Go back to module overview in admin view
+            window.location.href = 'module-overview.html';
+        }
+
         // Save progress when page is closed/navigated away
         window.addEventListener('beforeunload', saveProgressOnExit);
         window.addEventListener('pagehide', saveProgressOnExit);
 
         // Export functions to window for onclick handlers
         window.setView = setView;
+        window.exitParticipantMode = exitParticipantMode;
         window.previousPage = previousPage;
         window.nextPage = nextPage;
         window.saveProgressAndExit = saveProgressAndExit;

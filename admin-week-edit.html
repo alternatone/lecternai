@@ -329,7 +329,7 @@
                 item.style.position = 'relative';
                 const hasUrl = resource.url && resource.url.trim();
                 item.innerHTML = `
-                    ${hasUrl ? `<a href="${resource.url}" target="_blank" style="position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Access Resource →</a>` : ''}
+                    ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn btn-secondary" style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">View Resource</a>` : ''}
                     <div style="padding-right: ${hasUrl ? '140px' : '0'};">
                         <strong>${resource.title}</strong>
                         ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
@@ -398,7 +398,7 @@
                 item.style.position = 'relative';
                 const hasUrl = resource.url && resource.url.trim();
                 item.innerHTML = `
-                    ${hasUrl ? `<a href="${resource.url}" target="_blank" style="position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Access Resource →</a>` : ''}
+                    ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn btn-secondary" style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">View Resource</a>` : ''}
                     <div style="padding-right: ${hasUrl ? '140px' : '0'};">
                         <strong>${resource.title}</strong>
                         ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}

@@ -431,6 +431,13 @@
         let page1Questions = [];
         let reflectionQuestions = [];
 
+        // Edit mode tracking
+        let editingWeekId = null;
+        let isEditMode = false;
+
+        // Participant mode - admin experiencing module as student
+        let isParticipantMode = false;
+
         let currentView = 'student';
 
         async function setView(view, fromToggle = false) {
@@ -547,26 +554,29 @@
                 weekAction.style.alignItems = 'center';
                 weekAction.style.gap = '1rem';
 
-                if (currentView === 'admin') {
+                // Build week viewer URL (include participant param if in participant mode)
+                const weekViewerUrl = `week-viewer.html?week=${week.id}&page=1${isParticipantMode ? '&participant=true' : ''}`;
+
+                if (currentView === 'admin' && !isParticipantMode) {
                     // Admin view: Show Preview Week, Edit Week, and Delete Week buttons for all weeks
                     weekAction.innerHTML = `
                         <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Preview Week</button>
-                        <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="location.href='admin-week-edit.html?week=${week.id}'">Edit Week</button>
+                        <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="openEditWeekModal(${week.id})">Edit Week</button>
                         <button class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteWeek(${week.id})">Delete</button>
                     `;
                 } else {
-                    // Student view: Show status and View Week button
+                    // Student view (or participant mode): Show status and View Week button
                     if (week.status === 'complete' || isComplete) {
                         weekAction.innerHTML = `
                             <button class="status-badge status-complete" style="cursor: default;">Completed</button>
-                            <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
+                            <button class="btn btn-secondary" onclick="location.href='${weekViewerUrl}'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
                         `;
                     } else {
                         const statusText = hasProgress && !isComplete ? 'In Progress' : 'Not Started';
                         const statusClass = hasProgress && !isComplete ? 'status-inprogress' : 'status-incomplete';
                         weekAction.innerHTML = `
                             <button class="status-badge ${statusClass}" style="cursor: default;">${statusText}</button>
-                            <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
+                            <button class="btn btn-secondary" onclick="location.href='${weekViewerUrl}'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
                         `;
                     }
                 }
@@ -839,6 +849,10 @@
         }
 
         function openCreateWeekModal() {
+            // Reset edit mode
+            isEditMode = false;
+            editingWeekId = null;
+
             // Reset arrays
             weeklyReadings = [];
             furtherStudy = [];
@@ -850,7 +864,9 @@
             // Clear form fields
             document.getElementById('week-title-input').value = '';
             document.getElementById('week-description-input').value = '';
+            document.getElementById('week-unlock-date-input').value = '';
             document.getElementById('page2-intro-text').value = '';
+            document.getElementById('zoom-prep-text').value = '';
 
             renderWeeklyReadings();
             renderFurtherStudy();
@@ -859,6 +875,11 @@
             renderPage1Questions();
             renderReflectionQuestions();
 
+            // Update modal title and button text for create mode
+            document.querySelector('#create-week-modal h2').textContent = 'Create New Week';
+            const saveBtn = document.querySelector('#create-week-modal .btn-primary');
+            saveBtn.textContent = 'Create Week';
+
             document.getElementById('create-week-modal').style.display = 'block';
             document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
@@ -866,6 +887,9 @@
         function closeCreateWeekModal() {
             document.getElementById('create-week-modal').style.display = 'none';
             document.body.classList.remove('modal-open'); document.documentElement.classList.remove('modal-open');
+            // Reset edit mode
+            isEditMode = false;
+            editingWeekId = null;
             // Clear form
             document.getElementById('week-title-input').value = '';
             document.getElementById('week-description-input').value = '';
@@ -878,6 +902,69 @@
             page5Videos = [];
             page1Questions = [];
             reflectionQuestions = [];
+        }
+
+        async function openEditWeekModal(weekId) {
+            // Set edit mode
+            isEditMode = true;
+            editingWeekId = weekId;
+
+            // Find the week data
+            const week = weeks.find(w => w.id === weekId);
+            if (!week) {
+                showNotification('Week not found', 'error');
+                return;
+            }
+
+            // Populate form fields
+            document.getElementById('week-title-input').value = week.title || '';
+            document.getElementById('week-description-input').value = week.description || '';
+            document.getElementById('week-unlock-date-input').value = week.unlockDate || week.unlock_date || '';
+
+            // Extract page data
+            const pages = week.pages || [];
+
+            // Page 1: Opening Reflection Questions
+            const page1 = pages.find(p => p.title === 'Opening Reflection Question') || pages[0];
+            page1Questions = page1?.questions || [];
+
+            // Page 2: Introduction to the Week
+            const page2 = pages.find(p => p.title === 'Introduction to the Week') || pages[1];
+            document.getElementById('page2-intro-text').value = page2?.content || '';
+            videos = page2?.videos || [];
+
+            // Page 3: Weekly Reading
+            const page3 = pages.find(p => p.title === 'Weekly Reading') || pages[2];
+            weeklyReadings = page3?.resources || [];
+
+            // Page 4: Preparation for Zoom Session
+            const page4 = pages.find(p => p.title === 'Preparation for Zoom Session') || pages[3];
+            document.getElementById('zoom-prep-text').value = page4?.content || '';
+
+            // Page 5: Post-Zoom Reflection
+            const page5 = pages.find(p => p.title === 'Post-Zoom Reflection') || pages[4];
+            reflectionQuestions = page5?.questions || [];
+
+            // Page 6: Further Study
+            const page6 = pages.find(p => p.title === 'Further Study') || pages[5];
+            furtherStudy = page6?.resources || [];
+            page5Videos = page6?.videos || [];
+
+            // Render all lists
+            renderWeeklyReadings();
+            renderFurtherStudy();
+            renderVideos();
+            renderPage5Videos();
+            renderPage1Questions();
+            renderReflectionQuestions();
+
+            // Update modal title and button text for edit mode
+            document.querySelector('#create-week-modal h2').textContent = 'Edit Week';
+            const saveBtn = document.querySelector('#create-week-modal .btn-primary');
+            saveBtn.textContent = 'Save Changes';
+
+            document.getElementById('create-week-modal').style.display = 'block';
+            document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
 
         function renderWeeklyReadings() {
@@ -1479,7 +1566,7 @@
             // Show loading state
             const saveBtn = document.querySelector('#create-week-modal .btn-primary');
             const originalText = saveBtn.textContent;
-            saveBtn.textContent = 'Creating...';
+            saveBtn.textContent = isEditMode ? 'Saving...' : 'Creating...';
             saveBtn.disabled = true;
 
             // Create page data array with fixed 6-page structure
@@ -1518,28 +1605,52 @@
                 }
             ];
 
-            // Create new week object
-            const newWeekData = {
+            // Create week data object
+            const weekData = {
                 title: title,
                 description: description,
-                unlockDate: unlockDate, // Required field
-                status: weeks.length === 0 ? 'current' : 'locked',
+                unlockDate: unlockDate,
                 pages: pages
             };
 
             try {
-                // Save using DataService
-                const result = await dataService.createWeek(currentModuleId, newWeekData);
+                let result;
 
-                if (!result.success) {
-                    saveBtn.textContent = originalText;
-                    saveBtn.disabled = false;
-                    showNotification(result.message || 'Failed to create week', 'error');
-                    return;
+                if (isEditMode && editingWeekId) {
+                    // Update existing week
+                    result = await dataService.updateWeek(currentModuleId, editingWeekId, weekData);
+
+                    if (!result.success) {
+                        saveBtn.textContent = originalText;
+                        saveBtn.disabled = false;
+                        showNotification(result.message || 'Failed to update week', 'error');
+                        return;
+                    }
+
+                    // Update the week in our local array
+                    const weekIndex = weeks.findIndex(w => w.id === editingWeekId);
+                    if (weekIndex !== -1) {
+                        weeks[weekIndex] = { ...weeks[weekIndex], ...weekData };
+                    }
+
+                    showNotification(`Week "${title}" updated successfully!`, 'success');
+                } else {
+                    // Create new week
+                    weekData.status = weeks.length === 0 ? 'current' : 'locked';
+                    result = await dataService.createWeek(currentModuleId, weekData);
+
+                    if (!result.success) {
+                        saveBtn.textContent = originalText;
+                        saveBtn.disabled = false;
+                        showNotification(result.message || 'Failed to create week', 'error');
+                        return;
+                    }
+
+                    const newWeek = result.data;
+                    weeks.push(newWeek);
+
+                    showNotification(`Week "${title}" created successfully!`, 'success');
                 }
-
-                const newWeek = result.data;
-                weeks.push(newWeek);
 
                 // Clear the draft since we successfully saved
                 dataService.deleteDraft('createWeek');
@@ -1554,12 +1665,10 @@
 
                 // Hide the draft notice since we just saved it
                 document.getElementById('draft-week-notice').style.display = 'none';
-
-                showNotification(`Week ${newWeek.id}: ${title} created successfully!`, 'success');
             } catch (error) {
                 saveBtn.textContent = originalText;
                 saveBtn.disabled = false;
-                showNotification('Error creating week: ' + error.message, 'error');
+                showNotification('Error saving week: ' + error.message, 'error');
             }
         }
 
@@ -1621,18 +1730,52 @@
         }
 
         window.onload = async function() {
+            // Check for participant mode (admin viewing as student)
+            const urlParams = new URLSearchParams(window.location.search);
+            isParticipantMode = urlParams.get('participant') === 'true';
+
             let savedView = dataService.getCurrentView() || 'student';
             // Migrate old 'teacher' value to 'admin'
             if (savedView === 'teacher') {
                 savedView = 'admin';
                 dataService.setCurrentView('admin');
             }
+
+            // In participant mode, force student view
+            if (isParticipantMode) {
+                savedView = 'student';
+                // Show participant mode banner
+                showParticipantModeBanner();
+            }
+
             await loadWeeks();
             await setView(savedView);
             await loadModuleInfo();
             await displayZoomInfo();
             setupAutoSave();
         };
+
+        function showParticipantModeBanner() {
+            const banner = document.createElement('div');
+            banner.id = 'participant-mode-banner';
+            banner.style.cssText = 'background: var(--teal); color: white; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;';
+            banner.innerHTML = `
+                <span><strong>Participant Mode</strong> - You are viewing this module as a participant</span>
+                <button class="btn" style="background: white; color: var(--teal); padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="exitParticipantMode()">Exit to Admin View</button>
+            `;
+            document.body.insertBefore(banner, document.body.firstChild);
+
+            // Hide view toggle in participant mode
+            const viewToggle = document.querySelector('.view-toggle');
+            if (viewToggle) {
+                viewToggle.style.display = 'none';
+            }
+        }
+
+        function exitParticipantMode() {
+            // Remove participant param and reload as admin
+            window.location.href = 'module-overview.html';
+        }
 
         // Auto-save functionality to prevent data loss
         function setupAutoSave() {
@@ -1733,6 +1876,7 @@
             const weekDraft = {
                 title: document.getElementById('week-title-input').value,
                 description: document.getElementById('week-description-input').value,
+                unlockDate: document.getElementById('week-unlock-date-input').value,
                 page2IntroText: document.getElementById('page2-intro-text').value,
                 zoomPrepText: document.getElementById('zoom-prep-text').value,
                 weeklyReadings: [...weeklyReadings],
@@ -1761,6 +1905,7 @@
                 if (confirm('A draft was found. Would you like to restore it?')) {
                     document.getElementById('week-title-input').value = draft.title || '';
                     document.getElementById('week-description-input').value = draft.description || '';
+                    document.getElementById('week-unlock-date-input').value = draft.unlockDate || '';
                     document.getElementById('page2-intro-text').value = draft.page2IntroText || '';
                     document.getElementById('zoom-prep-text').value = draft.zoomPrepText || '';
                     weeklyReadings = draft.weeklyReadings || [];
@@ -1925,7 +2070,9 @@
 
         // Export functions to window for onclick handlers
         window.setView = setView;
+        window.exitParticipantMode = exitParticipantMode;
         window.openCreateWeekModal = openCreateWeekModal;
+        window.openEditWeekModal = openEditWeekModal;
         window.closeCreateWeekModal = closeCreateWeekModal;
         window.openEditDescriptionModal = openEditDescriptionModal;
         window.closeEditDescriptionModal = closeEditDescriptionModal;

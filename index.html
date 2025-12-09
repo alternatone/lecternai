@@ -456,19 +456,12 @@
                     </div>
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         <button class="btn btn-primary" style="background: var(--teal);" onclick="accessModule(${module.id})">Access Module</button>
-                        <button class="btn btn-secondary" onclick="editActiveModule(${module.id})">Edit Module</button>
                         <button class="btn btn-secondary" onclick="archiveModule(${module.id})">Archive</button>
                     </div>
                 </div>
             `;
 
             return moduleCard;
-        }
-
-        function editActiveModule(moduleId) {
-            // Set current module and navigate to module overview for editing
-            dataService.setCurrentModuleId(moduleId);
-            location.href = 'module-overview.html';
         }
 
         function createTemplateModuleCard(module) {
@@ -540,8 +533,8 @@
 
         function accessModule(moduleId) {
             dataService.setCurrentModuleId(moduleId);
-            // Navigate to module overview (handles all module types - draft, launched, archived)
-            location.href = 'module-overview.html';
+            // Navigate to module overview in participant mode (admin experiences module as student)
+            location.href = 'module-overview.html?participant=true';
         }
 
         async function archiveModule(moduleId) {
@@ -650,7 +643,6 @@
         window.closeCreateModuleModal = closeCreateModuleModal;
         window.saveModule = saveModule;
         window.accessModule = accessModule;
-        window.editActiveModule = editActiveModule;
         window.editModule = editModule;
         window.deleteModule = deleteModule;
         window.archiveModule = archiveModule;
