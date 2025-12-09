@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="styles.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
-    <script src="js/data-service.js"></script>
     <style>
         .modal {
             display: none;
@@ -293,7 +292,9 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { dataService } from './js/data-service-supabase.js';
+
         let weeklyReadings = [];
         let videos = [];
         let reflectionQuestions = [];
@@ -749,7 +750,7 @@
             }
         }
 
-        function saveWeek() {
+        async function saveWeek() {
             const weekNum = getWeekNumber();
             const currentModuleId = dataService.getCurrentModuleId();
 
@@ -758,7 +759,7 @@
                 return;
             }
 
-            const week = dataService.getWeek(currentModuleId, parseInt(weekNum));
+            const week = await dataService.getWeek(currentModuleId, parseInt(weekNum));
 
             if (!week) {
                 showNotification('Week not found. Please create the week first from the Module Overview page.', 'error');
@@ -833,7 +834,7 @@
                 pages: pages
             };
 
-            const result = dataService.updateWeek(currentModuleId, parseInt(weekNum), updates);
+            const result = await dataService.updateWeek(currentModuleId, parseInt(weekNum), updates);
 
             if (result.success) {
                 showNotification('Week content saved successfully!', 'success');
@@ -847,16 +848,14 @@
             }
         }
 
-        function previewAsStudent() {
+        async function previewAsStudent() {
             // First save current changes
-            saveWeek();
+            await saveWeek();
 
             // Load the saved week data to ensure preview shows saved content
             const weekNum = getWeekNumber();
-            const currentModuleId = localStorage.getItem('currentModuleId');
-            const storageKey = currentModuleId ? `module_${currentModuleId}_weeks` : 'moduleWeeks';
-            const weeks = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            const week = weeks.find(w => w.id === parseInt(weekNum));
+            const currentModuleId = dataService.getCurrentModuleId();
+            const week = currentModuleId ? await dataService.getWeek(currentModuleId, parseInt(weekNum)) : null;
 
             if (!week) {
                 alert('Unable to preview. Please save the week first.');
@@ -981,7 +980,7 @@
         }
 
         // Load week-specific content
-        function loadWeekContent() {
+        async function loadWeekContent() {
             const weekNum = getWeekNumber();
 
             // Update breadcrumb and title
@@ -993,7 +992,7 @@
 
             // Load existing week data using DataService
             const currentModuleId = dataService.getCurrentModuleId();
-            const week = currentModuleId ? dataService.getWeek(currentModuleId, parseInt(weekNum)) : null;
+            const week = currentModuleId ? await dataService.getWeek(currentModuleId, parseInt(weekNum)) : null;
 
             if (week) {
                 // Populate form fields with existing data
@@ -1059,7 +1058,7 @@
         }
 
         // Auto-save function - saves immediately on any change
-        function autoSave() {
+        async function autoSave() {
             const weekNum = getWeekNumber();
             const currentModuleId = dataService.getCurrentModuleId();
 
@@ -1067,7 +1066,7 @@
                 return;
             }
 
-            const week = dataService.getWeek(currentModuleId, parseInt(weekNum));
+            const week = await dataService.getWeek(currentModuleId, parseInt(weekNum));
             if (!week) {
                 return;
             }
@@ -1123,7 +1122,7 @@
                 pages: pages
             };
 
-            dataService.updateWeek(currentModuleId, parseInt(weekNum), updates);
+            await dataService.updateWeek(currentModuleId, parseInt(weekNum), updates);
 
             // Update auto-save indicator
             const indicator = document.getElementById('autosave-indicator');
@@ -1137,13 +1136,20 @@
             }
         }
 
+        // Debounced auto-save to avoid too many requests
+        let autoSaveTimeout = null;
+        function debouncedAutoSave() {
+            if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => autoSave(), 1000);
+        }
+
         // Setup auto-save listeners
         function setupAutoSave() {
             // Get all input/textarea elements
             const inputs = document.querySelectorAll('input, textarea, select');
             inputs.forEach(input => {
-                input.addEventListener('input', autoSave);
-                input.addEventListener('change', autoSave);
+                input.addEventListener('input', debouncedAutoSave);
+                input.addEventListener('change', debouncedAutoSave);
             });
 
             // Also trigger auto-save when arrays change (resources, videos, questions)
@@ -1156,14 +1162,43 @@
         }
 
         // Initialize
-        window.onload = function() {
-            loadWeekContent();
+        window.onload = async function() {
+            await loadWeekContent();
             renderWeeklyReadings();
             renderVideos();
             renderReflectionQuestions();
             renderFurtherStudy();
             setupAutoSave();
         };
+
+        // Export functions to window for onclick handlers
+        window.setView = setView;
+        window.openAddContentModal = openAddContentModal;
+        window.closeAddContentModal = closeAddContentModal;
+        window.addContent = addContent;
+        window.openAddResourceModal = openAddResourceModal;
+        window.closeAddResourceModal = closeAddResourceModal;
+        window.addResource = addResource;
+        window.openAddVideoModal = openAddVideoModal;
+        window.closeAddVideoModal = closeAddVideoModal;
+        window.addVideo = addVideo;
+        window.openAddStudyResourceModal = openAddStudyResourceModal;
+        window.openAddQuestionModal = openAddQuestionModal;
+        window.closeAddQuestionModal = closeAddQuestionModal;
+        window.addQuestion = addQuestion;
+        window.editResource = editResource;
+        window.closeEditResourceModal = closeEditResourceModal;
+        window.saveResourceEdit = saveResourceEdit;
+        window.deleteResource = deleteResource;
+        window.deleteVideo = deleteVideo;
+        window.editVideo = editVideo;
+        window.deleteQuestion = deleteQuestion;
+        window.editQuestion = editQuestion;
+        window.saveWeek = saveWeek;
+        window.previewAsStudent = previewAsStudent;
+        window.returnToEdit = returnToEdit;
+        window.detectContentType = detectContentType;
+        window.dataService = dataService;
     </script>
 </body>
 </html>

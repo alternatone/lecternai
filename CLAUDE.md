@@ -4,17 +4,18 @@
 LecternAI is a seminary learning platform for the Aquinas Institute. It provides module-based learning with weekly content, video integration, discussions, and progress tracking.
 
 ## Tech Stack
-- **Frontend**: Vanilla HTML, CSS, JavaScript (no build tools)
-- **Storage**: localStorage (no backend database)
+- **Frontend**: Vanilla HTML, CSS, JavaScript (ES Modules, no build tools)
+- **Backend**: Supabase (PostgreSQL database)
 - **Server**: Python HTTP server for local development (`python3 -m http.server 8000`)
 
 ## Key Files
 
 ### Core Pages
 - `index.html` - Homepage with module listing (student/admin views)
-- `module-overview.html` - Module details and week listing
-- `week-viewer.html` - **Primary week viewing page** (used by both student and admin)
-- `week-access.html` - Redirects to week-viewer.html (deprecated)
+- `module-overview.html` - Module details and week listing (handles all module statuses)
+- `week-viewer.html` - Week content viewer (used by both student and admin)
+- `admin-week-edit.html` - Admin-only week content editing
+- `module-archive.html` - Admin-only archived module viewer
 
 ### Data Layer
 - `js/data-service.js` - Central data service for all localStorage operations
@@ -24,25 +25,33 @@ LecternAI is a seminary learning platform for the Aquinas Institute. It provides
 ### Styles
 - `styles.css` - Global styles with CSS variables
 
-## Data Storage Patterns
+## Data Layer - Supabase (Phase 2B Migration Complete)
 
-### Module-scoped keys
-```javascript
-`module:${moduleId}:weeks` - Week data for a module
-`module:${moduleId}:week:${weekId}:pagePosition` - Student's saved page position
-`module:${moduleId}:week:${weekId}:completed` - Week completion status
-```
+### Backend
+- **Database**: Supabase (PostgreSQL)
+- **Project URL**: https://kfsmfllzcumvzsbufwgt.supabase.co
+- **Client**: js/supabase-client.js
+- **Data Service**: js/data-service-supabase.js (async API)
 
-### Discussion storage
-```javascript
-`discussion:module:${moduleId}:week:${weekId}:page:${pageIndex}:question:${questionId}`
-```
+### Key Files
+- `js/supabase-client.js` - Supabase connection and auth helpers
+- `js/data-service-supabase.js` - All async database operations
+- `seed-data.html` - Tool to seed test data to Supabase
 
-### Global keys
+### Database Tables
+- `users` - User accounts
+- `modules` - Course modules (status: draft/launched/archived)
+- `module_zoom_info` - Zoom meeting info per module
+- `weeks` - Week content within modules (pages stored as JSONB)
+- `enrollments` - Student enrollments in modules
+- `progress` - Student page positions and completion status
+- `discussion_posts` - Discussion thread posts with replies
+
+### Local Storage (still used for)
 ```javascript
-`modules` - Array of all modules
-`currentModuleId` - Currently selected module
-`currentView` - 'student' or 'admin'
+`currentModuleId` - Currently selected module (session state)
+`currentView` - 'student' or 'admin' (session state)
+`draft:*` - Unsaved form drafts (auto-save feature)
 ```
 
 ## View System
@@ -103,3 +112,21 @@ Visit: http://localhost:8000/clear-data.html
 - Student view redirect: Use `fromToggle` parameter to distinguish page load vs button click
 - Discussion storage: Unified to use dataService methods (not week.discussions array)
 - Progress status: Any saved pagePosition means "In Progress" (not just page > 1)
+
+## Phase 2A Cleanup (Dec 2024)
+Deleted dead code before Supabase migration:
+- Removed `admin-module-edit.html` (dead scheduling board feature)
+- Removed `week-access.html` (was just a redirect)
+- Removed `module-access.html` (consolidated into module-overview.html)
+- Removed duplicate zoom modal and dead zoom functions from module-overview.html
+- Fixed `clearPagePosition()` bug (was calling non-existent `this.delete()`)
+- Fixed direct localStorage calls in admin-week-edit.html to use dataService
+
+## Phase 2B Supabase Migration (Dec 2024)
+Migrated from localStorage to Supabase PostgreSQL:
+- Created `js/supabase-client.js` for database connection
+- Created `js/data-service-supabase.js` with async API matching old sync interface
+- Converted all HTML pages to ES Modules with async/await
+- All dataService methods now async (use `await dataService.getModules()` etc.)
+- Session state (currentModuleId, currentView, drafts) still in localStorage
+- Database tables: modules, weeks, progress, discussion_posts, etc.

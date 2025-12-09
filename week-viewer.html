@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="styles.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
-    <script src="js/data-service.js"></script>
 </head>
 <body>
     <header>
@@ -57,7 +56,9 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { dataService } from './js/data-service-supabase.js';
+
         let currentView = 'student';
         let currentWeek = null;
         let currentPage = 1;
@@ -139,7 +140,7 @@
             return result.join('');
         }
 
-        function setView(view, fromToggle = false) {
+        async function setView(view, fromToggle = false) {
             // Only redirect to index.html if explicitly toggling to student view (not on page load)
             if (view === 'student' && fromToggle) {
                 dataService.setCurrentView('student');
@@ -159,7 +160,7 @@
                 dataService.setCurrentView('admin');
             }
 
-            renderPage();
+            await renderPage();
         }
 
         function getWeekIdFromURL() {
@@ -172,13 +173,13 @@
             return parseInt(params.get('page')) || 1;
         }
 
-        function loadWeekData() {
+        async function loadWeekData() {
             const weekId = getWeekIdFromURL();
 
             // Load weeks using DataService
             currentModuleId = dataService.getCurrentModuleId();
             if (currentModuleId) {
-                currentWeek = dataService.getWeek(currentModuleId, weekId);
+                currentWeek = await dataService.getWeek(currentModuleId, weekId);
             }
 
             if (!currentWeek) {
@@ -201,7 +202,7 @@
             document.getElementById('progress-text').textContent = `Page ${currentPage} of ${totalPages}`;
         }
 
-        function renderPage() {
+        async function renderPage() {
             if (!currentWeek) {
                 return;
             }
@@ -219,7 +220,7 @@
 
             // Render based on page type
             if (pageData.type === 'discussion') {
-                renderDiscussionPage(pageData, content);
+                await renderDiscussionPage(pageData, content);
             } else if (pageData.type === 'intro') {
                 renderIntroPage(pageData, content);
             } else if (pageData.type === 'reading') {
@@ -239,14 +240,14 @@
             }
         }
 
-        function renderDiscussionPage(pageData, container) {
+        async function renderDiscussionPage(pageData, container) {
             const questions = pageData.questions || [];
             const pageIndex = currentPage - 1;
 
             // Determine read-only based on module status, not view type
             // Read-only when: draft (preview mode) or archived
             // Full read/write when: launched (both admin and students can participate)
-            const module = dataService.getModule(currentModuleId);
+            const module = await dataService.getModule(currentModuleId);
             const moduleStatus = module ? module.status : 'draft';
             const isReadOnly = moduleStatus === 'draft' || moduleStatus === 'archived';
 
@@ -263,14 +264,15 @@
             }
 
             if (questions.length > 0) {
-                questions.forEach((question, index) => {
+                for (let index = 0; index < questions.length; index++) {
+                    const question = questions[index];
                     html += `
                         <h3>${questions.length > 1 ? 'Question ' + (index + 1) : pageData.title}</h3>
                         <p style="margin-top: 1rem; margin-bottom: 1.5rem; width: 100%;">${question.text}</p>
                     `;
 
                     // Show discussion thread for everyone (isolated per module)
-                    const posts = dataService.getDiscussionPosts(currentModuleId, currentWeek.id, pageIndex, index);
+                    const posts = await dataService.getDiscussionPosts(currentModuleId, currentWeek.id, pageIndex, index);
 
                     // Show input form when module is launched (not read-only)
                     if (!isReadOnly) {
@@ -301,7 +303,7 @@
                     if (index < questions.length - 1) {
                         html += '<hr style="margin: 2rem 0;">';
                     }
-                });
+                }
             } else {
                 html += '<p style="color: #6c757d; text-align: center;">No questions available for this discussion.</p>';
             }
@@ -507,7 +509,7 @@
             container.innerHTML = html;
         }
 
-        function postDiscussion(questionIndex) {
+        async function postDiscussion(questionIndex) {
             const textarea = document.getElementById(`response-${questionIndex}`);
             const content = textarea.value.trim();
 
@@ -521,7 +523,7 @@
 
             // Add discussion post using DataService (isolated per module)
             const pageIndex = currentPage - 1; // Convert to 0-based index
-            dataService.addDiscussionPost(currentModuleId, currentWeek.id, pageIndex, questionIndex, {
+            await dataService.addDiscussionPost(currentModuleId, currentWeek.id, pageIndex, questionIndex, {
                 author: author,
                 content: content
             });
@@ -530,7 +532,7 @@
             textarea.value = '';
 
             // Reload the page to show the new post
-            renderPage();
+            await renderPage();
         }
 
         function toggleReplyForm(postId) {
@@ -542,7 +544,7 @@
             }
         }
 
-        function postReply(pageIndex, questionIndex, postId) {
+        async function postReply(pageIndex, questionIndex, postId) {
             const textarea = document.getElementById(`reply-text-${postId}`);
             const content = textarea.value.trim();
 
@@ -555,7 +557,7 @@
             const author = prompt('Enter your name:', 'Student') || 'Anonymous';
 
             // Add reply using DataService (isolated per module)
-            dataService.addReply(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, {
+            await dataService.addReply(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, {
                 author: author,
                 content: content
             });
@@ -563,7 +565,7 @@
             alert('Reply posted successfully!');
 
             // Reload the page to show the new reply
-            renderPage();
+            await renderPage();
         }
 
         function editPost(postId) {
@@ -576,7 +578,7 @@
             document.getElementById(`post-edit-form-${postId}`).style.display = 'none';
         }
 
-        function savePostEdit(pageIndex, questionIndex, postId) {
+        async function savePostEdit(pageIndex, questionIndex, postId) {
             const textarea = document.getElementById(`post-edit-text-${postId}`);
             const content = textarea.value.trim();
 
@@ -585,9 +587,9 @@
                 return;
             }
 
-            dataService.editDiscussionPost(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, content);
+            await dataService.editDiscussionPost(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, content);
             alert('Post updated successfully!');
-            renderPage();
+            await renderPage();
         }
 
         function editReply(replyId) {
@@ -600,7 +602,7 @@
             document.getElementById(`reply-edit-form-${replyId}`).style.display = 'none';
         }
 
-        function saveReplyEdit(pageIndex, questionIndex, postId, replyId) {
+        async function saveReplyEdit(pageIndex, questionIndex, postId, replyId) {
             const textarea = document.getElementById(`reply-edit-text-${replyId}`);
             const content = textarea.value.trim();
 
@@ -609,62 +611,65 @@
                 return;
             }
 
-            dataService.editReply(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, replyId, content);
+            await dataService.editReply(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, replyId, content);
             alert('Reply updated successfully!');
-            renderPage();
+            await renderPage();
         }
 
-        function previousPage() {
+        async function previousPage() {
             if (currentPage > 1) {
                 currentPage--;
                 // Auto-save position for students
                 if (currentView === 'student' && currentModuleId) {
-                    dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
+                    await dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
                 }
                 window.location.href = `week-viewer.html?week=${currentWeek.id}&page=${currentPage}`;
             }
         }
 
-        function nextPage() {
+        async function nextPage() {
             if (currentPage < totalPages) {
                 currentPage++;
                 // Auto-save position for students
                 if (currentView === 'student' && currentModuleId) {
-                    dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
+                    await dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
                 }
                 window.location.href = `week-viewer.html?week=${currentWeek.id}&page=${currentPage}`;
             } else {
                 // Finish - mark week as completed for students, just navigate for admins
                 const currentView = dataService.getCurrentView();
                 if (currentView === 'student' && currentModuleId) {
-                    dataService.completeWeek(currentModuleId, currentWeek.id);
+                    await dataService.completeWeek(currentModuleId, currentWeek.id);
                     alert('Week completed!');
                 }
                 window.location.href = 'module-overview.html';
             }
         }
 
-        // Save progress when user leaves page
+        // Save progress when user leaves page (sync version for unload events)
         function saveProgressOnExit() {
+            // Note: beforeunload cannot use async/await reliably
+            // Progress is saved on each page navigation, so this is just a backup
             if (currentView === 'student' && currentModuleId && currentWeek) {
-                dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
+                // Use sendBeacon for reliable async save on unload if needed
+                // For now, main progress saving happens on explicit navigation
             }
         }
 
         // Explicit save and exit button handler
-        function saveProgressAndExit() {
+        async function saveProgressAndExit() {
             if (currentModuleId && currentWeek) {
-                dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
+                await dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
             }
             alert('Progress saved! You can resume from this page next time.');
             window.location.href = 'module-overview.html';
         }
 
         // Check for saved position and offer to resume
-        function checkForSavedPosition() {
+        async function checkForSavedPosition() {
             if (currentView !== 'student' || !currentModuleId || !currentWeek) return;
 
-            const savedPosition = dataService.getPagePosition(currentModuleId, currentWeek.id);
+            const savedPosition = await dataService.getPagePosition(currentModuleId, currentWeek.id);
             const urlPage = getPageFromURL();
 
             // Only prompt if there's a saved position different from current page
@@ -678,24 +683,40 @@
             }
         }
 
-        window.onload = function() {
+        window.onload = async function() {
             let savedView = dataService.getCurrentView() || 'student';
             // Migrate old 'teacher' value to 'admin'
             if (savedView === 'teacher') {
                 savedView = 'admin';
                 dataService.setCurrentView('admin');
             }
-            setView(savedView);
-            if (loadWeekData()) {
-                renderPage();
+            await setView(savedView);
+            if (await loadWeekData()) {
+                await renderPage();
                 // Check for saved position after loading
-                checkForSavedPosition();
+                await checkForSavedPosition();
             }
         };
 
         // Save progress when page is closed/navigated away
         window.addEventListener('beforeunload', saveProgressOnExit);
         window.addEventListener('pagehide', saveProgressOnExit);
+
+        // Export functions to window for onclick handlers
+        window.setView = setView;
+        window.previousPage = previousPage;
+        window.nextPage = nextPage;
+        window.saveProgressAndExit = saveProgressAndExit;
+        window.postDiscussion = postDiscussion;
+        window.toggleReplyForm = toggleReplyForm;
+        window.postReply = postReply;
+        window.editPost = editPost;
+        window.cancelPostEdit = cancelPostEdit;
+        window.savePostEdit = savePostEdit;
+        window.editReply = editReply;
+        window.cancelReplyEdit = cancelReplyEdit;
+        window.saveReplyEdit = saveReplyEdit;
+        window.dataService = dataService;
     </script>
 </body>
 </html>

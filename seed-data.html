@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seed Test Data - LecternAI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container" style="max-width: 800px; margin: 4rem auto;">
+        <h2 style="color: var(--primary-color); margin-bottom: 2rem;">Seed Supabase Test Data</h2>
+        <p style="margin-bottom: 1rem;">This will create a test user, module, and week in Supabase to verify the migration.</p>
+
+        <div id="status" style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; font-family: monospace; white-space: pre-wrap;"></div>
+
+        <button class="btn btn-primary" onclick="seedData()" style="margin-right: 1rem;">Seed Test Data</button>
+        <button class="btn btn-secondary" onclick="clearData()">Clear Test Data</button>
+
+        <a href="index.html" class="btn btn-secondary" style="margin-left: 1rem;">Go to App</a>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+        const supabaseUrl = 'https://kfsmfllzcumvzsbufwgt.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtmc21mbGx6Y3VtdnpzYnVmd2d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzMDkyMjUsImV4cCI6MjA4MDg4NTIyNX0.X_o03nwo4aXBuj9zeUxCz4k60roq_xlACwkLwKIS4qE'
+        const supabase = createClient(supabaseUrl, supabaseKey)
+
+        const statusEl = document.getElementById('status')
+
+        function log(message) {
+            statusEl.textContent += message + '\n'
+            console.log(message)
+        }
+
+        window.seedData = async function() {
+            statusEl.textContent = ''
+            log('Starting seed process...\n')
+
+            try {
+                // 1. Create test user
+                log('1. Creating test user...')
+                const { data: user, error: userError } = await supabase
+                    .from('users')
+                    .upsert({
+                        id: 'test-user-001',
+                        email: 'test@lecternai.local',
+                        name: 'Test Student',
+                        role: 'student'
+                    }, { onConflict: 'id' })
+                    .select()
+                    .single()
+
+                if (userError) {
+                    log('   Error: ' + userError.message)
+                    // Try to continue anyway
+                } else {
+                    log('   Created user: ' + user.name)
+                }
+
+                // 2. Create a test module
+                log('\n2. Creating test module...')
+                const { data: module, error: moduleError } = await supabase
+                    .from('modules')
+                    .insert({
+                        title: 'Introduction to Thomistic Philosophy',
+                        description: 'A foundational course exploring the philosophical framework of St. Thomas Aquinas, including metaphysics, epistemology, and natural theology.',
+                        instructor: 'Dr. Maria Santos',
+                        duration: '6 weeks',
+                        participation: 'Weekly discussions and reflection posts required.',
+                        time_expectations: 'Expect 3-4 hours per week including readings and discussion.',
+                        status: 'launched',
+                        launched_at: new Date().toISOString()
+                    })
+                    .select()
+                    .single()
+
+                if (moduleError) {
+                    log('   Error: ' + moduleError.message)
+                    return
+                }
+                log('   Created module ID: ' + module.id)
+
+                // 3. Create zoom info
+                log('\n3. Creating zoom info...')
+                const { error: zoomError } = await supabase
+                    .from('module_zoom_info')
+                    .insert({
+                        module_id: module.id,
+                        url: 'https://zoom.us/j/1234567890',
+                        meeting_id: '123 456 7890',
+                        passcode: 'aquinas',
+                        day: 'Wednesday',
+                        time: '19:00',
+                        timezone: 'EST'
+                    })
+
+                if (zoomError) {
+                    log('   Error: ' + zoomError.message)
+                } else {
+                    log('   Created zoom info')
+                }
+
+                // 4. Create a week
+                log('\n4. Creating test week...')
+                const { data: week, error: weekError } = await supabase
+                    .from('weeks')
+                    .insert({
+                        module_id: module.id,
+                        week_number: 1,
+                        title: 'The Five Ways',
+                        description: 'An exploration of St. Thomas Aquinas\' five arguments for the existence of God from the Summa Theologica.',
+                        unlock_date: new Date().toISOString().split('T')[0]
+                    })
+                    .select()
+                    .single()
+
+                if (weekError) {
+                    log('   Error: ' + weekError.message)
+                    return
+                }
+                log('   Created week ID: ' + week.id)
+
+                // 5. Create pages for the week
+                log('\n5. Creating pages...')
+
+                // Page 1: Opening Discussion
+                const { data: page1 } = await supabase
+                    .from('pages')
+                    .insert({
+                        week_id: week.id,
+                        page_number: 1,
+                        title: 'Opening Reflection',
+                        type: 'discussion'
+                    })
+                    .select()
+                    .single()
+
+                if (page1) {
+                    await supabase.from('questions').insert({
+                        page_id: page1.id,
+                        question_number: 1,
+                        text: 'Before we begin, reflect on your current understanding of arguments for God\'s existence. What approaches have you encountered before? What questions do you bring to this study?'
+                    })
+                    log('   Created Page 1: Opening Reflection')
+                }
+
+                // Page 2: Introduction
+                const { data: page2 } = await supabase
+                    .from('pages')
+                    .insert({
+                        week_id: week.id,
+                        page_number: 2,
+                        title: 'Week Introduction',
+                        type: 'intro',
+                        content: 'This week we dive into the heart of Thomistic natural theology: the Five Ways. These arguments represent Aquinas\'s systematic approach to demonstrating God\'s existence through reason alone.'
+                    })
+                    .select()
+                    .single()
+
+                if (page2) {
+                    await supabase.from('videos').insert({
+                        page_id: page2.id,
+                        title: 'Introduction to the Five Ways',
+                        url: 'https://www.youtube.com/watch?v=example',
+                        duration: '15:00',
+                        sort_order: 0
+                    })
+                    log('   Created Page 2: Introduction')
+                }
+
+                // Page 3: Readings
+                const { data: page3 } = await supabase
+                    .from('pages')
+                    .insert({
+                        week_id: week.id,
+                        page_number: 3,
+                        title: 'Weekly Readings',
+                        type: 'reading'
+                    })
+                    .select()
+                    .single()
+
+                if (page3) {
+                    await supabase.from('resources').insert([
+                        {
+                            page_id: page3.id,
+                            title: 'Summa Theologica, Part I, Question 2',
+                            url: 'https://www.newadvent.org/summa/1002.htm',
+                            description: 'The original text of the Five Ways',
+                            sort_order: 0
+                        },
+                        {
+                            page_id: page3.id,
+                            title: 'Commentary on the Five Ways',
+                            description: 'A modern explanation of Aquinas\'s arguments',
+                            sort_order: 1
+                        }
+                    ])
+                    log('   Created Page 3: Readings')
+                }
+
+                // Page 4: Zoom Prep
+                const { data: page4 } = await supabase
+                    .from('pages')
+                    .insert({
+                        week_id: week.id,
+                        page_number: 4,
+                        title: 'Zoom Session Prep',
+                        type: 'reading',
+                        content: 'Prepare for our live discussion by reviewing the key concepts from this week.'
+                    })
+                    .select()
+                    .single()
+
+                if (page4) {
+                    log('   Created Page 4: Zoom Prep')
+                }
+
+                // Page 5: Closing Reflection
+                const { data: page5 } = await supabase
+                    .from('pages')
+                    .insert({
+                        week_id: week.id,
+                        page_number: 5,
+                        title: 'Closing Reflection',
+                        type: 'discussion'
+                    })
+                    .select()
+                    .single()
+
+                if (page5) {
+                    await supabase.from('questions').insert({
+                        page_id: page5.id,
+                        question_number: 1,
+                        text: 'Having studied the Five Ways, which argument do you find most compelling? Which raises the most questions for you? Share your thoughts with your fellow students.'
+                    })
+                    log('   Created Page 5: Closing Reflection')
+                }
+
+                log('\n✓ Seed data created successfully!')
+                log('\nYou can now visit the app at index.html to see the test module.')
+
+            } catch (err) {
+                log('\nError: ' + err.message)
+                console.error(err)
+            }
+        }
+
+        window.clearData = async function() {
+            statusEl.textContent = ''
+            log('Clearing all test data...\n')
+
+            try {
+                // Delete in order (respecting foreign keys)
+                log('Deleting discussion posts...')
+                await supabase.from('discussion_posts').delete().neq('id', 0)
+
+                log('Deleting progress...')
+                await supabase.from('progress').delete().neq('id', 0)
+
+                log('Deleting questions...')
+                await supabase.from('questions').delete().neq('id', 0)
+
+                log('Deleting resources...')
+                await supabase.from('resources').delete().neq('id', 0)
+
+                log('Deleting videos...')
+                await supabase.from('videos').delete().neq('id', 0)
+
+                log('Deleting pages...')
+                await supabase.from('pages').delete().neq('id', 0)
+
+                log('Deleting weeks...')
+                await supabase.from('weeks').delete().neq('id', 0)
+
+                log('Deleting zoom info...')
+                await supabase.from('module_zoom_info').delete().neq('module_id', 0)
+
+                log('Deleting modules...')
+                await supabase.from('modules').delete().neq('id', 0)
+
+                log('Deleting enrollments...')
+                await supabase.from('enrollments').delete().neq('id', 0)
+
+                log('\n✓ All test data cleared!')
+
+            } catch (err) {
+                log('\nError: ' + err.message)
+                console.error(err)
+            }
+        }
+    </script>
+</body>
+</html>

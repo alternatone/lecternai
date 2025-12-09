@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="styles.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
-    <script src="js/data-service.js"></script>
     <style>
         .archived-banner {
             background: linear-gradient(135deg, var(--gray) 0%, #5a5a5a 100%);
@@ -122,7 +121,9 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { dataService } from './js/data-service-supabase.js';
+
         let currentModule = null;
         let weeks = [];
 
@@ -141,20 +142,20 @@
             }
         }
 
-        function loadModuleData() {
+        async function loadModuleData() {
             const currentModuleId = dataService.getCurrentModuleId();
             if (!currentModuleId) {
                 location.href = 'index.html';
                 return;
             }
 
-            currentModule = dataService.getModule(currentModuleId);
+            currentModule = await dataService.getModule(currentModuleId);
             if (!currentModule || currentModule.status !== 'archived') {
                 location.href = 'index.html';
                 return;
             }
 
-            weeks = dataService.getWeeks(currentModuleId);
+            weeks = await dataService.getWeeks(currentModuleId);
 
             // Update page content
             document.getElementById('module-title').textContent = currentModule.title;
@@ -289,9 +290,15 @@
             }
         });
 
-        window.onload = function() {
-            loadModuleData();
+        window.onload = async function() {
+            await loadModuleData();
         };
+
+        // Export functions to window for onclick handlers
+        window.setView = setView;
+        window.viewWeekDetails = viewWeekDetails;
+        window.closeWeekModal = closeWeekModal;
+        window.dataService = dataService;
     </script>
 </body>
 </html>

@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="styles.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
-    <script src="js/data-service.js"></script>
     <style>
         .modal {
             display: none;
@@ -204,10 +203,12 @@
 
     <img src="brand-assets/aquinas-seal.svg" alt="" class="decorative-cross" style="width: 20rem; height: 20rem; opacity: 0.05;">
 
-    <script>
+    <script type="module">
+        import { dataService } from './js/data-service-supabase.js';
+
         let modules = [];
 
-        function setView(view) {
+        async function setView(view) {
             const studentView = document.getElementById('student-view');
             const adminView = document.getElementById('admin-view');
             const viewTitle = document.getElementById('view-title');
@@ -221,14 +222,14 @@
                 viewTitle.textContent = 'My Modules';
                 buttons[0].classList.add('active');
                 dataService.setCurrentView('student');
-                renderStudentModules();
+                await renderStudentModules();
             } else {
                 studentView.style.display = 'none';
                 adminView.style.display = 'block';
                 viewTitle.textContent = 'Module Management';
                 buttons[1].classList.add('active');
                 dataService.setCurrentView('admin');
-                renderModules();
+                await renderModules();
             }
         }
 
@@ -256,7 +257,7 @@
             document.body.classList.remove('modal-open');
         }
 
-        function saveModule() {
+        async function saveModule() {
             const title = document.getElementById('module-title-input').value.trim();
             const description = document.getElementById('module-description-input').value.trim();
             const instructor = document.getElementById('module-instructor-input').value.trim();
@@ -318,34 +319,40 @@
             saveBtn.textContent = 'Saving...';
             saveBtn.disabled = true;
 
-            // Create new module using DataService
-            const result = dataService.createModule(moduleData);
+            try {
+                // Create new module using DataService
+                const result = await dataService.createModule(moduleData);
 
-            // Check if operation was successful
-            if (!result.success) {
+                // Check if operation was successful
+                if (!result.success) {
+                    saveBtn.textContent = originalText;
+                    saveBtn.disabled = false;
+                    showNotification(result.message || 'Failed to create module', 'error');
+                    return;
+                }
+
+                const newModule = result.data;
+
+                // Set as current module
+                dataService.setCurrentModuleId(newModule.id);
+
+                // Save zoom info (already validated above)
+                if (zoomInfo.url || zoomInfo.meetingId) {
+                    await dataService.updateZoomInfo(newModule.id, zoomInfo);
+                }
+
+                closeCreateModuleModal();
+                showNotification('Module created successfully!', 'success');
+
+                // Navigate to module overview page
+                setTimeout(() => {
+                    location.href = 'module-overview.html';
+                }, 500);
+            } catch (error) {
                 saveBtn.textContent = originalText;
                 saveBtn.disabled = false;
-                showNotification(result.message || 'Failed to create module', 'error');
-                return;
+                showNotification('Error creating module: ' + error.message, 'error');
             }
-
-            const newModule = result.data;
-
-            // Set as current module
-            dataService.setCurrentModuleId(newModule.id);
-
-            // Save zoom info (already validated above)
-            if (zoomInfo.url || zoomInfo.meetingId) {
-                dataService.updateZoomInfo(newModule.id, zoomInfo);
-            }
-
-            closeCreateModuleModal();
-            showNotification('Module created successfully!', 'success');
-
-            // Navigate to module overview page
-            setTimeout(() => {
-                location.href = 'module-overview.html';
-            }, 500);
         }
 
         // Notification system
@@ -388,9 +395,9 @@
             }, 4000);
         }
 
-        function renderModules() {
+        async function renderModules() {
             // Get all modules from DataService
-            modules = dataService.getModules();
+            modules = await dataService.getModules();
 
             // Separate modules by status
             const activeModules = modules.filter(m => m.status === 'launched');
@@ -518,14 +525,14 @@
             return moduleCard;
         }
 
-        function deleteArchivedModule(moduleId) {
-            if (!confirm('Permanently delete this archived module?\\n\\nThis action cannot be undone. All module data, weeks, and discussions will be lost.')) {
+        async function deleteArchivedModule(moduleId) {
+            if (!confirm('Permanently delete this archived module?\n\nThis action cannot be undone. All module data, weeks, and discussions will be lost.')) {
                 return;
             }
 
-            const result = dataService.deleteModule(moduleId);
+            const result = await dataService.deleteModule(moduleId);
             if (result.success) {
-                renderModules();
+                await renderModules();
             } else {
                 alert(result.message || 'Failed to delete module');
             }
@@ -533,19 +540,19 @@
 
         function accessModule(moduleId) {
             dataService.setCurrentModuleId(moduleId);
-            // Navigate to a module access page (read-only structure, can interact with discussions)
-            location.href = 'module-access.html';
+            // Navigate to module overview (handles all module types - draft, launched, archived)
+            location.href = 'module-overview.html';
         }
 
-        function archiveModule(moduleId) {
+        async function archiveModule(moduleId) {
             if (!confirm('Archive this module?\n\nThis will end the active session and preserve all discussions and content in read-only format.')) {
                 return;
             }
 
-            const result = dataService.archiveModule(moduleId);
+            const result = await dataService.archiveModule(moduleId);
             if (result.success) {
                 showNotification('Module archived successfully', 'success');
-                renderModules();
+                await renderModules();
             } else {
                 showNotification(result.message || 'Failed to archive module', 'error');
             }
@@ -562,39 +569,41 @@
             location.href = 'module-overview.html';
         }
 
-        function deleteModule(moduleId) {
+        async function deleteModule(moduleId) {
             if (confirm('Are you sure you want to delete this module? This action cannot be undone.')) {
                 // Delete module using DataService (handles all related data)
-                const result = dataService.deleteModule(moduleId);
+                const result = await dataService.deleteModule(moduleId);
 
                 if (result.success) {
                     showNotification('Module deleted successfully', 'success');
                     // Re-render modules
-                    renderModules();
+                    await renderModules();
                 } else {
                     showNotification(result.message || 'Failed to delete module', 'error');
                 }
             }
         }
 
-        function loadModules() {
+        async function loadModules() {
             // Load modules from DataService
-            modules = dataService.getModules();
+            modules = await dataService.getModules();
         }
 
-        function renderStudentModules() {
+        async function renderStudentModules() {
             const grid = document.getElementById('student-modules-grid');
-            grid.innerHTML = '';
+            grid.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">Loading modules...</p>';
 
             // Get only launched modules that have at least one unlocked week
-            const studentModules = dataService.getStudentModules();
+            const studentModules = await dataService.getStudentModules();
+
+            grid.innerHTML = '';
 
             if (studentModules.length === 0) {
                 grid.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">No modules available yet. Check back later!</p>';
                 return;
             }
 
-            studentModules.forEach(module => {
+            for (const module of studentModules) {
                 const moduleCard = document.createElement('div');
                 moduleCard.className = 'course-card';
                 moduleCard.style.cursor = 'pointer';
@@ -604,7 +613,7 @@
                 };
 
                 // Get visible weeks count
-                const visibleWeeks = dataService.getVisibleWeeks(module.id);
+                const visibleWeeks = await dataService.getVisibleWeeks(module.id);
 
                 moduleCard.innerHTML = `
                     <div class="course-header">
@@ -620,20 +629,34 @@
                 `;
 
                 grid.appendChild(moduleCard);
-            });
+            }
         }
 
         // Restore view preference
-        window.onload = function() {
-            loadModules();
+        window.onload = async function() {
+            await loadModules();
             let savedView = dataService.getCurrentView() || 'student';
             // Migrate old 'teacher' value to 'admin'
             if (savedView === 'teacher') {
                 savedView = 'admin';
                 dataService.setCurrentView('admin');
             }
-            setView(savedView);
+            await setView(savedView);
         };
+
+        // Export functions to window for onclick handlers
+        window.setView = setView;
+        window.openCreateModuleModal = openCreateModuleModal;
+        window.closeCreateModuleModal = closeCreateModuleModal;
+        window.saveModule = saveModule;
+        window.accessModule = accessModule;
+        window.editActiveModule = editActiveModule;
+        window.editModule = editModule;
+        window.deleteModule = deleteModule;
+        window.archiveModule = archiveModule;
+        window.viewArchivedModule = viewArchivedModule;
+        window.deleteArchivedModule = deleteArchivedModule;
+        window.dataService = dataService;
     </script>
 </body>
 </html>

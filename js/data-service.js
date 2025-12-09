@@ -614,27 +614,6 @@ class DataService {
     // ==================== Progress Operations ====================
 
     /**
-     * Get progress for a week
-     */
-    getProgress(weekId) {
-        return this.get(`week:${weekId}:progress`, {});
-    }
-
-    /**
-     * Update progress for a week
-     */
-    updateProgress(weekId, progressData) {
-        const progress = {
-            ...progressData,
-            weekId: parseInt(weekId),
-            timestamp: new Date().toISOString()
-        };
-
-        this.set(`week:${weekId}:progress`, progress);
-        return progress;
-    }
-
-    /**
      * Save student's current page position for a week
      */
     savePagePosition(moduleId, weekId, pageNumber) {
@@ -660,7 +639,7 @@ class DataService {
      */
     clearPagePosition(moduleId, weekId) {
         const key = `module:${moduleId}:week:${weekId}:pagePosition`;
-        this.delete(key);
+        this.remove(key);
     }
 
     /**
