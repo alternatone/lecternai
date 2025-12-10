@@ -618,7 +618,7 @@ class DataServiceSupabase {
     // ==================== Progress Operations ====================
 
     async savePagePosition(moduleId, weekId, pageNumber) {
-        const userId = getCurrentUserId()
+        const userId = await getCurrentUserId()
 
         // Get week record ID
         const { data: weekRecord } = await supabase
@@ -655,7 +655,7 @@ class DataServiceSupabase {
     }
 
     async getPagePosition(moduleId, weekId) {
-        const userId = getCurrentUserId()
+        const userId = await getCurrentUserId()
 
         // Get week record ID
         const { data: weekRecord } = await supabase
@@ -680,7 +680,7 @@ class DataServiceSupabase {
     }
 
     async clearPagePosition(moduleId, weekId) {
-        const userId = getCurrentUserId()
+        const userId = await getCurrentUserId()
 
         const { data: weekRecord } = await supabase
             .from('weeks')
@@ -699,7 +699,7 @@ class DataServiceSupabase {
     }
 
     async completeWeek(moduleId, weekId) {
-        const userId = getCurrentUserId()
+        const userId = await getCurrentUserId()
 
         const { data: weekRecord } = await supabase
             .from('weeks')
@@ -725,7 +725,7 @@ class DataServiceSupabase {
     }
 
     async isWeekCompleted(moduleId, weekId) {
-        const userId = getCurrentUserId()
+        const userId = await getCurrentUserId()
 
         const { data: weekRecord } = await supabase
             .from('weeks')
@@ -824,10 +824,10 @@ class DataServiceSupabase {
 
         if (!question) return []
 
-        // Get posts with replies
+        // Get posts with user info
         const { data: posts, error } = await supabase
             .from('discussion_posts')
-            .select('*')
+            .select('*, users:user_id(name, email, role)')
             .eq('question_id', question.id)
             .is('parent_id', null)
             .order('created_at', { ascending: false })
@@ -837,30 +837,36 @@ class DataServiceSupabase {
             return []
         }
 
-        // Get replies for each post
+        // Get replies for each post with user info
         const postsWithReplies = await Promise.all(
             posts.map(async post => {
                 const { data: replies } = await supabase
                     .from('discussion_posts')
-                    .select('*')
+                    .select('*, users:user_id(name, email, role)')
                     .eq('parent_id', post.id)
                     .order('created_at', { ascending: true })
 
+                const postUser = post.users || {}
                 return {
                     id: post.id,
-                    author: post.user_id, // TODO: Fetch actual user name
+                    userId: post.user_id,
+                    author: postUser.name || postUser.email || 'Anonymous',
                     content: post.content,
-                    isAdmin: false, // TODO: Determine from user role
+                    isAdmin: postUser.role === 'admin',
                     createdAt: post.created_at,
                     editedAt: post.edited_at,
-                    replies: (replies || []).map(r => ({
-                        id: r.id,
-                        author: r.user_id,
-                        content: r.content,
-                        isAdmin: false,
-                        createdAt: r.created_at,
-                        editedAt: r.edited_at
-                    }))
+                    replies: (replies || []).map(r => {
+                        const replyUser = r.users || {}
+                        return {
+                            id: r.id,
+                            userId: r.user_id,
+                            author: replyUser.name || replyUser.email || 'Anonymous',
+                            content: r.content,
+                            isAdmin: replyUser.role === 'admin',
+                            createdAt: r.created_at,
+                            editedAt: r.edited_at
+                        }
+                    })
                 }
             })
         )
@@ -897,7 +903,7 @@ class DataServiceSupabase {
 
         if (!question) throw new Error('Question not found')
 
-        const userId = getCurrentUserId()
+        const userId = await getCurrentUserId()
 
         const { data, error } = await supabase
             .from('discussion_posts')
@@ -924,7 +930,7 @@ class DataServiceSupabase {
     }
 
     async addReply(moduleId, weekId, pageIndex, questionId, postId, reply) {
-        const userId = getCurrentUserId()
+        const userId = await getCurrentUserId()
 
         // Get question ID (needed for foreign key)
         const { data: weekRecord } = await supabase
@@ -998,6 +1004,39 @@ class DataServiceSupabase {
 
     async editReply(moduleId, weekId, pageIndex, questionId, postId, replyId, newContent) {
         return this.editDiscussionPost(moduleId, weekId, pageIndex, questionId, replyId, newContent)
+    }
+
+    async deleteDiscussionPost(postId) {
+        // First delete any replies to this post
+        await supabase
+            .from('discussion_posts')
+            .delete()
+            .eq('parent_id', postId)
+
+        // Then delete the post itself
+        const { error } = await supabase
+            .from('discussion_posts')
+            .delete()
+            .eq('id', postId)
+
+        if (error) {
+            throw new Error('Failed to delete post: ' + error.message)
+        }
+
+        return true
+    }
+
+    async deleteReply(replyId) {
+        const { error } = await supabase
+            .from('discussion_posts')
+            .delete()
+            .eq('id', replyId)
+
+        if (error) {
+            throw new Error('Failed to delete reply: ' + error.message)
+        }
+
+        return true
     }
 
     // ==================== Response Operations ====================

@@ -72,6 +72,35 @@
             font-size: 0.75rem;
             margin-left: 0.5rem;
         }
+        /* Loading state styles */
+        .page-loading {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .page-loaded {
+            opacity: 1;
+        }
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+        .loading-spinner::before {
+            content: '';
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e9ecef;
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -79,15 +108,21 @@
 
     <header>
         <div class="header-content">
-            <div class="logo">
+            <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
                 <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
                 <h1>LecternAI</h1>
-            </div>
+            </a>
             <div id="header-actions"></div>
         </div>
     </header>
 
-    <div class="container">
+    <!-- Loading State -->
+    <div id="loading-state" class="container">
+        <div class="loading-spinner">Loading module...</div>
+    </div>
+
+    <!-- Main Content (hidden until loaded) -->
+    <div id="main-content" class="container page-loading">
         <div class="breadcrumb">
             <a href="index.html">Home</a>
             <span>›</span>
@@ -135,12 +170,12 @@
             <div id="draft-week-notice" style="display: none; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <strong style="color: #856404;">Draft Week in Progress</strong>
+                        <strong style="color: #856404;">Draft: <span id="draft-week-name">Untitled Week</span></strong>
                         <p style="margin: 0.5rem 0 0 0; color: #856404; font-size: 0.9rem;">You have an unsaved week draft</p>
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn btn-secondary" onclick="discardDraft()" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Discard</button>
                         <button class="btn btn-primary" onclick="resumeDraft()" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Resume</button>
+                        <button class="btn btn-secondary" onclick="discardDraft()" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Discard</button>
                     </div>
                 </div>
             </div>
@@ -153,11 +188,11 @@
             <a href="index.html" class="btn btn-secondary" style="line-height: 1.5;">← Back to Modules</a>
             <div id="admin-action-btns" style="display: none; gap: 1rem;">
                 <button id="update-from-template-btn" class="btn btn-secondary" style="line-height: 1.5; display: none;" onclick="updateFromTemplate()">Update Active Module</button>
-                <button id="launch-module-btn" class="btn btn-primary" style="line-height: 1.5; background: var(--teal);" onclick="launchModule()">Launch Module</button>
+                <button id="launch-module-btn" class="btn btn-teal" style="line-height: 1.5;" onclick="launchModule()">Launch Module</button>
                 <button id="save-template-btn" class="btn btn-primary" style="line-height: 1.5;" onclick="saveModuleProgress()">Save Template</button>
             </div>
         </div>
-    </div>
+    </div><!-- end main-content -->
 
     <img src="brand-assets/aquinas-seal.svg" alt="" class="decorative-cross" style="width: 20rem; height: 20rem; opacity: 0.05;">
 
@@ -396,15 +431,15 @@
     <div id="add-video-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="video-modal-title">Add Video</h3>
+                <h3 id="video-modal-title">Add Resource</h3>
                 <button class="modal-close" onclick="closeAddVideoModal()">&times;</button>
             </div>
             <div class="form-group">
-                <label for="video-title">Video Title</label>
+                <label for="video-title">Title</label>
                 <input type="text" id="video-title">
             </div>
             <div class="form-group">
-                <label for="video-url">Video URL</label>
+                <label for="video-url">URL</label>
                 <input type="text" id="video-url">
                 <small style="color: #6c757d; margin-top: 0.5rem; display: block;">Supported: YouTube, Vimeo, or direct video file URLs</small>
             </div>
@@ -414,7 +449,7 @@
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeAddVideoModal()">Cancel</button>
-                <button class="btn btn-primary" id="video-modal-submit-btn" onclick="addVideo()">Add Video</button>
+                <button class="btn btn-primary" id="video-modal-submit-btn" onclick="addVideo()">Add Resource</button>
             </div>
         </div>
     </div>
@@ -427,8 +462,7 @@
                 <button class="modal-close" onclick="closeAddQuestionModal()">&times;</button>
             </div>
             <div class="form-group">
-                <label for="question-text">Question</label>
-                <textarea id="question-text" style="min-height: 120px;"></textarea>
+                <textarea id="question-text" placeholder="Enter your question..." style="min-height: 120px;"></textarea>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeAddQuestionModal()">Cancel</button>
@@ -470,7 +504,7 @@
                     <strong>${currentUser.name || currentUser.email}</strong>
                     ${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
                 </span>
-                ${isAdmin ? '<a href="admin-users.html" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Manage Users</a>' : ''}
+                ${isAdmin ? '<a href="admin-users.html" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Manage Users</a>' : ''}
                 <button onclick="logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
             `;
             header.style.display = 'flex';
@@ -594,7 +628,7 @@
                     weekAction.innerHTML = `
                         <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Preview Week</button>
                         <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="openEditWeekModal(${week.id})">Edit Week</button>
-                        <button class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteWeek(${week.id})">Delete</button>
+                        <button class="btn btn-danger" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="deleteWeek(${week.id})">Delete</button>
                     `;
                 } else {
                     // Student view (or participant mode): Show status and View Week button
@@ -1015,7 +1049,7 @@
                     <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description || 'No description'}</p>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
+                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1039,7 +1073,7 @@
                     <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description || 'No description'}</p>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
+                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1207,7 +1241,7 @@
                     <strong>Question ${index + 1}:</strong> ${question.text}
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editPage1Question(${question.id})">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deletePage1Question(${question.id})">Delete</button>
+                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deletePage1Question(${question.id})">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1262,7 +1296,7 @@
                     ${durationHtml}
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteVideo(${video.id})">Delete</button>
+                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteVideo(${video.id})">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1274,8 +1308,8 @@
             document.getElementById('video-title').value = '';
             document.getElementById('video-url').value = '';
             document.getElementById('video-duration').value = '';
-            document.getElementById('video-modal-title').textContent = 'Add Video';
-            document.getElementById('video-modal-submit-btn').textContent = 'Add Video';
+            document.getElementById('video-modal-title').textContent = 'Add Resource';
+            document.getElementById('video-modal-submit-btn').textContent = 'Add Resource';
             document.getElementById('add-video-modal').style.display = 'block';
             document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
@@ -1332,8 +1366,8 @@
                 document.getElementById('video-duration').value = video.duration || '';
                 // Store the ID being edited
                 window.editingVideoId = id;
-                document.getElementById('video-modal-title').textContent = 'Edit Video';
-                document.getElementById('video-modal-submit-btn').textContent = 'Save Video';
+                document.getElementById('video-modal-title').textContent = 'Edit Resource';
+                document.getElementById('video-modal-submit-btn').textContent = 'Save Resource';
                 document.getElementById('add-video-modal').style.display = 'block';
                 document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
             }
@@ -1364,7 +1398,7 @@
                     ${durationHtml}
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editPage5Video(${video.id})">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deletePage5Video(${video.id})">Delete</button>
+                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deletePage5Video(${video.id})">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1377,8 +1411,8 @@
             document.getElementById('video-url').value = '';
             document.getElementById('video-duration').value = '';
             window.editingPage5Video = true;
-            document.getElementById('video-modal-title').textContent = 'Add Video';
-            document.getElementById('video-modal-submit-btn').textContent = 'Add Video';
+            document.getElementById('video-modal-title').textContent = 'Add Resource';
+            document.getElementById('video-modal-submit-btn').textContent = 'Add Resource';
             document.getElementById('add-video-modal').style.display = 'block';
             document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
@@ -1425,8 +1459,8 @@
                 document.getElementById('video-duration').value = video.duration || '';
                 window.editingPage5VideoId = id;
                 window.editingPage5Video = true;
-                document.getElementById('video-modal-title').textContent = 'Edit Video';
-                document.getElementById('video-modal-submit-btn').textContent = 'Save Video';
+                document.getElementById('video-modal-title').textContent = 'Edit Resource';
+                document.getElementById('video-modal-submit-btn').textContent = 'Save Resource';
                 document.getElementById('add-video-modal').style.display = 'block';
                 document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
             }
@@ -1457,7 +1491,7 @@
                     <strong>Question ${index + 1}:</strong> ${question.text}
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editQuestion(${question.id})">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteQuestion(${question.id})">Delete</button>
+                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteQuestion(${question.id})">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1721,6 +1755,8 @@
 
             if (draft && currentView === 'admin') {
                 draftNotice.style.display = 'block';
+                const draftNameSpan = document.getElementById('draft-week-name');
+                draftNameSpan.textContent = draft.title || 'Untitled Week';
             } else {
                 draftNotice.style.display = 'none';
             }
@@ -1739,6 +1775,7 @@
             if (draft) {
                 document.getElementById('week-title-input').value = draft.title || '';
                 document.getElementById('week-description-input').value = draft.description || '';
+                document.getElementById('week-unlock-date-input').value = draft.unlockDate || '';
                 document.getElementById('page2-intro-text').value = draft.page2IntroText || '';
                 document.getElementById('zoom-prep-text').value = draft.zoomPrepText || '';
                 weeklyReadings = draft.weeklyReadings || [];
@@ -1821,17 +1858,31 @@
             await loadModuleInfo();
             await displayZoomInfo();
             setupAutoSave();
+
+            // Show content after everything is loaded
+            showContent();
         };
+
+        // Show content and hide loading spinner
+        function showContent() {
+            const loadingState = document.getElementById('loading-state');
+            const mainContent = document.getElementById('main-content');
+
+            loadingState.style.display = 'none';
+            mainContent.classList.remove('page-loading');
+            mainContent.classList.add('page-loaded');
+        }
 
         function showParticipantModeBanner() {
             const banner = document.createElement('div');
             banner.id = 'participant-mode-banner';
-            banner.style.cssText = 'background: var(--teal); color: white; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;';
+            banner.style.cssText = 'background: var(--teal); color: white; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;';
             banner.innerHTML = `
                 <span><strong>Participant Mode</strong> - You are viewing this module as a participant</span>
                 <button class="btn" style="background: white; color: var(--teal); padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="exitParticipantMode()">Exit to Admin View</button>
             `;
-            document.body.insertBefore(banner, document.body.firstChild);
+            const header = document.querySelector('header');
+            header.insertAdjacentElement('afterend', banner);
 
             // Hide view toggle in participant mode
             const viewToggle = document.querySelector('.view-toggle');
@@ -2022,6 +2073,9 @@
             if (currentModule) {
                 // Keep module as draft (template) status
                 showNotification('Module template saved successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
             } else {
                 showNotification('Module not found', 'error');
             }

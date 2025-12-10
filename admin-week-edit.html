@@ -88,10 +88,10 @@
 
     <header>
         <div class="header-content">
-            <div class="logo">
+            <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
                 <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
                 <h1>LecternAI</h1>
-            </div>
+            </a>
             <div id="header-actions"></div>
         </div>
     </header>
@@ -266,12 +266,11 @@
     <div id="add-question-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Add Reflection Question</h3>
+                <h3 id="question-modal-title">Add Reflection Question</h3>
                 <button class="modal-close" onclick="closeAddQuestionModal()">&times;</button>
             </div>
             <div class="form-group">
-                <label for="question-text">Question</label>
-                <textarea id="question-text" style="min-height: 120px;"></textarea>
+                <textarea id="question-text" placeholder="Enter your reflection question..." style="min-height: 120px;"></textarea>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeAddQuestionModal()">Cancel</button>
@@ -343,7 +342,7 @@
                     <strong>${currentUser.name || currentUser.email}</strong>
                     <span class="admin-badge">Admin</span>
                 </span>
-                <a href="admin-users.html" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Manage Users</a>
+                <a href="admin-users.html" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Manage Users</a>
                 <button onclick="logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
             `;
             header.style.display = 'flex';
@@ -365,7 +364,7 @@
                     </div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
+                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -386,7 +385,7 @@
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
-                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteVideo(${video.id})">Delete</button>
+                            <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteVideo(${video.id})">Delete</button>
                         </div>
                     </div>
                 `;
@@ -410,7 +409,7 @@
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
                             <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editQuestion(${question.id})">Edit</button>
-                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteQuestion(${question.id})">Delete</button>
+                            <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteQuestion(${question.id})">Delete</button>
                         </div>
                     </div>
                 `;
@@ -434,7 +433,7 @@
                     </div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
                         <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #dc3545; color: white;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
+                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -623,8 +622,9 @@
             setTimeout(() => notification.remove(), 4000);
         }
 
-        function openAddQuestionModal() {
+        function openAddQuestionModal(isEdit = false) {
             document.getElementById('question-text').value = '';
+            document.getElementById('question-modal-title').textContent = isEdit ? 'Edit Reflection Question' : 'Add Reflection Question';
             document.getElementById('add-question-modal').style.display = 'block';
             document.body.classList.add('modal-open');
         }
@@ -772,10 +772,10 @@
         function editQuestion(id) {
             const question = reflectionQuestions.find(q => q.id === id);
             if (question) {
-                document.getElementById('question-text').value = question.text;
                 // Store the ID being edited - don't delete the question
                 window.editingQuestionId = id;
-                openAddQuestionModal();
+                openAddQuestionModal(true);
+                document.getElementById('question-text').value = question.text;
             }
         }
 

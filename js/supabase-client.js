@@ -13,13 +13,12 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
 /**
- * Temporary user ID function - will be replaced with real auth
- * Returns a hardcoded test user ID for development
+ * Get the current authenticated user's ID
+ * @returns {Promise<string|null>} User ID or null if not logged in
  */
-export function getCurrentUserId() {
-    // TODO: Replace with real auth in next phase
-    // For now, return a test user ID that should exist in the users table
-    return 'test-user-001'
+export async function getCurrentUserId() {
+    const { data: { user } } = await supabase.auth.getUser()
+    return user ? user.id : null
 }
 
 /**

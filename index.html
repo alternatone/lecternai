@@ -87,6 +87,35 @@
             font-size: 0.75rem;
             margin-left: 0.5rem;
         }
+        /* Loading state styles */
+        .page-loading {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .page-loaded {
+            opacity: 1;
+        }
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+        .loading-spinner::before {
+            content: '';
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e9ecef;
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -94,15 +123,21 @@
 
     <header>
         <div class="header-content">
-            <div class="logo">
+            <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
                 <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
                 <h1>LecternAI</h1>
-            </div>
+            </a>
             <div id="header-actions"></div>
         </div>
     </header>
 
-    <div class="container">
+    <!-- Loading State -->
+    <div id="loading-state" class="container">
+        <div class="loading-spinner">Loading modules...</div>
+    </div>
+
+    <!-- Main Content (hidden until loaded) -->
+    <div id="main-content" class="container page-loading">
         <h2 class="page-title">
             <span id="view-title">My Modules</span>
         </h2>
@@ -141,7 +176,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div><!-- end main-content -->
 
     <!-- Create Module Modal -->
     <div id="create-module-modal" class="modal">
@@ -244,6 +279,19 @@
             } else {
                 await setView('student');
             }
+
+            // Show content after everything is loaded
+            showContent();
+        }
+
+        // Show content and hide loading spinner
+        function showContent() {
+            const loadingState = document.getElementById('loading-state');
+            const mainContent = document.getElementById('main-content');
+
+            loadingState.style.display = 'none';
+            mainContent.classList.remove('page-loading');
+            mainContent.classList.add('page-loaded');
         }
 
         function renderUserHeader() {
@@ -256,7 +304,7 @@
                     <strong>${currentUser.name || currentUser.email}</strong>
                     ${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
                 </span>
-                ${isAdmin ? '<a href="admin-users.html" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Manage Users</a>' : ''}
+                ${isAdmin ? '<a href="admin-users.html" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Manage Users</a>' : ''}
                 <button onclick="logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
             `;
             header.style.display = 'flex';
@@ -503,8 +551,9 @@
                         ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
                         ${module.duration ? `<span><strong>Duration:</strong> ${module.duration}</span>` : ''}
                     </div>
-                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-primary" style="background: var(--teal);" onclick="accessModule(${module.id})">Access Module</button>
+                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-teal" onclick="accessModule(${module.id})">Participate</button>
+                        <button class="btn btn-secondary" onclick="manageModule(${module.id})">Manage</button>
                         <button class="btn btn-secondary" onclick="archiveModule(${module.id})">Archive</button>
                     </div>
                 </div>
@@ -531,8 +580,8 @@
                         ${module.duration ? `<span><strong>Duration:</strong> ${module.duration}</span>` : ''}
                     </div>
                     <div style="display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-secondary" onclick="deleteModule(${module.id})">Delete</button>
                         <button class="btn btn-primary" onclick="editModule(${module.id})">Edit Template</button>
+                        <button class="btn btn-danger" onclick="deleteModule(${module.id})">Delete</button>
                     </div>
                 </div>
             `;
@@ -557,9 +606,9 @@
                     <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
                         ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
                     </div>
-                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-danger" onclick="deleteArchivedModule(${module.id})">Delete</button>
                         <button class="btn btn-secondary" onclick="viewArchivedModule(${module.id})">View Archive</button>
-                        <button class="btn btn-secondary" style="background: #dc3545; color: white;" onclick="deleteArchivedModule(${module.id})">Delete</button>
                     </div>
                 </div>
             `;
@@ -584,6 +633,12 @@
             dataService.setCurrentModuleId(moduleId);
             // Navigate to module overview in participant mode (admin experiences module as student)
             location.href = 'module-overview.html?participant=true';
+        }
+
+        function manageModule(moduleId) {
+            dataService.setCurrentModuleId(moduleId);
+            // Navigate to module overview in admin mode (can update from template, view stats, etc.)
+            location.href = 'module-overview.html';
         }
 
         async function archiveModule(moduleId) {
@@ -680,7 +735,9 @@
                             ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
                             <span><strong>Available Weeks:</strong> ${visibleWeeks.length}</span>
                         </div>
-                        <button class="btn btn-primary" onclick="event.stopPropagation(); dataService.setCurrentModuleId(${module.id}); location.href='module-overview.html';">${isArchived ? 'View Archive' : 'View Module'}</button>
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn btn-primary" onclick="event.stopPropagation(); dataService.setCurrentModuleId(${module.id}); location.href='module-overview.html';">${isArchived ? 'View Archive' : 'View Module'}</button>
+                        </div>
                     </div>
                 `;
 
@@ -698,6 +755,7 @@
         window.closeCreateModuleModal = closeCreateModuleModal;
         window.saveModule = saveModule;
         window.accessModule = accessModule;
+        window.manageModule = manageModule;
         window.editModule = editModule;
         window.deleteModule = deleteModule;
         window.archiveModule = archiveModule;

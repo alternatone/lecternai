@@ -246,24 +246,50 @@ header {
     display: inline-block;
 }
 
+/* Primary button - Gold (main CTAs) */
 .btn-primary {
-    background: var(--primary-color);
-    color: var(--text-light);
-}
-
-.btn-primary:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-.btn-secondary {
     background: var(--secondary-color);
     color: var(--text-dark);
 }
 
-.btn-secondary:hover {
+.btn-primary:hover {
     background: #E6A915;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* Teal button - Active/Launch/Approve actions */
+.btn-teal {
+    background: var(--teal);
+    color: var(--text-light);
+}
+
+.btn-teal:hover {
+    background: #007d73;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* Secondary button - Gray (Cancel, Edit, Back) */
+.btn-secondary {
+    background: #6c757d;
+    color: var(--text-light);
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+/* Danger button - Red (Delete, Reject, Remove) */
+.btn-danger {
+    background: #dc3545;
+    color: var(--text-light);
+}
+
+.btn-danger:hover {
+    background: #c82333;
     transform: translateY(-2px);
     box-shadow: var(--shadow);
 }

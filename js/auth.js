@@ -297,7 +297,7 @@ export function renderUserHeader(user, container) {
                 <strong>${user.name || user.email}</strong>
                 ${isAdmin ? '<span style="background: var(--primary-color); color: white; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">Admin</span>' : ''}
             </span>
-            ${isAdmin ? '<a href="admin-users.html" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Manage Users</a>' : ''}
+            ${isAdmin ? '<a href="admin-users.html" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Manage Users</a>' : ''}
             <button onclick="window.logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
         </div>
     `;

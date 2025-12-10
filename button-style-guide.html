@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Style Guide - LecternAI</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .guide-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .section {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .color-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .swatch-large {
+            height: 50px;
+        }
+
+        .color-details {
+            padding: 0.5rem 0.75rem;
+        }
+
+        .color-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .color-value {
+            font-size: 0.75rem;
+            color: #6c757d;
+            font-family: monospace;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .option-box {
+            border: 3px solid #dee2e6;
+            border-radius: 12px;
+            padding: 1.5rem;
+            background: white;
+        }
+
+        .option-box h3 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #e9ecef;
+            font-size: 1.3rem;
+        }
+
+        .option-box.recommended {
+            border-color: var(--teal);
+            background: rgba(0, 147, 135, 0.02);
+        }
+
+        .option-box.recommended h3 {
+            color: var(--teal);
+        }
+
+        .recommended-badge {
+            background: var(--teal);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            font-weight: normal;
+        }
+
+        .btn-showcase {
+            margin-bottom: 1.25rem;
+        }
+
+        .btn-showcase-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .btn-showcase-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .example-card {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .example-card-title {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0.75rem;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 600;
+            background: #f8f9fa;
+        }
+
+        .swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* Option A: Teal Primary */
+        .opt-a .btn-primary-new {
+            background: var(--teal);
+            color: white;
+        }
+        .opt-a .btn-primary-new:hover {
+            background: #007d73;
+        }
+        .opt-a .btn-secondary-new {
+            background: var(--secondary-color);
+            color: var(--text-dark);
+        }
+        .opt-a .btn-danger-new {
+            background: #dc3545;
+            color: white;
+        }
+        .opt-a .btn-gray-new {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* Option B: Gold Primary with Light Secondary */
+        .opt-b .btn-primary-new {
+            background: var(--secondary-color);
+            color: var(--text-dark);
+        }
+        .opt-b .btn-teal-new {
+            background: var(--teal);
+            color: white;
+        }
+        .opt-b .btn-secondary-new {
+            background: #e9ecef;
+            color: var(--text-dark);
+            border: 1px solid #dee2e6;
+        }
+        .opt-b .btn-danger-new {
+            background: #dc3545;
+            color: white;
+        }
+
+        @media (max-width: 900px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon">
+                <h1>Button Style Guide</h1>
+            </a>
+        </div>
+    </header>
+
+    <div class="guide-container">
+        <!-- Brand Colors Reference -->
+        <div class="section">
+            <h2>Available Brand Colors</h2>
+            <div class="color-grid">
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #BB292F;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Primary Red</div>
+                        <div class="color-value">#BB292F</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #FFB81C;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Gold</div>
+                        <div class="color-value">#FFB81C</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #009387;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Teal</div>
+                        <div class="color-value">#009387</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #89985A;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Olive</div>
+                        <div class="color-value">#89985A</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #6c757d;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Gray</div>
+                        <div class="color-value">#6c757d</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #dc3545;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Danger Red</div>
+                        <div class="color-value">#dc3545</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Options Comparison -->
+        <div class="section">
+            <h2>Proposed Button Systems (Choose One)</h2>
+            <p style="color: #6c757d; margin-bottom: 1.5rem;">Both options eliminate the conflict of having two different red buttons. Red is reserved exclusively for destructive/danger actions.</p>
+
+            <div class="options-grid">
+                <!-- Option A -->
+                <div class="option-box recommended opt-a">
+                    <h3>Option A: Teal Primary <span class="recommended-badge">RECOMMENDED</span></h3>
+
+                    <div class="btn-showcase">
+                        <div class="btn-showcase-label">btn-primary (Teal) - Main CTAs</div>
+                        <div class="btn-showcase-row">
+                            <button type="button" class="btn btn-primary-new">Save</button>
+                            <button type="button" class="btn btn-primary-new">Submit</button>
+                            <button type="button" class="btn btn-primary-new">Create</button>
+                            <button type="button" class="btn btn-primary-new">Participate</button>
+                        </div>
+                    </div>
+
+                    <div class="btn-showcase">
+                        <div class="btn-showcase-label">btn-secondary (Gold) - Secondary actions</div>
+                        <div class="btn-showcase-row">
+                            <button type="button" class="btn btn-secondary-new">Cancel</button>
+                            <button type="button" class="btn btn-secondary-new">Edit</button>
+                            <button type="button" class="btn btn-secondary-new">Back</button>
+                            <button type="button" class="btn btn-secondary-new">Manage</button>
+                        </div>
+                    </div>
+
+                    <div class="btn-showcase">
+                        <div class="btn-showcase-label">btn-gray - Neutral actions</div>
+                        <div class="btn-showcase-row">
+                            <button type="button" class="btn btn-gray-new">Save Draft</button>
+                            <button type="button" class="btn btn-gray-new">Archive</button>
+                        </div>
+                    </div>
+
+                    <div class="btn-showcase">
+                        <div class="btn-showcase-label">btn-danger (Red) - Destructive only</div>
+                        <div class="btn-showcase-row">
+                            <button type="button" class="btn btn-danger-new">Delete</button>
+                            <button type="button" class="btn btn-danger-new">Reject</button>
+                            <button type="button" class="btn btn-danger-new">Remove</button>
+                        </div>
+                    </div>
+
+                    <hr style="margin: 1.5rem 0;">
+
+                    <div class="example-card">
+                        <div class="example-card-title">Example: Active Module Card</div>
+                        <div class="btn-row">
+                            <button type="button" class="btn btn-gray-new">Archive</button>
+                            <button type="button" class="btn btn-secondary-new">Manage</button>
+                            <button type="button" class="btn btn-primary-new">Participate</button>
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <div class="example-card-title">Example: User Management</div>
+                        <div class="btn-row">
+                            <button type="button" class="btn btn-danger-new">Reject</button>
+                            <button type="button" class="btn btn-primary-new">Approve</button>
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <div class="example-card-title">Example: Week Actions</div>
+                        <div class="btn-row">
+                            <button type="button" class="btn btn-danger-new">Delete</button>
+                            <button type="button" class="btn btn-secondary-new">Edit</button>
+                        </div>
+                    </div>
+
+                    <table style="margin-top: 1rem;">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Color</th>
+                                <th>Use For</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>btn-primary</code></td>
+                                <td><span class="swatch" style="background: #009387;"></span>Teal</td>
+                                <td>Save, Submit, Create, Participate, Approve</td>
+                            </tr>
+                            <tr>
+                                <td><code>btn-secondary</code></td>
+                                <td><span class="swatch" style="background: #FFB81C;"></span>Gold</td>
+                                <td>Cancel, Edit, Back, Manage, Reply</td>
+                            </tr>
+                            <tr>
+                                <td><code>btn-gray</code></td>
+                                <td><span class="swatch" style="background: #6c757d;"></span>Gray</td>
+                                <td>Save Draft, Archive, Dismiss</td>
+                            </tr>
+                            <tr>
+                                <td><code>btn-danger</code></td>
+                                <td><span class="swatch" style="background: #dc3545;"></span>Red</td>
+                                <td>Delete, Reject, Remove</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Option B -->
+                <div class="option-box opt-b">
+                    <h3>Option B: Gold Primary + Light Secondary</h3>
+
+                    <div class="btn-showcase">
+                        <div class="btn-showcase-label">btn-primary (Gold) - Main CTAs</div>
+                        <div class="btn-showcase-row">
+                            <button type="button" class="btn btn-primary-new">Save</button>
+                            <button type="button" class="btn btn-primary-new">Submit</button>
+                            <button type="button" class="btn btn-primary-new">Create</button>
+                        </div>
+                    </div>
+
+                    <div class="btn-showcase">
+                        <div class="btn-showcase-label">btn-teal - Active/Launch actions</div>
+                        <div class="btn-showcase-row">
+                            <button type="button" class="btn btn-teal-new">Participate</button>
+                            <button type="button" class="btn btn-teal-new">Launch</button>
+                            <button type="button" class="btn btn-teal-new">Approve</button>
+                        </div>
+                    </div>
+
+                    <div class="btn-showcase">
+                        <div class="btn-showcase-label">btn-secondary (Light Gray) - Secondary actions</div>
+                        <div class="btn-showcase-row">
+                            <button type="button" class="btn btn-secondary-new">Cancel</button>
+                            <button type="button" class="btn btn-secondary-new">Edit</button>
+                            <button type="button" class="btn btn-secondary-new">Back</button>
+                            <button type="button" class="btn btn-secondary-new">Archive</button>
+                        </div>
+                    </div>
+
+                    <div class="btn-showcase">
+                        <div class="btn-showcase-label">btn-danger (Red) - Destructive only</div>
+                        <div class="btn-showcase-row">
+                            <button type="button" class="btn btn-danger-new">Delete</button>
+                            <button type="button" class="btn btn-danger-new">Reject</button>
+                            <button type="button" class="btn btn-danger-new">Remove</button>
+                        </div>
+                    </div>
+
+                    <hr style="margin: 1.5rem 0;">
+
+                    <div class="example-card">
+                        <div class="example-card-title">Example: Active Module Card</div>
+                        <div class="btn-row">
+                            <button type="button" class="btn btn-secondary-new">Archive</button>
+                            <button type="button" class="btn btn-secondary-new">Manage</button>
+                            <button type="button" class="btn btn-teal-new">Participate</button>
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <div class="example-card-title">Example: User Management</div>
+                        <div class="btn-row">
+                            <button type="button" class="btn btn-danger-new">Reject</button>
+                            <button type="button" class="btn btn-teal-new">Approve</button>
+                        </div>
+                    </div>
+
+                    <div class="example-card">
+                        <div class="example-card-title">Example: Week Actions</div>
+                        <div class="btn-row">
+                            <button type="button" class="btn btn-danger-new">Delete</button>
+                            <button type="button" class="btn btn-secondary-new">Edit</button>
+                        </div>
+                    </div>
+
+                    <table style="margin-top: 1rem;">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Color</th>
+                                <th>Use For</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>btn-primary</code></td>
+                                <td><span class="swatch" style="background: #FFB81C;"></span>Gold</td>
+                                <td>Save, Submit, Create</td>
+                            </tr>
+                            <tr>
+                                <td><code>btn-teal</code></td>
+                                <td><span class="swatch" style="background: #009387;"></span>Teal</td>
+                                <td>Participate, Launch, Approve</td>
+                            </tr>
+                            <tr>
+                                <td><code>btn-secondary</code></td>
+                                <td><span class="swatch" style="background: #e9ecef;"></span>Light</td>
+                                <td>Cancel, Edit, Back, Archive</td>
+                            </tr>
+                            <tr>
+                                <td><code>btn-danger</code></td>
+                                <td><span class="swatch" style="background: #dc3545;"></span>Red</td>
+                                <td>Delete, Reject, Remove</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Summary -->
+        <div class="section">
+            <h2>Comparison Summary</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Aspect</th>
+                        <th>Option A (Teal Primary)</th>
+                        <th>Option B (Gold Primary)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Primary CTA color</strong></td>
+                        <td>Teal - calming, professional</td>
+                        <td>Gold - warm, attention-grabbing</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Number of button types</strong></td>
+                        <td>4 (primary, secondary, gray, danger)</td>
+                        <td>4 (primary, teal, secondary, danger)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Secondary button</strong></td>
+                        <td>Gold - still prominent</td>
+                        <td>Light gray - very subtle</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Brand color usage</strong></td>
+                        <td>Teal prominent, Gold secondary</td>
+                        <td>Gold prominent, Teal for special actions</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Visual hierarchy</strong></td>
+                        <td>Clear: Teal > Gold > Gray > Red</td>
+                        <td>Gold and Teal compete for attention</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Simplicity</strong></td>
+                        <td>Simpler - fewer decisions needed</td>
+                        <td>More nuanced - need to choose between gold/teal</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
