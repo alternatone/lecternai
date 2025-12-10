@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Debug/utility files (development only)
+check-weeks.html
+cleanup-duplicates.html
+debug-storage.html
+recover-weeks.html
+view-data.html
+AUDIT-REPORT.md
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log

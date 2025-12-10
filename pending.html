@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Approval - LecternAI</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .pending-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .pending-card {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .pending-icon {
+            width: 80px;
+            height: 80px;
+            background: #fff3cd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .pending-icon svg {
+            width: 40px;
+            height: 40px;
+            color: #856404;
+        }
+
+        .pending-card h1 {
+            color: var(--primary-color);
+            margin: 0 0 1rem;
+            font-size: 1.75rem;
+        }
+
+        .pending-card p {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .pending-card .email-info {
+            background: var(--light-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .pending-card .email-info strong {
+            display: block;
+            color: var(--text-color);
+            margin-bottom: 0.25rem;
+        }
+
+        .logout-btn {
+            padding: 0.75rem 2rem;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="pending-container">
+        <div class="pending-card">
+            <div class="pending-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+
+            <h1>Account Pending Approval</h1>
+
+            <p>Your account has been created successfully but is awaiting admin approval. You'll be notified when your account is activated.</p>
+
+            <div class="email-info" id="user-info" style="display: none;">
+                <strong>Logged in as:</strong>
+                <span id="user-email"></span>
+            </div>
+
+            <p style="font-size: 0.9rem; color: #856404;">Please check back later or contact your administrator if you haven't heard back within 24 hours.</p>
+
+            <button class="logout-btn" onclick="logoutUser()">Sign Out</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { getCurrentUser, logout } from './js/auth.js';
+
+        async function init() {
+            const user = await getCurrentUser();
+
+            if (!user) {
+                // Not logged in - redirect to login
+                window.location.href = 'login.html';
+                return;
+            }
+
+            if (user.status === 'active') {
+                // Already approved - redirect to app
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Show user info
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('user-info').style.display = 'block';
+        }
+
+        window.logoutUser = logout;
+
+        init();
+    </script>
+</body>
+</html>

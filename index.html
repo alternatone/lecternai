@@ -65,19 +65,40 @@
         body.modal-open {
             overflow: hidden;
         }
+
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--light-bg);
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .user-header .user-info {
+            flex: 1;
+        }
+
+        .user-header .admin-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
     </style>
 </head>
 <body>
+    <div id="user-header" class="user-header" style="display: none;"></div>
+
     <header>
         <div class="header-content">
             <div class="logo">
                 <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
                 <h1>LecternAI</h1>
             </div>
-            <div class="view-toggle">
-                <button class="active" onclick="setView('student')">Student View</button>
-                <button onclick="setView('admin')">Admin View</button>
-            </div>
+            <div id="header-actions"></div>
         </div>
     </header>
 
@@ -205,29 +226,57 @@
 
     <script type="module">
         import { dataService } from './js/data-service-supabase.js';
+        import { requireActiveUser, logout, getUserEnrollments } from './js/auth.js';
 
         let modules = [];
+        let currentUser = null;
+
+        async function init() {
+            currentUser = await requireActiveUser();
+            if (!currentUser) return;
+
+            // Render user header
+            renderUserHeader();
+
+            // Set view based on role
+            if (currentUser.role === 'admin') {
+                await setView('admin');
+            } else {
+                await setView('student');
+            }
+        }
+
+        function renderUserHeader() {
+            const header = document.getElementById('user-header');
+            const headerActions = document.getElementById('header-actions');
+            const isAdmin = currentUser.role === 'admin';
+
+            header.innerHTML = `
+                <span class="user-info">
+                    <strong>${currentUser.name || currentUser.email}</strong>
+                    ${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
+                </span>
+                ${isAdmin ? '<a href="admin-users.html" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Manage Users</a>' : ''}
+                <button onclick="logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
+            `;
+            header.style.display = 'flex';
+        }
 
         async function setView(view) {
             const studentView = document.getElementById('student-view');
             const adminView = document.getElementById('admin-view');
             const viewTitle = document.getElementById('view-title');
-            const buttons = document.querySelectorAll('.view-toggle button');
-
-            buttons.forEach(btn => btn.classList.remove('active'));
 
             if (view === 'student') {
                 studentView.style.display = 'block';
                 adminView.style.display = 'none';
                 viewTitle.textContent = 'My Modules';
-                buttons[0].classList.add('active');
                 dataService.setCurrentView('student');
                 await renderStudentModules();
             } else {
                 studentView.style.display = 'none';
                 adminView.style.display = 'block';
                 viewTitle.textContent = 'Module Management';
-                buttons[1].classList.add('active');
                 dataService.setCurrentView('admin');
                 await renderModules();
             }
@@ -586,8 +635,15 @@
             const grid = document.getElementById('student-modules-grid');
             grid.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">Loading modules...</p>';
 
-            // Get only launched modules that have at least one unlocked week
-            const studentModules = await dataService.getStudentModules();
+            // Get user's enrolled module IDs
+            const enrolledModuleIds = await getUserEnrollments(currentUser.id);
+
+            // Get all modules and filter to enrolled ones (launched or archived)
+            const allModules = await dataService.getModules();
+            const studentModules = allModules.filter(m =>
+                enrolledModuleIds.includes(m.id) &&
+                (m.status === 'launched' || m.status === 'archived')
+            );
 
             grid.innerHTML = '';
 
@@ -600,6 +656,12 @@
                 const moduleCard = document.createElement('div');
                 moduleCard.className = 'course-card';
                 moduleCard.style.cursor = 'pointer';
+
+                const isArchived = module.status === 'archived';
+                if (isArchived) {
+                    moduleCard.style.borderLeft = '4px solid #6c757d';
+                }
+
                 moduleCard.onclick = () => {
                     dataService.setCurrentModuleId(module.id);
                     location.href = 'module-overview.html';
@@ -611,13 +673,14 @@
                 moduleCard.innerHTML = `
                     <div class="course-header">
                         <h3>${module.title}</h3>
+                        ${isArchived ? '<span style="background: #6c757d; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">Archived</span>' : ''}
                     </div>
                     <div class="course-body">
                         <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
                             ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
                             <span><strong>Available Weeks:</strong> ${visibleWeeks.length}</span>
                         </div>
-                        <button class="btn btn-primary" onclick="event.stopPropagation(); dataService.setCurrentModuleId(${module.id}); location.href='module-overview.html';">View Module</button>
+                        <button class="btn btn-primary" onclick="event.stopPropagation(); dataService.setCurrentModuleId(${module.id}); location.href='module-overview.html';">${isArchived ? 'View Archive' : 'View Module'}</button>
                     </div>
                 `;
 
@@ -625,20 +688,12 @@
             }
         }
 
-        // Restore view preference
-        window.onload = async function() {
-            await loadModules();
-            let savedView = dataService.getCurrentView() || 'student';
-            // Migrate old 'teacher' value to 'admin'
-            if (savedView === 'teacher') {
-                savedView = 'admin';
-                dataService.setCurrentView('admin');
-            }
-            await setView(savedView);
-        };
+        // Initialize app with auth
+        window.onload = init;
 
         // Export functions to window for onclick handlers
         window.setView = setView;
+        window.logoutUser = logout;
         window.openCreateModuleModal = openCreateModuleModal;
         window.closeCreateModuleModal = closeCreateModuleModal;
         window.saveModule = saveModule;

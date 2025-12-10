@@ -64,19 +64,35 @@
         body.modal-open {
             overflow: hidden;
         }
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--light-bg);
+            border-bottom: 1px solid #e9ecef;
+        }
+        .user-header .user-info { flex: 1; }
+        .user-header .admin-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
     </style>
 </head>
 <body>
+    <div id="user-header" class="user-header" style="display: none;"></div>
+
     <header>
         <div class="header-content">
             <div class="logo">
                 <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
                 <h1>LecternAI</h1>
             </div>
-            <div class="view-toggle">
-                <button onclick="setView('student', true)">Student View</button>
-                <button class="active" onclick="setView('admin', true)">Admin View</button>
-            </div>
+            <div id="header-actions"></div>
         </div>
     </header>
 
@@ -294,30 +310,43 @@
 
     <script type="module">
         import { dataService } from './js/data-service-supabase.js';
+        import { requireAdmin, logout } from './js/auth.js';
 
         let weeklyReadings = [];
         let videos = [];
         let reflectionQuestions = [];
         let furtherStudy = [];
+        let currentUser = null;
 
-        function setView(view, fromToggle = false) {
-            // Only redirect to index.html if explicitly toggling to student view (not on page load)
-            if (view === 'student' && fromToggle) {
-                dataService.setCurrentView('student');
-                window.location.href = 'index.html';
-                return;
-            }
+        async function init() {
+            // Admin-only page
+            currentUser = await requireAdmin();
+            if (!currentUser) return;
 
-            const buttons = document.querySelectorAll('.view-toggle button');
-            buttons.forEach(btn => btn.classList.remove('active'));
+            // Render user header
+            renderUserHeader();
 
-            if (view === 'student') {
-                buttons[0].classList.add('active');
-                dataService.setCurrentView('student');
-            } else {
-                buttons[1].classList.add('active');
-                dataService.setCurrentView('admin');
-            }
+            // Load content
+            await loadWeekContent();
+            renderWeeklyReadings();
+            renderVideos();
+            renderReflectionQuestions();
+            renderFurtherStudy();
+            setupAutoSave();
+        }
+
+        function renderUserHeader() {
+            const header = document.getElementById('user-header');
+
+            header.innerHTML = `
+                <span class="user-info">
+                    <strong>${currentUser.name || currentUser.email}</strong>
+                    <span class="admin-badge">Admin</span>
+                </span>
+                <a href="admin-users.html" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Manage Users</a>
+                <button onclick="logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
+            `;
+            header.style.display = 'flex';
         }
 
         function renderWeeklyReadings() {
@@ -1162,17 +1191,10 @@
         }
 
         // Initialize
-        window.onload = async function() {
-            await loadWeekContent();
-            renderWeeklyReadings();
-            renderVideos();
-            renderReflectionQuestions();
-            renderFurtherStudy();
-            setupAutoSave();
-        };
+        window.onload = init;
 
         // Export functions to window for onclick handlers
-        window.setView = setView;
+        window.logoutUser = logout;
         window.openAddContentModal = openAddContentModal;
         window.closeAddContentModal = closeAddContentModal;
         window.addContent = addContent;

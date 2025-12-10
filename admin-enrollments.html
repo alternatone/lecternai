@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Enrollments - LecternAI</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .user-header {
+            background: var(--light-bg);
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-header h2 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .student-selector {
+            background: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .student-selector label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .student-selector select {
+            width: 100%;
+            max-width: 400px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .enrollment-section {
+            display: none;
+        }
+
+        .enrollment-section.show {
+            display: block;
+        }
+
+        .student-info {
+            background: var(--light-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-info h3 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .student-info p {
+            margin: 0.25rem 0 0;
+            color: #6c757d;
+        }
+
+        .module-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .module-item {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .module-item:hover {
+            border-color: #dee2e6;
+        }
+
+        .module-item.enrolled {
+            border-color: var(--teal);
+            background: #f0fdfa;
+        }
+
+        .module-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .module-info {
+            flex: 1;
+        }
+
+        .module-info h4 {
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        .module-info p {
+            margin: 0.25rem 0 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .module-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .module-status.launched {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .module-status.archived {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .save-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div id="user-header" class="user-header"></div>
+
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <h1>LecternAI</h1>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="admin-users.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; text-decoration: none;">Back to Users</a>
+                <a href="index.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; text-decoration: none;">Back to Modules</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 2rem;">
+        <div class="page-header">
+            <h2>Enrollment Management</h2>
+        </div>
+
+        <div class="student-selector">
+            <label for="student-select">Select a Student</label>
+            <select id="student-select" onchange="selectStudent(this.value)">
+                <option value="">Choose a student...</option>
+            </select>
+        </div>
+
+        <div id="enrollment-section" class="enrollment-section">
+            <div class="student-info">
+                <div>
+                    <h3 id="selected-student-name">Student Name</h3>
+                    <p id="selected-student-email">student@email.com</p>
+                </div>
+                <span id="enrollment-count" style="color: #6c757d;">0 modules enrolled</span>
+            </div>
+
+            <div id="modules-list" class="module-list"></div>
+
+            <div id="empty-modules" class="empty-state" style="display: none;">
+                <p>No launched or archived modules available for enrollment.</p>
+            </div>
+
+            <div class="save-section">
+                <button class="btn btn-primary" onclick="saveEnrollments()" id="save-btn">Save Enrollments</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { requireAdmin, getAllUsers, getUserEnrollments, setUserEnrollments, renderUserHeader } from './js/auth.js';
+        import { dataService } from './js/data-service-supabase.js';
+
+        let currentUser = null;
+        let students = [];
+        let modules = [];
+        let selectedStudent = null;
+        let currentEnrollments = [];
+
+        async function init() {
+            currentUser = await requireAdmin();
+            if (!currentUser) return;
+
+            renderUserHeader(currentUser, document.getElementById('user-header'));
+
+            // Load students and modules
+            const allUsers = await getAllUsers();
+            students = allUsers.filter(u => u.status === 'active' && u.role === 'student');
+
+            const allModules = await dataService.getModules();
+            modules = allModules.filter(m => m.status === 'launched' || m.status === 'archived');
+
+            // Populate student dropdown
+            const select = document.getElementById('student-select');
+            students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.id;
+                option.textContent = `${student.name || 'No name'} (${student.email})`;
+                select.appendChild(option);
+            });
+
+            // Check for pre-selected user from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user');
+            if (userId) {
+                select.value = userId;
+                await selectStudent(userId);
+            }
+        }
+
+        async function selectStudent(userId) {
+            if (!userId) {
+                document.getElementById('enrollment-section').classList.remove('show');
+                selectedStudent = null;
+                return;
+            }
+
+            selectedStudent = students.find(s => s.id === userId);
+            if (!selectedStudent) return;
+
+            // Update student info
+            document.getElementById('selected-student-name').textContent = selectedStudent.name || 'No name';
+            document.getElementById('selected-student-email').textContent = selectedStudent.email;
+
+            // Load current enrollments
+            currentEnrollments = await getUserEnrollments(userId);
+
+            // Render modules
+            renderModules();
+
+            // Show section
+            document.getElementById('enrollment-section').classList.add('show');
+        }
+
+        function renderModules() {
+            const container = document.getElementById('modules-list');
+            const emptyState = document.getElementById('empty-modules');
+
+            if (modules.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            container.innerHTML = modules.map(module => {
+                const isEnrolled = currentEnrollments.includes(module.id);
+                return `
+                    <label class="module-item ${isEnrolled ? 'enrolled' : ''}" onclick="toggleEnrollment(${module.id}, this)">
+                        <input type="checkbox" ${isEnrolled ? 'checked' : ''} data-module-id="${module.id}">
+                        <div class="module-info">
+                            <h4>${module.title}</h4>
+                            <p>${module.description || 'No description'}</p>
+                        </div>
+                        <span class="module-status ${module.status}">${module.status === 'launched' ? 'Active' : 'Archived'}</span>
+                    </label>
+                `;
+            }).join('');
+
+            updateEnrollmentCount();
+        }
+
+        function toggleEnrollment(moduleId, element) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+
+            if (currentEnrollments.includes(moduleId)) {
+                currentEnrollments = currentEnrollments.filter(id => id !== moduleId);
+                element.classList.remove('enrolled');
+            } else {
+                currentEnrollments.push(moduleId);
+                element.classList.add('enrolled');
+            }
+
+            checkbox.checked = currentEnrollments.includes(moduleId);
+            updateEnrollmentCount();
+        }
+
+        function updateEnrollmentCount() {
+            const count = currentEnrollments.length;
+            document.getElementById('enrollment-count').textContent = `${count} module${count !== 1 ? 's' : ''} enrolled`;
+        }
+
+        async function saveEnrollments() {
+            if (!selectedStudent) return;
+
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            const result = await setUserEnrollments(selectedStudent.id, currentEnrollments);
+
+            if (result.success) {
+                showNotification('Enrollments saved successfully', 'success');
+            } else {
+                showNotification(result.error || 'Failed to save enrollments', 'error');
+            }
+
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Enrollments';
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Export functions to window
+        window.selectStudent = selectStudent;
+        window.toggleEnrollment = toggleEnrollment;
+        window.saveEnrollments = saveEnrollments;
+
+        init();
+    </script>
+</body>
+</html>

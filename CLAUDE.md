@@ -11,14 +11,24 @@ LecternAI is a seminary learning platform for the Aquinas Institute. It provides
 ## Key Files
 
 ### Core Pages
-- `index.html` - Homepage with module listing (student/admin views)
+- `index.html` - Homepage with module listing (role-based views)
 - `module-overview.html` - Module details and week listing (handles all module statuses)
 - `week-viewer.html` - Week content viewer (used by both student and admin)
 - `admin-week-edit.html` - Admin-only week content editing
-- `module-archive.html` - Admin-only archived module viewer
+- `module-archive.html` - Archived module viewer (read-only for enrolled users)
+
+### Auth Pages
+- `login.html` - Email/password login
+- `signup.html` - User registration (creates pending account)
+- `pending.html` - Waiting for approval page (for pending users)
+- `admin-users.html` - User management (approve/reject, role changes)
+- `admin-enrollments.html` - Enrollment management (assign students to modules)
 
 ### Data Layer
 - `js/data-service.js` - Central data service for all localStorage operations
+- `js/data-service-supabase.js` - Async Supabase data operations
+- `js/supabase-client.js` - Supabase connection
+- `js/auth.js` - Authentication utilities (guards, user management, enrollments)
 - `js/db-schema.js` - Database schema definitions
 - `js/validation.js` - Input validation utilities
 
@@ -50,18 +60,59 @@ LecternAI is a seminary learning platform for the Aquinas Institute. It provides
 ### Local Storage (still used for)
 ```javascript
 `currentModuleId` - Currently selected module (session state)
-`currentView` - 'student' or 'admin' (session state)
 `draft:*` - Unsaved form drafts (auto-save feature)
 ```
+Note: `currentView` is no longer used - view is determined by user's role.
 
-## View System
-- **Student View**: Read-only module access, can participate in discussions, progress tracking
-- **Admin View**: Full edit access, module/week creation, can participate in discussions
+## Authentication & Roles (Phase 2C)
 
-### View Toggle Behavior
-The `setView(view, fromToggle)` function handles view switching:
-- `fromToggle=false` (page load): Stay on current page, just update UI
-- `fromToggle=true` (button click): Redirect to index.html for student view
+### User Flow
+1. User signs up at `signup.html` → creates account with `status: 'pending'`, `role: 'student'`
+2. Pending users are redirected to `pending.html` (waiting for approval)
+3. Admin approves user at `admin-users.html` → `status: 'active'`
+4. Active users can access the app based on their role
+
+### Roles
+- **admin**: Full access to all modules, can edit content, manage users, manage enrollments
+- **student**: Read-only access to enrolled modules only, can participate in discussions
+
+### Auth Guards
+All pages use auth guards from `js/auth.js`:
+```javascript
+import { requireActiveUser, requireAdmin } from './js/auth.js';
+
+// For general pages (students and admins)
+const user = await requireActiveUser();
+if (!user) return; // Redirects to login or pending
+
+// For admin-only pages
+const user = await requireAdmin();
+if (!user) return; // Redirects to login or index
+```
+
+### Module Access
+- Admins see all modules (draft, launched, archived)
+- Students see only enrolled modules (launched and archived)
+- Access is verified with `canAccessModule(user, moduleId)`
+
+### User Header
+All pages display a user header showing:
+- User's name
+- Admin badge (if admin)
+- "Manage Users" link (if admin)
+- Logout button
+
+### Key Auth Functions (js/auth.js)
+- `getCurrentUser()` - Get logged-in user with profile
+- `requireActiveUser()` - Guard: redirect if not logged in or pending
+- `requireAdmin()` - Guard: redirect if not admin
+- `canAccessModule(user, moduleId)` - Check if user can access module
+- `getUserEnrollments(userId)` - Get module IDs user is enrolled in
+- `setUserEnrollments(userId, moduleIds)` - Admin: set user's enrollments
+- `getAllUsers()` - Admin: get all users
+- `approveUser(userId)` - Admin: approve pending user
+- `rejectUser(userId)` - Admin: delete user
+- `updateUserRole(userId, role)` - Admin: change user role
 
 ## Module Statuses
 - `draft` - Template, not visible to students
@@ -130,3 +181,28 @@ Migrated from localStorage to Supabase PostgreSQL:
 - All dataService methods now async (use `await dataService.getModules()` etc.)
 - Session state (currentModuleId, currentView, drafts) still in localStorage
 - Database tables: modules, weeks, progress, discussion_posts, etc.
+
+## Phase 2C Authentication + Enrollment (Dec 2024)
+Implemented full authentication and enrollment system:
+
+### New Files Created
+- `js/auth.js` - Auth utilities (guards, user management, enrollments)
+- `login.html` - Login page with email/password
+- `signup.html` - Signup page (creates pending account)
+- `pending.html` - Waiting for approval page
+- `admin-users.html` - User management (approve/reject, roles)
+- `admin-enrollments.html` - Enrollment management
+
+### Pages Modified
+- All pages now have auth guards (`requireActiveUser()` or `requireAdmin()`)
+- All pages display user header with name, admin badge, logout
+- `index.html` - Role-based module visibility (admin sees all, students see enrolled)
+- `module-overview.html` - Module access verification
+- `week-viewer.html` - Module access verification
+- `module-archive.html` - Accessible to enrolled students (read-only)
+
+### Auth Flow
+1. Signup → pending status → admin approval → active status
+2. Role determines access: admin (full) vs student (enrolled modules only)
+3. View toggle removed - determined by user role
+4. Enrollments managed via admin-enrollments.html

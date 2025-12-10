@@ -7,18 +7,36 @@
     <link rel="stylesheet" href="styles.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
+    <style>
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--light-bg);
+            border-bottom: 1px solid #e9ecef;
+        }
+        .user-header .user-info { flex: 1; }
+        .user-header .admin-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+    </style>
 </head>
 <body>
+    <div id="user-header" class="user-header" style="display: none;"></div>
+
     <header>
         <div class="header-content">
             <div class="logo">
                 <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
                 <h1>LecternAI</h1>
             </div>
-            <div class="view-toggle">
-                <button class="active" onclick="setView('student', true)">Student View</button>
-                <button onclick="setView('admin', true)">Admin View</button>
-            </div>
+            <div id="header-actions"></div>
         </div>
     </header>
 
@@ -58,12 +76,29 @@
 
     <script type="module">
         import { dataService } from './js/data-service-supabase.js';
+        import { requireActiveUser, logout, canAccessModule } from './js/auth.js';
 
         let currentView = 'student';
         let currentWeek = null;
         let currentPage = 1;
         let currentModuleId = null;
         let isParticipantMode = false;
+        let currentUser = null;
+
+        function renderUserHeader() {
+            const header = document.getElementById('user-header');
+            const isAdmin = currentUser.role === 'admin';
+
+            header.innerHTML = `
+                <span class="user-info">
+                    <strong>${currentUser.name || currentUser.email}</strong>
+                    ${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
+                </span>
+                ${isAdmin ? '<a href="admin-users.html" style="color: var(--primary-color); text-decoration: none; font-size: 0.9rem;">Manage Users</a>' : ''}
+                <button onclick="logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
+            `;
+            header.style.display = 'flex';
+        }
         let totalPages = 6; // Now 6 pages with Zoom Prep
 
         // Convert video URLs to embed URLs
@@ -669,20 +704,38 @@
         }
 
         window.onload = async function() {
+            // Auth guard
+            currentUser = await requireActiveUser();
+            if (!currentUser) return;
+
+            // Render user header
+            renderUserHeader();
+
+            // Check module access
+            currentModuleId = dataService.getCurrentModuleId();
+            if (currentModuleId && currentUser.role !== 'admin') {
+                const hasAccess = await canAccessModule(currentUser, currentModuleId);
+                if (!hasAccess) {
+                    alert('You do not have access to this module.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+            }
+
             // Check for participant mode
             const urlParams = new URLSearchParams(window.location.search);
             isParticipantMode = urlParams.get('participant') === 'true';
 
-            let savedView = dataService.getCurrentView() || 'student';
-            // Migrate old 'teacher' value to 'admin'
-            if (savedView === 'teacher') {
+            // Determine view based on user role
+            let savedView;
+            if (currentUser.role === 'admin' && !isParticipantMode) {
                 savedView = 'admin';
-                dataService.setCurrentView('admin');
+            } else {
+                savedView = 'student';
             }
 
-            // In participant mode, force student view
+            // In participant mode, show banner
             if (isParticipantMode) {
-                savedView = 'student';
                 showParticipantModeBanner();
             }
 
@@ -722,6 +775,7 @@
 
         // Export functions to window for onclick handlers
         window.setView = setView;
+        window.logoutUser = logout;
         window.exitParticipantMode = exitParticipantMode;
         window.previousPage = previousPage;
         window.nextPage = nextPage;
