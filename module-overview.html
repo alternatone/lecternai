@@ -574,6 +574,10 @@
             const currentModuleId = dataService.getCurrentModuleId();
             const today = new Date().toISOString().split('T')[0];
 
+            // Batch fetch progress for all weeks (single query instead of 2N queries)
+            const progressMap = currentView === 'student' ?
+                await dataService.getBatchWeekProgress(currentModuleId) : {};
+
             for (const week of weeks) {
                 // For student view, check unlock date
                 if (currentView === 'student') {
@@ -610,11 +614,10 @@
 
                 const weekAction = document.createElement('div');
 
-                // Check progress using DataService (dynamic based on week ID)
-                const pagePosition = await dataService.getPagePosition(currentModuleId, week.id);
-                const isComplete = await dataService.isWeekCompleted(currentModuleId, week.id);
-                // Any saved page position means the student has started the week
-                const hasProgress = pagePosition && pagePosition.page;
+                // Use batch-fetched progress data (no additional queries)
+                const weekProgress = progressMap[week.id] || {};
+                const hasProgress = weekProgress.page;
+                const isComplete = weekProgress.completed;
 
                 weekAction.style.display = 'flex';
                 weekAction.style.alignItems = 'center';
@@ -1853,9 +1856,9 @@
                 showParticipantModeBanner();
             }
 
-            await loadWeeks();
+            // Load weeks and module info in parallel
+            await Promise.all([loadWeeks(), loadModuleInfo()]);
             await setView(savedView);
-            await loadModuleInfo();
             await displayZoomInfo();
             setupAutoSave();
 

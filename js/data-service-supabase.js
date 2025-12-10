@@ -442,6 +442,58 @@ class DataServiceSupabase {
         })
     }
 
+    /**
+     * Get count of visible weeks without fetching full week data (optimized)
+     * Used for module cards where we just need a count
+     */
+    async getVisibleWeekCount(moduleId) {
+        const today = new Date().toISOString().split('T')[0]
+
+        const { data, error } = await supabase
+            .from('weeks')
+            .select('week_number, unlock_date')
+            .eq('module_id', moduleId)
+
+        if (error || !data) return 0
+
+        return data.filter(week => {
+            if (!week.unlock_date) return true
+            return week.unlock_date <= today
+        }).length
+    }
+
+    /**
+     * Batch get visible week counts for multiple modules (avoids N+1)
+     * Returns a map of moduleId -> count
+     */
+    async getBatchVisibleWeekCounts(moduleIds) {
+        if (!moduleIds || moduleIds.length === 0) return {}
+
+        const today = new Date().toISOString().split('T')[0]
+
+        const { data, error } = await supabase
+            .from('weeks')
+            .select('module_id, week_number, unlock_date')
+            .in('module_id', moduleIds)
+
+        if (error || !data) return {}
+
+        // Group by module and count visible weeks
+        const countMap = {}
+        for (const moduleId of moduleIds) {
+            countMap[moduleId] = 0
+        }
+
+        for (const week of data) {
+            const isVisible = !week.unlock_date || week.unlock_date <= today
+            if (isVisible) {
+                countMap[week.module_id] = (countMap[week.module_id] || 0) + 1
+            }
+        }
+
+        return countMap
+    }
+
     async createWeek(moduleId, weekData) {
         try {
             // Get current max week number
@@ -746,6 +798,43 @@ class DataServiceSupabase {
         return data?.completed || false
     }
 
+    /**
+     * Batch fetch progress for all weeks in a module (avoids N+1 queries)
+     * Returns a map of weekNumber -> { page, completed }
+     */
+    async getBatchWeekProgress(moduleId) {
+        const userId = await getCurrentUserId()
+        if (!userId) return {}
+
+        // Get all weeks with their progress in one query using a join
+        const { data, error } = await supabase
+            .from('weeks')
+            .select(`
+                week_number,
+                progress!left (
+                    current_page,
+                    completed,
+                    user_id
+                )
+            `)
+            .eq('module_id', moduleId)
+
+        if (error || !data) return {}
+
+        // Build a map of weekNumber -> progress
+        const progressMap = {}
+        for (const week of data) {
+            // Filter progress to current user (since we can't filter in the nested select easily)
+            const userProgress = (week.progress || []).find(p => p.user_id === userId)
+            progressMap[week.week_number] = {
+                page: userProgress?.current_page || null,
+                completed: userProgress?.completed || false
+            }
+        }
+
+        return progressMap
+    }
+
     // ==================== Zoom Operations ====================
 
     async getZoomInfo(moduleId) {
@@ -796,57 +885,66 @@ class DataServiceSupabase {
     // ==================== Discussion Operations ====================
 
     async getDiscussionPosts(moduleId, weekId, pageIndex, questionId) {
-        // Get the question ID from the database
-        const { data: weekRecord } = await supabase
+        // Get the question ID using a single query with joins
+        const { data: weekData } = await supabase
             .from('weeks')
-            .select('id')
+            .select(`
+                id,
+                pages!inner (
+                    id,
+                    page_number,
+                    questions!inner (
+                        id,
+                        question_number
+                    )
+                )
+            `)
             .eq('module_id', moduleId)
             .eq('week_number', weekId)
             .single()
 
-        if (!weekRecord) return []
+        if (!weekData) return []
 
-        const { data: page } = await supabase
-            .from('pages')
-            .select('id')
-            .eq('week_id', weekRecord.id)
-            .eq('page_number', pageIndex + 1)
-            .single()
-
+        // Find the specific page and question
+        const page = weekData.pages?.find(p => p.page_number === pageIndex + 1)
         if (!page) return []
 
-        const { data: question } = await supabase
-            .from('questions')
-            .select('id')
-            .eq('page_id', page.id)
-            .eq('question_number', questionId + 1)
-            .single()
-
+        const question = page.questions?.find(q => q.question_number === questionId + 1)
         if (!question) return []
 
-        // Get posts with user info
-        const { data: posts, error } = await supabase
+        // Get ALL posts for this question (both parent posts and replies) in ONE query
+        const { data: allPosts, error } = await supabase
             .from('discussion_posts')
             .select('*, users:user_id(name, email, role)')
             .eq('question_id', question.id)
-            .is('parent_id', null)
-            .order('created_at', { ascending: false })
+            .order('created_at', { ascending: true })
 
         if (error) {
             console.error('Error fetching discussion posts:', error)
             return []
         }
 
-        // Get replies for each post with user info
-        const postsWithReplies = await Promise.all(
-            posts.map(async post => {
-                const { data: replies } = await supabase
-                    .from('discussion_posts')
-                    .select('*, users:user_id(name, email, role)')
-                    .eq('parent_id', post.id)
-                    .order('created_at', { ascending: true })
+        // Separate parent posts and replies, then assemble the tree
+        const parentPosts = allPosts.filter(p => !p.parent_id)
+        const repliesMap = {}
 
+        // Group replies by parent_id
+        for (const post of allPosts) {
+            if (post.parent_id) {
+                if (!repliesMap[post.parent_id]) {
+                    repliesMap[post.parent_id] = []
+                }
+                repliesMap[post.parent_id].push(post)
+            }
+        }
+
+        // Build final structure with replies attached
+        return parentPosts
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) // newest first for parents
+            .map(post => {
                 const postUser = post.users || {}
+                const replies = repliesMap[post.id] || []
+
                 return {
                     id: post.id,
                     userId: post.user_id,
@@ -855,7 +953,7 @@ class DataServiceSupabase {
                     isAdmin: postUser.role === 'admin',
                     createdAt: post.created_at,
                     editedAt: post.edited_at,
-                    replies: (replies || []).map(r => {
+                    replies: replies.map(r => {
                         const replyUser = r.users || {}
                         return {
                             id: r.id,
@@ -869,9 +967,6 @@ class DataServiceSupabase {
                     })
                 }
             })
-        )
-
-        return postsWithReplies
     }
 
     async addDiscussionPost(moduleId, weekId, pageIndex, questionId, post) {

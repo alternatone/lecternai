@@ -7,21 +7,47 @@
 
 import { supabase } from './supabase-client.js'
 
+// Cache for current user to avoid repeated auth + profile queries
+let cachedUser = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 30000; // 30 seconds
+
 /**
  * Get the currently logged-in user with their profile data
+ * Uses caching to avoid repeated queries within the same page session
+ * @param {boolean} forceRefresh - Force a fresh query, bypassing cache
  * @returns {Object|null} User profile or null if not logged in
  */
-export async function getCurrentUser() {
+export async function getCurrentUser(forceRefresh = false) {
+    // Return cached user if still valid
+    const now = Date.now();
+    if (!forceRefresh && cachedUser && (now - cacheTimestamp) < CACHE_DURATION) {
+        return cachedUser;
+    }
+
     const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) return null;
+    if (!authUser) {
+        cachedUser = null;
+        return null;
+    }
 
     const { data: profile } = await supabase
         .from('users')
-        .select('*')
+        .select('id, email, name, role, status, created_at')
         .eq('id', authUser.id)
         .single();
 
+    cachedUser = profile;
+    cacheTimestamp = now;
     return profile;
+}
+
+/**
+ * Clear the user cache (call on logout or when user data changes)
+ */
+export function clearUserCache() {
+    cachedUser = null;
+    cacheTimestamp = 0;
 }
 
 /**
@@ -87,6 +113,7 @@ export async function canAccessModule(user, moduleId) {
  * Log out the current user
  */
 export async function logout() {
+    clearUserCache();
     await supabase.auth.signOut();
     window.location.href = 'login.html';
 }

@@ -690,11 +690,12 @@
             const grid = document.getElementById('student-modules-grid');
             grid.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">Loading modules...</p>';
 
-            // Get user's enrolled module IDs
-            const enrolledModuleIds = await getUserEnrollments(currentUser.id);
+            // Fetch enrollments and modules in parallel
+            const [enrolledModuleIds, allModules] = await Promise.all([
+                getUserEnrollments(currentUser.id),
+                dataService.getModules()
+            ]);
 
-            // Get all modules and filter to enrolled ones (launched or archived)
-            const allModules = await dataService.getModules();
             const studentModules = allModules.filter(m =>
                 enrolledModuleIds.includes(m.id) &&
                 (m.status === 'launched' || m.status === 'archived')
@@ -706,6 +707,10 @@
                 grid.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 2rem;">No modules available yet. Check back later!</p>';
                 return;
             }
+
+            // Batch fetch visible week counts for all modules (single query instead of N)
+            const moduleIds = studentModules.map(m => m.id);
+            const weekCounts = await dataService.getBatchVisibleWeekCounts(moduleIds);
 
             for (const module of studentModules) {
                 const moduleCard = document.createElement('div');
@@ -722,8 +727,8 @@
                     location.href = 'module-overview.html';
                 };
 
-                // Get visible weeks count
-                const visibleWeeks = await dataService.getVisibleWeeks(module.id);
+                // Use pre-fetched week count
+                const visibleWeekCount = weekCounts[module.id] || 0;
 
                 moduleCard.innerHTML = `
                     <div class="course-header">
@@ -733,7 +738,7 @@
                     <div class="course-body">
                         <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
                             ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
-                            <span><strong>Available Weeks:</strong> ${visibleWeeks.length}</span>
+                            <span><strong>Available Weeks:</strong> ${visibleWeekCount}</span>
                         </div>
                         <div style="display: flex; justify-content: flex-end;">
                             <button class="btn btn-primary" onclick="event.stopPropagation(); dataService.setCurrentModuleId(${module.id}); location.href='module-overview.html';">${isArchived ? 'View Archive' : 'View Module'}</button>
