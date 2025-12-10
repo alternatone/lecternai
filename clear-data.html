@@ -9,20 +9,69 @@
 <body>
     <div class="container" style="max-width: 600px; margin: 4rem auto; text-align: center;">
         <h2 style="color: var(--primary-color); margin-bottom: 2rem;">Clear All Data</h2>
-        <p style="margin-bottom: 2rem;">This will clear all modules, weeks, and settings from the application.</p>
-        <button class="btn btn-primary" onclick="clearAllData()" style="font-size: 1.1rem; padding: 1rem 2rem;">Clear All Data</button>
-        <div id="result" style="margin-top: 2rem;"></div>
+        <p style="margin-bottom: 2rem;">This will clear all modules, weeks, progress, discussions, and enrollments from the database.</p>
+        <button class="btn btn-primary" id="clearBtn" style="font-size: 1.1rem; padding: 1rem 2rem;">Clear All Data</button>
+        <div id="result" style="margin-top: 2rem; text-align: left;"></div>
     </div>
 
-    <script>
-        function clearAllData() {
-            if (confirm('Are you sure you want to clear ALL data? This cannot be undone.')) {
-                // Clear all localStorage
-                localStorage.clear();
+    <script type="module">
+        import { supabase } from './js/supabase-client.js';
 
-                document.getElementById('result').innerHTML = '<p style="color: #28a745; font-weight: bold;">All data cleared successfully!</p><p><a href="index.html" class="btn btn-secondary" style="margin-top: 1rem; display: inline-block;">Go to Homepage</a></p>';
+        document.getElementById('clearBtn').addEventListener('click', async () => {
+            if (!confirm('Are you sure you want to clear ALL data? This cannot be undone.')) {
+                return;
             }
-        }
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Clearing data...</p>';
+            const logs = [];
+
+            async function clearTable(tableName) {
+                // First get all IDs
+                const { data, error: selectError } = await supabase.from(tableName).select('id');
+                if (selectError) {
+                    logs.push(`❌ ${tableName}: Select error - ${selectError.message}`);
+                    return;
+                }
+                if (!data || data.length === 0) {
+                    logs.push(`✓ ${tableName}: Already empty`);
+                    return;
+                }
+
+                // Delete each row by ID
+                const ids = data.map(row => row.id);
+                const { error: deleteError } = await supabase.from(tableName).delete().in('id', ids);
+                if (deleteError) {
+                    logs.push(`❌ ${tableName}: Delete error - ${deleteError.message}`);
+                } else {
+                    logs.push(`✓ ${tableName}: Cleared ${ids.length} rows`);
+                }
+            }
+
+            try {
+                // Clear in order due to foreign key constraints
+                await clearTable('progress');
+                await clearTable('discussion_posts');
+                await clearTable('enrollments');
+                await clearTable('weeks');
+                await clearTable('module_zoom_info');
+                await clearTable('modules');
+
+                // Also clear localStorage
+                localStorage.clear();
+                logs.push('✓ localStorage: Cleared');
+
+                resultDiv.innerHTML = `
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem;">
+                        ${logs.map(l => `<div>${l}</div>`).join('')}
+                    </div>
+                    <p style="margin-top: 1rem;"><a href="index.html" class="btn btn-secondary">Go to Homepage</a></p>
+                `;
+            } catch (err) {
+                console.error('Error clearing data:', err);
+                resultDiv.innerHTML = `<p style="color: #dc3545; font-weight: bold;">Error: ${err.message}</p>`;
+            }
+        });
     </script>
 </body>
 </html>

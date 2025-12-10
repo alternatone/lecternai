@@ -185,14 +185,10 @@
             }
 
             currentView = view;
-            const buttons = document.querySelectorAll('.view-toggle button');
-            buttons.forEach(btn => btn.classList.remove('active'));
 
             if (view === 'student') {
-                buttons[0].classList.add('active');
                 dataService.setCurrentView('student');
             } else {
-                buttons[1].classList.add('active');
                 dataService.setCurrentView('admin');
             }
 
@@ -280,20 +276,20 @@
             const questions = pageData.questions || [];
             const pageIndex = currentPage - 1;
 
-            // Determine read-only based on module status, not view type
-            // Read-only when: draft (preview mode) or archived
-            // Full read/write when: launched (both admin and students can participate)
+            // Determine read-only based on module status and participant mode
+            // Read-only when: archived, OR draft without participant mode (preview for testing links)
+            // Full read/write when: launched, OR draft WITH participant mode (admin simulating student)
             const module = await dataService.getModule(currentModuleId);
             const moduleStatus = module ? module.status : 'draft';
-            const isReadOnly = moduleStatus === 'draft' || moduleStatus === 'archived';
+            const isReadOnly = moduleStatus === 'archived' || (moduleStatus === 'draft' && !isParticipantMode);
 
             let html = '<div class="card" style="width: 100%;">';
 
-            // Show read-only notice for draft (preview) or archived modules
+            // Show read-only notice
             if (isReadOnly) {
                 const noticeText = moduleStatus === 'archived'
                     ? '<strong>Archived Module:</strong> This module is archived. Discussion posts and replies are disabled.'
-                    : '<strong>Preview Mode:</strong> This is a read-only preview. Discussion posts and replies are disabled.';
+                    : '<strong>Preview Mode:</strong> This is a read-only preview for testing links and embeds. Use Participant Mode to test discussions.';
                 html += `<div style="background: #fff3cd; border: 1px solid #ffc107; padding: 0.75rem; margin-bottom: 1rem; border-radius: 4px; font-size: 0.9rem;">
                     ${noticeText}
                 </div>`;

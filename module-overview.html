@@ -54,7 +54,7 @@
         body.modal-open {
             overflow: hidden;
         }
-    </style>
+
         .user-header {
             display: flex;
             align-items: center;
@@ -485,18 +485,14 @@
             }
 
             currentView = view;
-            const buttons = document.querySelectorAll('.view-toggle button');
-            buttons.forEach(btn => btn.classList.remove('active'));
 
             if (view === 'student') {
-                buttons[0].classList.add('active');
                 dataService.setCurrentView('student');
                 // Hide admin controls in student view
                 document.getElementById('edit-description-btn').style.display = 'none';
                 document.getElementById('create-week-btn').style.display = 'none';
                 document.getElementById('admin-action-btns').style.display = 'none';
             } else {
-                buttons[1].classList.add('active');
                 dataService.setCurrentView('admin');
                 // Show admin controls
                 document.getElementById('edit-description-btn').style.display = 'inline-block';
@@ -912,7 +908,7 @@
             renderReflectionQuestions();
 
             // Update modal title and button text for create mode
-            document.querySelector('#create-week-modal h2').textContent = 'Create New Week';
+            document.querySelector('#create-week-modal h3').textContent = 'Create New Week';
             const saveBtn = document.querySelector('#create-week-modal .btn-primary');
             saveBtn.textContent = 'Create Week';
 
@@ -995,7 +991,7 @@
             renderReflectionQuestions();
 
             // Update modal title and button text for edit mode
-            document.querySelector('#create-week-modal h2').textContent = 'Edit Week';
+            document.querySelector('#create-week-modal h3').textContent = 'Edit Week';
             const saveBtn = document.querySelector('#create-week-modal .btn-primary');
             saveBtn.textContent = 'Save Changes';
 
@@ -1773,9 +1769,28 @@
             // Render user header
             renderUserHeader();
 
-            // Check module access (admin can access all, students need enrollment)
+            // Check if module exists
             const currentModuleId = dataService.getCurrentModuleId();
-            if (currentModuleId && currentUser.role !== 'admin') {
+            console.log('DEBUG: currentModuleId =', currentModuleId, 'type:', typeof currentModuleId);
+
+            if (!currentModuleId) {
+                alert('No module selected.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const currentModule = await dataService.getModule(currentModuleId);
+            console.log('DEBUG: currentModule =', currentModule);
+
+            if (!currentModule) {
+                alert('Module not found (ID: ' + currentModuleId + '). It may have been deleted.');
+                dataService.setCurrentModuleId(null);
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Check module access (admin can access all, students need enrollment)
+            if (currentUser.role !== 'admin') {
                 const hasAccess = await canAccessModule(currentUser, currentModuleId);
                 if (!hasAccess) {
                     alert('You do not have access to this module.');
