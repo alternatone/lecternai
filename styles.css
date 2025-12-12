@@ -2,15 +2,15 @@
 
 :root {
     /* Aquinas Primary Colors */
-    --primary-color: #BB292F;  /* Red PMS 201 */
-    --primary-dark: #76232F;   /* Dark Red PMS 7630 */
-    --secondary-color: #FFB81C; /* Gold PMS 1235 */
-    --black: #231F20;           /* Black PMS Process Black */
+    --primary-color: #a21f35;  /* Red PMS 201 */
+    --primary-dark: #7F1F1F;   /* Dark Red PMS 181 */
+    --secondary-color: #FFC222; /* Gold PMS 1235 */
+    --black: #000000;           /* Black */
 
     /* Aquinas Secondary Colors */
-    --olive: #89985A;          /* Olive PMS 5747 */
-    --teal: #009387;           /* Teal PMS 7713 */
-    --gray: #848383;           /* Gray PMS 424 */
+    --olive: #a2a569;          /* Olive PMS 5777 */
+    --teal: #106470;           /* Teal PMS 5473 */
+    --gray: #8A8B8C;           /* Gray PMS 423 */
 
     /* Application Colors */
     --text-dark: #231F20;
@@ -265,7 +265,7 @@ header {
 }
 
 .btn-teal:hover {
-    background: #007d73;
+    background: #0a4a52;
     transform: translateY(-2px);
     box-shadow: var(--shadow);
 }

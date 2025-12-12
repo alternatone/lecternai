@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LecternAI - Seminary Learning Platform</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Lectern - Seminary Learning Platform</title>
+    <link rel="stylesheet" href="styles/lectern-core.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
     <style>
@@ -124,8 +124,8 @@
     <header>
         <div class="header-content">
             <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
-                <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
-                <h1>LecternAI</h1>
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <h1>Lectern</h1>
             </a>
             <div id="header-actions"></div>
         </div>
@@ -150,18 +150,18 @@
 
         <div id="admin-view" style="display: none;">
             <!-- Active Modules Section -->
-            <div id="active-modules-section" style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(0, 147, 135, 0.08) 0%, rgba(0, 147, 135, 0.03) 100%); border-radius: 16px; padding: 1.5rem; border-left: 4px solid var(--teal);">
-                <h3 style="color: var(--teal); margin-bottom: 1.25rem;">Active Modules</h3>
-                <div class="course-grid" id="active-modules-grid">
-                    <p style="text-align: center; color: #6c757d; padding: 2rem; background: rgba(255,255,255,0.5); border-radius: 8px;">No active modules. Launch a template to start.</p>
+            <div id="active-modules-section" class="section-panel teal-outline">
+                <h3 class="teal-title">Active Modules</h3>
+                <div class="course-grid" id="active-modules-grid" style="margin-top: 0.5rem;">
+                    <p style="text-align: center; color: #6c757d; padding: 2rem;">No active modules. Launch a template to start.</p>
                 </div>
             </div>
 
             <!-- Module Templates Section -->
-            <div id="templates-section" style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(255, 184, 28, 0.08) 0%, rgba(255, 184, 28, 0.03) 100%); border-radius: 16px; padding: 1.5rem; border-left: 4px solid var(--secondary-color);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-                    <h3 style="color: var(--secondary-color); margin: 0;">Module Templates</h3>
-                    <button class="btn btn-primary" onclick="openCreateModuleModal()">Create Template</button>
+            <div id="templates-section" class="section-panel gold-outline">
+                <h3 class="gold-title">Module Templates</h3>
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                    <button class="btn-f gold" type="button" onclick="openCreateModuleModal()">+ Create Template</button>
                 </div>
                 <div class="course-grid" id="templates-grid">
                     <!-- Templates will be populated here -->
@@ -169,10 +169,10 @@
             </div>
 
             <!-- Archived Modules Section -->
-            <div id="archived-section" style="background: linear-gradient(135deg, rgba(132, 131, 131, 0.08) 0%, rgba(132, 131, 131, 0.03) 100%); border-radius: 16px; padding: 1.5rem; border-left: 4px solid var(--gray);">
-                <h3 style="color: var(--gray); margin-bottom: 1.25rem;">Archived Modules</h3>
-                <div class="course-grid" id="archived-modules-grid">
-                    <p style="text-align: center; color: #6c757d; padding: 2rem; background: rgba(255,255,255,0.5); border-radius: 8px;">No archived modules yet.</p>
+            <div id="archived-section" class="section-panel gray-outline">
+                <h3 class="gray-title">Archived Modules</h3>
+                <div class="course-grid" id="archived-modules-grid" style="margin-top: 0.5rem;">
+                    <p style="text-align: center; color: #6c757d; padding: 2rem;">No archived modules yet.</p>
                 </div>
             </div>
         </div>
@@ -251,8 +251,8 @@
                 </select>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeCreateModuleModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveModule()">Save & Close</button>
+                <button class="btn-f olive" type="button" onclick="closeCreateModuleModal()">Cancel</button>
+                <button class="btn-f gold" type="button" onclick="saveModule()">Save & Close</button>
             </div>
         </div>
     </div>
@@ -304,8 +304,8 @@
                     <strong>${currentUser.name || currentUser.email}</strong>
                     ${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
                 </span>
-                ${isAdmin ? '<a href="admin-users.html" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Manage Users</a>' : ''}
-                <button onclick="logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
+                ${isAdmin ? '<a href="admin-users.html" class="btn-f olive" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Manage Users</a>' : ''}
+                <button onclick="logoutUser()" class="btn-f olive" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Logout</button>
             `;
             header.style.display = 'flex';
         }
@@ -475,12 +475,13 @@
             `;
 
             if (type === 'success') {
-                notification.style.backgroundColor = '#28a745';
+                notification.style.backgroundColor = 'rgba(16, 100, 112, 0.75)';
             } else if (type === 'error') {
-                notification.style.backgroundColor = '#dc3545';
+                notification.style.backgroundColor = 'rgba(139, 26, 26, 0.75)';
             } else {
-                notification.style.backgroundColor = '#17a2b8';
+                notification.style.backgroundColor = 'rgba(115, 125, 78, 0.75)';
             }
+            notification.style.backdropFilter = 'blur(10px)';
 
             notification.textContent = message;
             document.body.appendChild(notification);
@@ -536,25 +537,20 @@
 
         function createActiveModuleCard(module) {
             const moduleCard = document.createElement('div');
-            moduleCard.className = 'course-card';
-            moduleCard.style.borderLeft = '4px solid var(--teal)';
+            moduleCard.className = 'module-card';
 
             const launchedDate = module.launchedAt ? new Date(module.launchedAt).toLocaleDateString() : '';
 
             moduleCard.innerHTML = `
-                <div class="course-header" style="background: linear-gradient(135deg, var(--teal) 0%, #006d63 100%);">
-                    <h3>${module.title}</h3>
-                    ${launchedDate ? `<p style="opacity: 0.8; font-size: 0.9rem;">Launched: ${launchedDate}</p>` : ''}
+                <div class="module-card-header teal-bg">
+                    <h4>${module.title}</h4>
+                    <span style="font-size: 0.8rem; color: #6c757d;">${module.instructor || ''} ${module.duration ? '· ' + module.duration : ''}</span>
                 </div>
-                <div class="course-body">
-                    <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
-                        ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
-                        ${module.duration ? `<span><strong>Duration:</strong> ${module.duration}</span>` : ''}
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-teal" onclick="accessModule(${module.id})">Participate</button>
-                        <button class="btn btn-secondary" onclick="manageModule(${module.id})">Manage</button>
-                        <button class="btn btn-secondary" onclick="archiveModule(${module.id})">Archive</button>
+                <div class="module-card-body">
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+                        <button class="btn-f teal" type="button" onclick="accessModule(${module.id})">Participate</button>
+                        <button class="btn-f gold" type="button" onclick="manageModule(${module.id})">Edit</button>
+                        <button class="btn-f olive" type="button" onclick="archiveModule(${module.id})">Archive</button>
                     </div>
                 </div>
             `;
@@ -564,24 +560,17 @@
 
         function createTemplateModuleCard(module) {
             const moduleCard = document.createElement('div');
-            moduleCard.className = 'course-card';
-            moduleCard.style.borderLeft = '4px solid var(--secondary-color)';
+            moduleCard.className = 'module-card';
 
             moduleCard.innerHTML = `
-                <div class="course-header">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <h3 style="margin: 0;">${module.title}</h3>
-                        <span class="status-badge status-incomplete" style="opacity: 0.6; font-size: 0.75rem; padding: 0.25rem 0.6rem;">TEMPLATE</span>
-                    </div>
+                <div class="module-card-header gold-bg">
+                    <h4>${module.title}</h4>
+                    <span style="font-size: 0.8rem; color: #6c757d;">${module.instructor || ''} ${module.duration ? '· ' + module.duration : ''}</span>
                 </div>
-                <div class="course-body">
-                    <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
-                        ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
-                        ${module.duration ? `<span><strong>Duration:</strong> ${module.duration}</span>` : ''}
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-primary" onclick="editModule(${module.id})">Edit Template</button>
-                        <button class="btn btn-danger" onclick="deleteModule(${module.id})">Delete</button>
+                <div class="module-card-body">
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+                        <button class="btn-f gold" type="button" onclick="editModule(${module.id})">Edit</button>
+                        <button class="btn-f red" type="button" onclick="deleteModule(${module.id})">Delete</button>
                     </div>
                 </div>
             `;
@@ -591,24 +580,20 @@
 
         function createArchivedModuleCard(module) {
             const moduleCard = document.createElement('div');
-            moduleCard.className = 'course-card';
-            moduleCard.style.borderLeft = '4px solid var(--gray)';
-            moduleCard.style.opacity = '0.85';
+            moduleCard.className = 'module-card';
 
             const archivedDate = module.archivedAt ? new Date(module.archivedAt).toLocaleDateString() : '';
 
             moduleCard.innerHTML = `
-                <div class="course-header" style="background: linear-gradient(135deg, var(--gray) 0%, #5a5a5a 100%);">
-                    <h3>${module.title}</h3>
-                    ${archivedDate ? `<p style="opacity: 0.8; font-size: 0.9rem;">Archived: ${archivedDate}</p>` : ''}
+                <div class="module-card-header gray-bg">
+                    <h4>${module.title}</h4>
+                    <span style="font-size: 0.8rem; color: #6c757d;">${module.instructor || ''} ${archivedDate ? '· Archived: ' + archivedDate : ''}</span>
                 </div>
-                <div class="course-body">
-                    <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
-                        ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
-                    </div>
-                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-danger" onclick="deleteArchivedModule(${module.id})">Delete</button>
-                        <button class="btn btn-secondary" onclick="viewArchivedModule(${module.id})">View Archive</button>
+                <div class="module-card-body">
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+                        <button class="btn-f olive" type="button" onclick="viewArchivedModule(${module.id})">View</button>
+                        <button class="btn-f teal" type="button" onclick="restoreModule(${module.id})">Restore</button>
+                        <button class="btn-f red" type="button" onclick="deleteArchivedModule(${module.id})">Delete</button>
                     </div>
                 </div>
             `;
@@ -714,13 +699,10 @@
 
             for (const module of studentModules) {
                 const moduleCard = document.createElement('div');
-                moduleCard.className = 'course-card';
+                moduleCard.className = 'module-card';
                 moduleCard.style.cursor = 'pointer';
 
                 const isArchived = module.status === 'archived';
-                if (isArchived) {
-                    moduleCard.style.borderLeft = '4px solid #6c757d';
-                }
 
                 moduleCard.onclick = () => {
                     dataService.setCurrentModuleId(module.id);
@@ -731,17 +713,13 @@
                 const visibleWeekCount = weekCounts[module.id] || 0;
 
                 moduleCard.innerHTML = `
-                    <div class="course-header">
-                        <h3>${module.title}</h3>
-                        ${isArchived ? '<span style="background: #6c757d; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">Archived</span>' : ''}
+                    <div class="module-card-header ${isArchived ? 'gray-bg' : 'teal-bg'}">
+                        <h4>${module.title}</h4>
+                        <span style="font-size: 0.8rem; color: #6c757d;">${module.instructor || ''} · ${visibleWeekCount} weeks available</span>
                     </div>
-                    <div class="course-body">
-                        <div style="display: flex; gap: 1rem; color: #6c757d; font-size: 0.9rem; margin-bottom: 1rem;">
-                            ${module.instructor ? `<span><strong>Instructor:</strong> ${module.instructor}</span>` : ''}
-                            <span><strong>Available Weeks:</strong> ${visibleWeekCount}</span>
-                        </div>
+                    <div class="module-card-body">
                         <div style="display: flex; justify-content: flex-end;">
-                            <button class="btn btn-primary" onclick="event.stopPropagation(); dataService.setCurrentModuleId(${module.id}); location.href='module-overview.html';">${isArchived ? 'View Archive' : 'View Module'}</button>
+                            <button class="btn-f ${isArchived ? 'olive' : 'teal'}" type="button" onclick="event.stopPropagation(); dataService.setCurrentModuleId(${module.id}); location.href='module-overview.html';">${isArchived ? 'View Archive' : 'View Module'}</button>
                         </div>
                     </div>
                 `;

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lectern - Module Management</title>
+    <link rel="stylesheet" href="../styles/lectern-core.css">
+    <style>
+        /* Page-specific styles (if needed) */
+    </style>
+</head>
+<body>
+    <!-- USER HEADER BAR -->
+    <div class="user-header">
+        <span class="user-info">
+            <strong>Dr. John Smith</strong>
+            <span class="admin-badge">Admin</span>
+        </span>
+        <a href="#" class="btn-f olive" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Manage Users</a>
+        <button class="btn-f olive" type="button" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Logout</button>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-content">
+            <a href="#" class="logo">
+                <img src="../brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon">
+                <h1>Lectern</h1>
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2 class="page-title">Module Management</h2>
+
+        <div class="section-panel teal-outline">
+            <h3 class="teal-title">Active Modules</h3>
+            <div class="course-grid" style="margin-top: 0.5rem;">
+                <div class="module-card">
+                    <div class="module-card-header teal-bg">
+                        <h4>Introduction to Thomistic Philosophy</h4>
+                        <span style="font-size: 0.8rem; color: #6c757d;">Dr. Sarah Johnson · 8 weeks</span>
+                    </div>
+                    <div class="module-card-body">
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button class="btn-f teal" type="button">Participate</button>
+                            <button class="btn-f olive" type="button">Manage</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="module-card">
+                    <div class="module-card-header teal-bg">
+                        <h4>Ethics and Moral Philosophy</h4>
+                        <span style="font-size: 0.8rem; color: #6c757d;">Dr. Robert Hayes · 6 weeks</span>
+                    </div>
+                    <div class="module-card-body">
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button class="btn-f teal" type="button">Participate</button>
+                            <button class="btn-f olive" type="button">Manage</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="module-card">
+                    <div class="module-card-header teal-bg">
+                        <h4>Medieval Philosophy Survey</h4>
+                        <span style="font-size: 0.8rem; color: #6c757d;">Fr. James Murphy · 10 weeks</span>
+                    </div>
+                    <div class="module-card-body">
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button class="btn-f teal" type="button">Participate</button>
+                            <button class="btn-f olive" type="button">Manage</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-panel gold-outline">
+            <h3 class="gold-title">Module Templates</h3>
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                <button class="btn-f gold" type="button">+ Create New Module</button>
+            </div>
+            <div class="course-grid">
+                <div class="module-card">
+                    <div class="module-card-header gold-bg">
+                        <h4>Moral Theology Fundamentals</h4>
+                        <span style="font-size: 0.8rem; color: #6c757d;">Fr. Michael Brown · 6 weeks</span>
+                    </div>
+                    <div class="module-card-body">
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button class="btn-f gold" type="button">Edit</button>
+                            <button class="btn-f red" type="button">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="module-card">
+                    <div class="module-card-header gold-bg">
+                        <h4>Sacred Scripture: Gospels</h4>
+                        <span style="font-size: 0.8rem; color: #6c757d;">Dr. Maria Santos · 10 weeks</span>
+                    </div>
+                    <div class="module-card-body">
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button class="btn-f gold" type="button">Edit</button>
+                            <button class="btn-f red" type="button">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="module-card">
+                    <div class="module-card-header gold-bg">
+                        <h4>Christology: Person of Christ</h4>
+                        <span style="font-size: 0.8rem; color: #6c757d;">Dr. Anna Kowalski · 8 weeks</span>
+                    </div>
+                    <div class="module-card-body">
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button class="btn-f gold" type="button">Edit</button>
+                            <button class="btn-f red" type="button">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-panel gray-outline">
+            <h3 class="gray-title">Archived Modules</h3>
+            <div class="course-grid" style="margin-top: 0.5rem;">
+                <div class="module-card">
+                    <div class="module-card-header gray-bg">
+                        <h4>Patristics: Early Church Fathers</h4>
+                        <span style="font-size: 0.8rem; color: #6c757d;">Fr. Thomas Reilly · 8 weeks</span>
+                    </div>
+                    <div class="module-card-body">
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button class="btn-f olive" type="button">View</button>
+                            <button class="btn-f teal" type="button">Restore</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="module-card">
+                    <div class="module-card-header gray-bg">
+                        <h4>Introduction to Canon Law</h4>
+                        <span style="font-size: 0.8rem; color: #6c757d;">Fr. David Chen · 12 weeks</span>
+                    </div>
+                    <div class="module-card-body">
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button class="btn-f olive" type="button">View</button>
+                            <button class="btn-f teal" type="button">Restore</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <img src="../brand-assets/aquinas-seal.svg" alt="" class="decorative-cross">
+</body>
+</html>

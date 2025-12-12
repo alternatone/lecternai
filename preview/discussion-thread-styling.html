@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discussion Thread Styling - Lectern</title>
+    <link rel="stylesheet" href="../styles/lectern-core.css">
+    <style>
+        body {
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+
+        .preview-container {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            color: var(--teal);
+            margin-bottom: 2rem;
+            font-size: 1.75rem;
+            text-align: center;
+        }
+
+        /* Question Box */
+        .question-box {
+            background: transparent;
+            border: 2px solid var(--teal);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .question-box > h3 {
+            position: absolute;
+            top: -0.7rem;
+            left: 1.5rem;
+            background: white;
+            padding: 0 0.75rem;
+            font-size: 1rem;
+            color: var(--teal);
+        }
+
+        /* Question Text - Garamond Italic */
+        .question-text {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.3rem;
+            font-style: italic;
+            color: #2c3e50;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Discussion Form */
+        .discussion-form {
+            margin-bottom: 2rem;
+        }
+
+        .discussion-form textarea {
+            min-height: 120px;
+            width: 100%;
+            padding: 0.875rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: 'Benton Sans', Arial, sans-serif;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border-color 0.2s ease;
+        }
+
+        .discussion-form textarea:focus {
+            outline: none;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(16, 100, 112, 0.1);
+        }
+
+        .discussion-form textarea::placeholder {
+            color: #9ca3af;
+        }
+
+        .option-label {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.1rem;
+            color: var(--teal);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(16, 100, 112, 0.2);
+        }
+
+        /* Base bubble styles */
+        .discussion-post-bubble {
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 12px 12px 12px 4px;
+        }
+
+        .reply-container-bubble {
+            margin-top: 1rem;
+            padding-left: 2rem;
+        }
+
+        .discussion-reply-bubble {
+            background: white;
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 12px 12px 4px 12px;
+        }
+
+        .section-divider {
+            margin: 3rem 0;
+            border: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #dee2e6 10%, #dee2e6 90%, transparent);
+        }
+    </style>
+</head>
+<body>
+    <h1>Conversation Bubble Color Options</h1>
+
+    <div class="preview-container">
+        <!-- OPTION 1: Light Teal (current) -->
+        <div class="question-box">
+            <h3>Option 1</h3>
+
+            <div class="question-text">
+                What aspects of Thomas Aquinas's approach to faith and reason do you find most compelling, and why?
+            </div>
+
+            <div class="discussion-form">
+                <textarea placeholder="Share your thoughts on this question..."></textarea>
+                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                    <button class="btn-f teal">Post Response</button>
+                </div>
+            </div>
+
+            <div class="option-label">Light Teal - Calm, Academic, On-Brand</div>
+            <div id="discussion-thread-1"></div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- OPTION 2: Warm Cream -->
+        <div class="question-box">
+            <h3>Option 2</h3>
+
+            <div class="question-text">
+                How does Aquinas's conception of natural law relate to modern ethical frameworks?
+            </div>
+
+            <div class="discussion-form">
+                <textarea placeholder="Share your thoughts on this question..."></textarea>
+                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                    <button class="btn-f teal">Post Response</button>
+                </div>
+            </div>
+
+            <div class="option-label">Warm Cream - Classic, Scholarly, Parchment-like</div>
+            <div id="discussion-thread-2"></div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- OPTION 3: Soft Gray -->
+        <div class="question-box">
+            <h3>Option 3</h3>
+
+            <div class="question-text">
+                In what ways does Aquinas's understanding of virtue ethics inform contemporary moral theology?
+            </div>
+
+            <div class="discussion-form">
+                <textarea placeholder="Share your thoughts on this question..."></textarea>
+                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                    <button class="btn-f teal">Post Response</button>
+                </div>
+            </div>
+
+            <div class="option-label">Soft Gray - Neutral, Modern, Professional</div>
+            <div id="discussion-thread-3"></div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- OPTION 4: Subtle Gold -->
+        <div class="question-box">
+            <h3>Option 4</h3>
+
+            <div class="question-text">
+                How do Aquinas's arguments for the existence of God hold up against modern scientific understanding?
+            </div>
+
+            <div class="discussion-form">
+                <textarea placeholder="Share your thoughts on this question..."></textarea>
+                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                    <button class="btn-f teal">Post Response</button>
+                </div>
+            </div>
+
+            <div class="option-label">Subtle Gold - Warm, Inviting, Enriching</div>
+            <div id="discussion-thread-4"></div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- OPTION 5: Very Light Olive -->
+        <div class="question-box">
+            <h3>Option 5</h3>
+
+            <div class="question-text">
+                What role does contemplation play in Aquinas's vision of the good life?
+            </div>
+
+            <div class="discussion-form">
+                <textarea placeholder="Share your thoughts on this question..."></textarea>
+                <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                    <button class="btn-f teal">Post Response</button>
+                </div>
+            </div>
+
+            <div class="option-label">Very Light Olive - Natural, Understated, Harmonious</div>
+            <div id="discussion-thread-5"></div>
+        </div>
+    </div>
+
+    <script>
+        // Sample discussion data
+        const samplePosts = [
+            {
+                id: 1,
+                author: 'Sarah Mitchell',
+                userId: 'user1',
+                content: 'I find Aquinas\'s integration of Aristotelian philosophy with Christian theology particularly fascinating. His Five Ways of demonstrating God\'s existence show how philosophical reasoning can complement faith rather than contradict it.',
+                createdAt: new Date('2024-01-15T10:30:00'),
+                editedAt: null,
+                replies: [
+                    {
+                        id: 101,
+                        author: 'Michael Chen',
+                        userId: 'user2',
+                        content: 'Great point, Sarah! I especially appreciate how the cosmological arguments build upon each other.',
+                        createdAt: new Date('2024-01-15T14:20:00'),
+                        editedAt: null
+                    }
+                ]
+            },
+            {
+                id: 2,
+                author: 'David Thompson',
+                userId: 'user4',
+                content: 'While I appreciate Aquinas\'s systematic approach, I sometimes wonder if his reliance on Aristotelian metaphysics limits the scope of his theology.',
+                createdAt: new Date('2024-01-16T09:15:00'),
+                editedAt: null,
+                replies: []
+            }
+        ];
+
+        // Current user (for demo purposes)
+        const currentUser = { id: 'user1', name: 'Sarah Mitchell' };
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Generate consistent colors for authors
+        function getAuthorColor(author) {
+            const colors = ['#106470', '#8b6914', '#7a7d4e', '#8b1a1a', '#2c5282', '#744210'];
+            let hash = 0;
+            for (let i = 0; i < author.length; i++) {
+                hash = author.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        // Generic render function with configurable background color
+        function renderBubbles(posts, containerId, backgroundColor) {
+            const container = document.getElementById(containerId);
+            let html = '';
+
+            posts.forEach(post => {
+                const postDate = new Date(post.createdAt).toLocaleDateString();
+                const postTime = new Date(post.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const isOwnPost = currentUser.id === post.userId;
+                const editedText = post.editedAt ? ' <span style="font-size: 0.75rem; color: #6c757d;">(edited)</span>' : '';
+                const postAuthorColor = getAuthorColor(post.author);
+
+                html += `
+                    <div class="discussion-post-bubble" style="background: ${backgroundColor};">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong style="color: ${postAuthorColor};">${escapeHtml(post.author)}${editedText}</strong>
+                            <span style="color: #6c757d; font-size: 0.85rem;">${postDate} at ${postTime}</span>
+                        </div>
+                        <p style="margin: 0.5rem 0; white-space: pre-wrap;">${escapeHtml(post.content)}</p>
+                        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.75rem;">
+                            <button class="btn-f olive" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Reply</button>
+                            ${isOwnPost ? `
+                                <button class="btn-f gold" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Edit</button>
+                                <button class="btn-f red" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Delete</button>
+                            ` : ''}
+                        </div>
+                `;
+
+                if (post.replies && post.replies.length > 0) {
+                    html += '<div class="reply-container-bubble">';
+                    post.replies.forEach(reply => {
+                        const replyDate = new Date(reply.createdAt).toLocaleDateString();
+                        const replyTime = new Date(reply.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        const replyEditedText = reply.editedAt ? ' <span style="font-size: 0.7rem; color: #6c757d;">(edited)</span>' : '';
+                        const replyAuthorColor = getAuthorColor(reply.author);
+                        const isOwnReply = currentUser.id === reply.userId;
+
+                        html += `
+                            <div class="discussion-reply-bubble">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <strong style="color: ${replyAuthorColor}; font-size: 0.9rem;">${escapeHtml(reply.author)}${replyEditedText}</strong>
+                                    <span style="color: #6c757d; font-size: 0.8rem;">${replyDate} at ${replyTime}</span>
+                                </div>
+                                <p style="margin: 0; font-size: 0.9rem; white-space: pre-wrap;">${escapeHtml(reply.content)}</p>
+                                ${isOwnReply ? `
+                                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+                                        <button class="btn-f gold" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;">Edit</button>
+                                        <button class="btn-f red" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;">Delete</button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Initialize all options with different background colors
+        renderBubbles(samplePosts, 'discussion-thread-1', '#f0f7f8'); // Light Teal
+        renderBubbles(samplePosts, 'discussion-thread-2', '#fef6e4'); // Warm Cream
+        renderBubbles(samplePosts, 'discussion-thread-3', '#f5f5f7'); // Soft Gray
+        renderBubbles(samplePosts, 'discussion-thread-4', '#fffbf0'); // Subtle Gold
+        renderBubbles(samplePosts, 'discussion-thread-5', '#f7f8f4'); // Very Light Olive
+    </script>
+</body>
+</html>

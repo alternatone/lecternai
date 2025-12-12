@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Option 2 V2 - Lectern</title>
+    <link rel="stylesheet" href="../styles/lectern-core.css">
+    <style>
+        body {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+
+        .modal-preview {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            margin: 2rem auto;
+        }
+
+        .modal-header-demo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header-demo h3 {
+            margin: 0;
+        }
+
+        .modal-close {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #6c757d;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+        }
+
+        .form-group textarea {
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        /* Page Sections with Bottom Border */
+        .page-section {
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .page-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background: #d1d5db;
+        }
+
+        .page-section:last-of-type::after {
+            display: none;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .page-title {
+            margin: 0;
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.2rem;
+            color: #106470;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="font-family: 'Adobe Garamond Pro', Georgia, serif; margin-bottom: 1rem; text-align: center;">Bottom Border Sections</h1>
+    <p style="text-align: center; color: #6c757d; margin-bottom: 2rem;">Simple grey line as bottom border for each section</p>
+
+    <div class="modal-preview">
+        <div class="modal-header-demo">
+            <h3>Create New Week</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+
+        <div class="form-group">
+            <label>Week Title</label>
+            <input type="text" placeholder="Enter week title...">
+        </div>
+
+        <div class="form-group">
+            <label>Week Description</label>
+            <textarea placeholder="Enter description..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Unlock Date <span style="color: var(--primary-color);">*</span></label>
+            <input type="date">
+        </div>
+
+        <div class="page-section">
+            <div class="page-header">
+                <h4 class="page-title">Page 1: Opening Reflection Question</h4>
+                <button class="btn-f gold">+ Add Question</button>
+            </div>
+            <p style="color: #6c757d; font-size: 0.9rem; margin: 0;">Questions will appear here...</p>
+        </div>
+
+        <div class="page-section">
+            <div class="page-header">
+                <h4 class="page-title">Page 2: Intro to the Week</h4>
+                <button class="btn-f gold">+ Add Resource</button>
+            </div>
+            <label style="margin-bottom: 0.5rem; display: block; font-weight: 500;">Week Introduction</label>
+            <textarea style="width: 100%; padding: 0.5rem; border: 1px solid #e9ecef; border-radius: 4px; min-height: 100px; font-family: inherit;" placeholder="Enter introduction text..."></textarea>
+            <div style="margin-top: 1rem;">
+                <p style="color: #6c757d; font-size: 0.9rem; margin: 0;">Videos will appear here...</p>
+            </div>
+        </div>
+
+        <div class="page-section">
+            <div class="page-header">
+                <h4 class="page-title">Page 3: Weekly Readings</h4>
+                <button class="btn-f gold">+ Add Resource</button>
+            </div>
+            <p style="color: #6c757d; font-size: 0.9rem; margin: 0;">Reading resources will appear here...</p>
+        </div>
+
+        <div class="page-section">
+            <div class="page-header">
+                <h4 class="page-title">Page 4: Preparation for Zoom Session</h4>
+            </div>
+            <textarea style="width: 100%; padding: 0.5rem; border: 1px solid #e9ecef; border-radius: 4px; min-height: 100px; font-family: inherit;" placeholder="Enter instructions, agenda, or any preparation content..."></textarea>
+        </div>
+
+        <div class="page-section">
+            <div class="page-header">
+                <h4 class="page-title">Page 5: Post-Zoom Reflection</h4>
+                <button class="btn-f gold">+ Add Question</button>
+            </div>
+            <p style="color: #6c757d; font-size: 0.9rem; margin: 0;">Reflection questions will appear here...</p>
+        </div>
+
+        <div class="page-section">
+            <div class="page-header">
+                <h4 class="page-title">Page 6: Further Study</h4>
+                <button class="btn-f gold">+ Add Resource</button>
+            </div>
+            <p style="color: #6c757d; font-size: 0.9rem; margin: 0;">Further study resources will appear here...</p>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #e9ecef;">
+            <button class="btn-f olive">Cancel</button>
+            <button class="btn-f olive">Save as Draft</button>
+            <button class="btn-f teal">Create Week</button>
+        </div>
+    </div>
+
+</body>
+</html>

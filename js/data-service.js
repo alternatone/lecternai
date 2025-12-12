@@ -1,5 +1,5 @@
 /**
- * LecternAI Data Service
+ * Lectern Data Service
  *
  * Centralized data access layer that abstracts storage operations.
  * Provides a consistent API that can easily switch between localStorage and backend.

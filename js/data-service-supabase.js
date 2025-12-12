@@ -1,5 +1,5 @@
 /**
- * LecternAI Data Service - Supabase Implementation
+ * Lectern Data Service - Supabase Implementation
  *
  * Async data access layer using Supabase as backend.
  * Mirrors the localStorage dataService API for minimal page changes.

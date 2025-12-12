@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week Modal Layout Options - Lectern</title>
+    <link rel="stylesheet" href="../styles/lectern-core.css">
+    <style>
+        body {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+
+        .option-section {
+            margin-bottom: 3rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .option-title {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+            color: var(--teal);
+        }
+
+        .option-description {
+            color: #6c757d;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .modal-preview {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            border: 1px solid #e9ecef;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .modal-header-demo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Option 1: Accordion Style */
+        .accordion-section {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            background: rgba(255, 194, 34, 0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border-bottom: 2px solid rgba(255, 194, 34, 0.3);
+        }
+
+        .accordion-header h4 {
+            margin: 0;
+            color: #8b6914;
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.1rem;
+        }
+
+        .accordion-body {
+            padding: 1.5rem;
+        }
+
+        /* Option 2: Numbered Tabs/Steps */
+        .stepped-section {
+            margin-bottom: 2rem;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid rgba(255, 194, 34, 0.3);
+        }
+
+        .step-number {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--teal) 0%, #0d7580 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .step-title {
+            margin: 0;
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.2rem;
+            color: #106470;
+        }
+
+        .step-body {
+            padding-left: 3.5rem;
+        }
+
+        /* Option 3: Colored Dividers with Icons */
+        .divider-section {
+            margin-bottom: 2rem;
+        }
+
+        .divider-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--secondary-color), transparent);
+        }
+
+        .divider-title {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.1rem;
+            color: #8b6914;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0 1rem;
+            white-space: nowrap;
+        }
+
+        .divider-body {
+            padding: 0 1rem;
+        }
+
+        .page-badge {
+            background: rgba(255, 194, 34, 0.2);
+            color: #8b6914;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="font-family: 'Adobe Garamond Pro', Georgia, serif; margin-bottom: 2rem; text-align: center;">Create Week Modal Layout Options</h1>
+
+    <!-- Option 1: Accordion Sections -->
+    <div class="option-section">
+        <h2 class="option-title">Option 1: Accordion-Style Sections</h2>
+        <p class="option-description">Each page is an expandable/collapsible card with a colored header. Clean, organized, and reduces visual clutter by allowing users to focus on one section at a time.</p>
+
+        <div class="modal-preview">
+            <div class="modal-header-demo">
+                <h3>Create New Week</h3>
+                <span>&times;</span>
+            </div>
+
+            <div class="form-group">
+                <label><strong>Week Title</strong></label>
+                <input type="text" placeholder="Enter week title..." style="width: 100%; padding: 0.5rem; border: 1px solid #e9ecef; border-radius: 4px;">
+            </div>
+
+            <div class="form-group">
+                <label><strong>Week Description</strong></label>
+                <textarea style="width: 100%; padding: 0.5rem; border: 1px solid #e9ecef; border-radius: 4px; min-height: 80px;" placeholder="Enter description..."></textarea>
+            </div>
+
+            <div class="accordion-section">
+                <div class="accordion-header">
+                    <h4>Page 1: Opening Reflection Question</h4>
+                    <button class="btn-f gold">+ Add Question</button>
+                </div>
+                <div class="accordion-body">
+                    <p style="color: #6c757d; font-size: 0.9rem;">Questions will appear here...</p>
+                </div>
+            </div>
+
+            <div class="accordion-section">
+                <div class="accordion-header">
+                    <h4>Page 2: Intro to the Week</h4>
+                    <button class="btn-f gold">+ Add Resource</button>
+                </div>
+                <div class="accordion-body">
+                    <label style="margin-bottom: 0.5rem; display: block;"><strong>Week Introduction</strong></label>
+                    <textarea style="width: 100%; padding: 0.5rem; border: 1px solid #e9ecef; border-radius: 4px; min-height: 100px;" placeholder="Enter introduction text..."></textarea>
+                </div>
+            </div>
+
+            <div class="accordion-section">
+                <div class="accordion-header">
+                    <h4>Page 3: Weekly Readings</h4>
+                    <button class="btn-f gold">+ Add Resource</button>
+                </div>
+                <div class="accordion-body">
+                    <p style="color: #6c757d; font-size: 0.9rem;">Reading resources will appear here...</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #e9ecef;">
+                <button class="btn-f olive">Cancel</button>
+                <button class="btn-f olive">Save as Draft</button>
+                <button class="btn-f teal">Create Week</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Option 2: Numbered Steps -->
+    <div class="option-section">
+        <h2 class="option-title">Option 2: Numbered Step Progression</h2>
+        <p class="option-description">Each page is presented as a numbered step with a circular badge and underlined header. Feels like a guided workflow, showing clear progression through the week creation process.</p>
+
+        <div class="modal-preview">
+            <div class="modal-header-demo">
+                <h3>Create New Week</h3>
+                <span>&times;</span>
+            </div>
+
+            <div class="form-group">
+                <label><strong>Week Title</strong></label>
+                <input type="text" placeholder="Enter week title..." style="width: 100%; padding: 0.5rem; border: 1px solid #e9ecef; border-radius: 4px;">
+            </div>
+
+            <div class="stepped-section">
+                <div class="step-header">
+                    <div class="step-number">1</div>
+                    <h4 class="step-title">Opening Reflection Question</h4>
+                    <button class="btn-f gold" style="margin-left: auto;">+ Add Question</button>
+                </div>
+                <div class="step-body">
+                    <p style="color: #6c757d; font-size: 0.9rem;">Questions will appear here...</p>
+                </div>
+            </div>
+
+            <div class="stepped-section">
+                <div class="step-header">
+                    <div class="step-number">2</div>
+                    <h4 class="step-title">Intro to the Week</h4>
+                    <button class="btn-f gold" style="margin-left: auto;">+ Add Resource</button>
+                </div>
+                <div class="step-body">
+                    <label style="margin-bottom: 0.5rem; display: block;"><strong>Week Introduction</strong></label>
+                    <textarea style="width: 100%; padding: 0.5rem; border: 1px solid #e9ecef; border-radius: 4px; min-height: 100px;" placeholder="Enter introduction text..."></textarea>
+                </div>
+            </div>
+
+            <div class="stepped-section">
+                <div class="step-header">
+                    <div class="step-number">3</div>
+                    <h4 class="step-title">Weekly Readings</h4>
+                    <button class="btn-f gold" style="margin-left: auto;">+ Add Resource</button>
+                </div>
+                <div class="step-body">
+                    <p style="color: #6c757d; font-size: 0.9rem;">Reading resources will appear here...</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #e9ecef;">
+                <button class="btn-f olive">Cancel</button>
+                <button class="btn-f olive">Save as Draft</button>
+                <button class="btn-f teal">Create Week</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Option 3: Decorative Dividers -->
+    <div class="option-section">
+        <h2 class="option-title">Option 3: Gold Divider Lines with Page Labels</h2>
+        <p class="option-description">Simple, elegant horizontal dividers with centered page titles. Minimal and sophisticated, letting the content breathe while maintaining clear visual separation. Most similar to current design but refined.</p>
+
+        <div class="modal-preview">
+            <div class="modal-header-demo">
+                <h3>Create New Week</h3>
+                <span>&times;</span>
+            </div>
+
+            <div class="form-group">
+                <label><strong>Week Title</strong></label>
+                <input type="text" placeholder="Enter week title..." style="width: 100%; padding: 0.5rem; border: 1px solid #e9ecef; border-radius: 4px;">
+            </div>
+
+            <div class="divider-section">
+                <div class="divider-header">
+                    <div class="divider-line"></div>
+                    <div class="divider-title">
+                        <span class="page-badge">Page 1</span>
+                        Opening Reflection Question
+                    </div>
+                    <div class="divider-line"></div>
+                </div>
+                <div class="divider-body">
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                        <button class="btn-f gold">+ Add Question</button>
+                    </div>
+                    <p style="color: #6c757d; font-size: 0.9rem;">Questions will appear here...</p>
+                </div>
+            </div>
+
+            <div class="divider-section">
+                <div class="divider-header">
+                    <div class="divider-line"></div>
+                    <div class="divider-title">
+                        <span class="page-badge">Page 2</span>
+                        Intro to the Week
+                    </div>
+                    <div class="divider-line"></div>
+                </div>
+                <div class="divider-body">
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                        <button class="btn-f gold">+ Add Resource</button>
+                    </div>
+                    <label style="margin-bottom: 0.5rem; display: block;"><strong>Week Introduction</strong></label>
+                    <textarea style="width: 100%; padding: 0.5rem; border: 1px solid #e9ecef; border-radius: 4px; min-height: 100px;" placeholder="Enter introduction text..."></textarea>
+                </div>
+            </div>
+
+            <div class="divider-section">
+                <div class="divider-header">
+                    <div class="divider-line"></div>
+                    <div class="divider-title">
+                        <span class="page-badge">Page 3</span>
+                        Weekly Readings
+                    </div>
+                    <div class="divider-line"></div>
+                </div>
+                <div class="divider-body">
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                        <button class="btn-f gold">+ Add Resource</button>
+                    </div>
+                    <p style="color: #6c757d; font-size: 0.9rem;">Reading resources will appear here...</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #e9ecef;">
+                <button class="btn-f olive">Cancel</button>
+                <button class="btn-f olive">Save as Draft</button>
+                <button class="btn-f teal">Create Week</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

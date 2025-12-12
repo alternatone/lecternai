@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Badge Options - Lectern</title>
+    <link rel="stylesheet" href="../styles/lectern-core.css">
+    <style>
+        body {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .option-section {
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .option-title {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--teal);
+        }
+
+        .week-example {
+            padding: 1.5rem;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .week-info h3 {
+            margin: 0.5rem 0 0.25rem 0;
+        }
+
+        .week-label {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #8b6914;
+            margin: 0;
+        }
+
+        .week-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        /* Option 1: Transparent Background Pills */
+        .status-pill-transparent {
+            padding: 0.4rem 0.9rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-pill-transparent.in-progress {
+            background: rgba(115, 125, 78, 0.15);
+            color: #5a5f3e;
+        }
+        .status-pill-transparent.not-started {
+            background: rgba(255, 194, 34, 0.15);
+            color: #8b6914;
+        }
+        .status-pill-transparent.completed {
+            background: rgba(16, 100, 112, 0.15);
+            color: #106470;
+        }
+
+        /* Option 2: Outline Badges */
+        .status-outline {
+            padding: 0.35rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: transparent;
+            border: 2px solid;
+        }
+        .status-outline.in-progress {
+            border-color: var(--olive);
+            color: var(--olive);
+        }
+        .status-outline.not-started {
+            border-color: #b8860b;
+            color: #b8860b;
+        }
+        .status-outline.completed {
+            border-color: var(--teal);
+            color: var(--teal);
+        }
+
+        /* Option 3: Small Caps Typography */
+        .status-smallcaps {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 0.85rem;
+            font-variant: small-caps;
+            letter-spacing: 0.08em;
+            font-weight: 600;
+        }
+        .status-smallcaps.in-progress {
+            color: #5a5f3e;
+        }
+        .status-smallcaps.not-started {
+            color: #8b6914;
+        }
+        .status-smallcaps.completed {
+            color: #106470;
+        }
+
+        /* Option 4: Icon + Text */
+        .status-icon {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-icon::before {
+            content: '●';
+            font-size: 0.6rem;
+        }
+        .status-icon.in-progress {
+            color: #5a5f3e;
+        }
+        .status-icon.not-started {
+            color: #8b6914;
+        }
+        .status-icon.completed {
+            color: #106470;
+        }
+
+        /* Option 5: Underline Accent */
+        .status-underline {
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding-bottom: 0.25rem;
+            border-bottom: 2px solid;
+        }
+        .status-underline.in-progress {
+            color: #5a5f3e;
+            border-color: var(--olive);
+        }
+        .status-underline.not-started {
+            color: #8b6914;
+            border-color: #b8860b;
+        }
+        .status-underline.completed {
+            color: #106470;
+            border-color: var(--teal);
+        }
+    </style>
+</head>
+<body>
+    <h1 style="font-family: 'Adobe Garamond Pro', Georgia, serif; margin-bottom: 2rem;">Status Badge Styling Options</h1>
+
+    <!-- Option 1 -->
+    <div class="option-section">
+        <h2 class="option-title">Option 1: Transparent Background Pills</h2>
+        <p style="color: #6c757d; margin-bottom: 1.5rem;">Matches stacked card header approach with subtle transparency</p>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 1</p>
+                    <h3>TEST WEEK ONE</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-pill-transparent in-progress">In Progress</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>Test week one week description</p>
+        </div>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 2</p>
+                    <h3>TEST WEEK TWO</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-pill-transparent not-started">Not Started</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>This is another test for another week</p>
+        </div>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 3</p>
+                    <h3>COMPLETED WEEK</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-pill-transparent completed">Completed</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>This week has been completed</p>
+        </div>
+    </div>
+
+    <!-- Option 2 -->
+    <div class="option-section">
+        <h2 class="option-title">Option 2: Minimal Outline Badges</h2>
+        <p style="color: #6c757d; margin-bottom: 1.5rem;">Follows ghost button pattern with 2px colored border</p>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 1</p>
+                    <h3>TEST WEEK ONE</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-outline in-progress">In Progress</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>Test week one week description</p>
+        </div>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 2</p>
+                    <h3>TEST WEEK TWO</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-outline not-started">Not Started</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>This is another test for another week</p>
+        </div>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 3</p>
+                    <h3>COMPLETED WEEK</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-outline completed">Completed</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>This week has been completed</p>
+        </div>
+    </div>
+
+    <!-- Option 3 -->
+    <div class="option-section">
+        <h2 class="option-title">Option 3: Small Caps Typography</h2>
+        <p style="color: #6c757d; margin-bottom: 1.5rem;">Elegant Garamond small-caps, lets typography do the work</p>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 1</p>
+                    <h3>TEST WEEK ONE</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-smallcaps in-progress">In Progress</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>Test week one week description</p>
+        </div>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 2</p>
+                    <h3>TEST WEEK TWO</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-smallcaps not-started">Not Started</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>This is another test for another week</p>
+        </div>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 3</p>
+                    <h3>COMPLETED WEEK</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-smallcaps completed">Completed</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>This week has been completed</p>
+        </div>
+    </div>
+
+    <!-- Option 4 -->
+    <div class="option-section">
+        <h2 class="option-title">Option 4: Icon + Text</h2>
+        <p style="color: #6c757d; margin-bottom: 1.5rem;">Colored text with dot prefix, minimal and clean</p>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 1</p>
+                    <h3>TEST WEEK ONE</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-icon in-progress">In Progress</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>Test week one week description</p>
+        </div>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 2</p>
+                    <h3>TEST WEEK TWO</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-icon not-started">Not Started</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>This is another test for another week</p>
+        </div>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 3</p>
+                    <h3>COMPLETED WEEK</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-icon completed">Completed</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>This week has been completed</p>
+        </div>
+    </div>
+
+    <!-- Option 5 -->
+    <div class="option-section">
+        <h2 class="option-title">Option 5: Underline Accent</h2>
+        <p style="color: #6c757d; margin-bottom: 1.5rem;">Colored text with subtle bottom border, sophisticated</p>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 1</p>
+                    <h3>TEST WEEK ONE</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-underline in-progress">In Progress</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>Test week one week description</p>
+        </div>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 2</p>
+                    <h3>TEST WEEK TWO</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-underline not-started">Not Started</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>This is another test for another week</p>
+        </div>
+
+        <div class="week-example">
+            <div class="week-header">
+                <div class="week-info">
+                    <p class="week-label">Week 3</p>
+                    <h3>COMPLETED WEEK</h3>
+                    <p style="color: var(--teal); margin: 0.25rem 0;">Available now</p>
+                </div>
+                <div class="week-actions">
+                    <span class="status-underline completed">Completed</span>
+                    <button class="btn-f olive">View Week</button>
+                </div>
+            </div>
+            <p>This week has been completed</p>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Button Style Guide - LecternAI</title>
+    <title>Style Guide - Lectern</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         .guide-container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 2rem auto;
             padding: 2rem;
         }
@@ -29,7 +29,7 @@
 
         .color-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
@@ -58,47 +58,6 @@
             font-size: 0.75rem;
             color: #6c757d;
             font-family: monospace;
-        }
-
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-        }
-
-        .option-box {
-            border: 3px solid #dee2e6;
-            border-radius: 12px;
-            padding: 1.5rem;
-            background: white;
-        }
-
-        .option-box h3 {
-            margin-top: 0;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid #e9ecef;
-            font-size: 1.3rem;
-        }
-
-        .option-box.recommended {
-            border-color: var(--teal);
-            background: rgba(0, 147, 135, 0.02);
-        }
-
-        .option-box.recommended h3 {
-            color: var(--teal);
-        }
-
-        .recommended-badge {
-            background: var(--teal);
-            color: white;
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-left: 0.5rem;
-            vertical-align: middle;
-            font-weight: normal;
         }
 
         .btn-showcase {
@@ -157,59 +116,143 @@
         }
 
         .swatch {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 4px;
             display: inline-block;
             vertical-align: middle;
-            margin-right: 0.5rem;
+            margin-right: 0.4rem;
             border: 1px solid rgba(0,0,0,0.1);
         }
 
-        /* Option A: Teal Primary */
-        .opt-a .btn-primary-new {
-            background: var(--teal);
+        /* Button styles - Chosen: Inset + Soft Shadow */
+        .btn-primary-demo {
+            background: #FFC222;
+            color: #231F20;
+            letter-spacing: 0.03em;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .btn-primary-demo:hover {
+            background: #e6ad1e;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 6px 16px rgba(0,0,0,0.15);
+        }
+        .btn-secondary-demo {
+            background: #106470;
             color: white;
+            letter-spacing: 0.03em;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.1);
         }
-        .opt-a .btn-primary-new:hover {
-            background: #007d73;
+        .btn-secondary-demo:hover {
+            background: #0a4a52;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 6px 16px rgba(0,0,0,0.15);
         }
-        .opt-a .btn-secondary-new {
-            background: var(--secondary-color);
-            color: var(--text-dark);
-        }
-        .opt-a .btn-danger-new {
-            background: #dc3545;
+        .btn-neutral-demo {
+            background: #a2a569;
             color: white;
+            letter-spacing: 0.03em;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.1);
         }
-        .opt-a .btn-gray-new {
-            background: #6c757d;
+        .btn-neutral-demo:hover {
+            background: #8a8d5a;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 6px 16px rgba(0,0,0,0.15);
+        }
+        .btn-danger-demo {
+            background: #a21f35;
             color: white;
+            letter-spacing: 0.03em;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .btn-danger-demo:hover {
+            background: #8a1a2d;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1), 0 6px 16px rgba(0,0,0,0.15);
         }
 
-        /* Option B: Gold Primary with Light Secondary */
-        .opt-b .btn-primary-new {
-            background: var(--secondary-color);
-            color: var(--text-dark);
+        .hierarchy-visual {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 1rem 0;
         }
-        .opt-b .btn-teal-new {
-            background: var(--teal);
-            color: white;
+
+        .hierarchy-arrow {
+            color: #6c757d;
+            font-size: 1.2rem;
         }
-        .opt-b .btn-secondary-new {
-            background: #e9ecef;
-            color: var(--text-dark);
+
+        /* Typography showcase */
+        .font-showcase {
+            margin-bottom: 2rem;
+        }
+
+        .font-showcase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .font-showcase-name {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .font-showcase-specs {
+            font-size: 0.75rem;
+            color: #adb5bd;
+            font-family: monospace;
+        }
+
+        .font-sample-garamond {
+            font-family: 'Adobe Garamond Pro', Garamond, Georgia, 'Times New Roman', serif;
+        }
+
+        .font-sample-benton {
+            font-family: 'Benton Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+        }
+
+        .type-scale {
+            margin: 1.5rem 0;
+        }
+
+        .type-scale-item {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .type-scale-label {
+            width: 120px;
+            flex-shrink: 0;
+            font-size: 0.75rem;
+            color: #6c757d;
+            font-family: monospace;
+        }
+
+        .text-color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .text-color-sample {
+            padding: 1rem;
+            border-radius: 8px;
             border: 1px solid #dee2e6;
         }
-        .opt-b .btn-danger-new {
-            background: #dc3545;
-            color: white;
-        }
 
-        @media (max-width: 900px) {
-            .options-grid {
-                grid-template-columns: 1fr;
-            }
+        .text-color-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            font-family: monospace;
         }
     </style>
 </head>
@@ -217,317 +260,519 @@
     <header>
         <div class="header-content">
             <a href="index.html" class="logo">
-                <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon">
-                <h1>Button Style Guide</h1>
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon">
+                <h1>Style Guide</h1>
             </a>
         </div>
     </header>
 
     <div class="guide-container">
-        <!-- Brand Colors Reference -->
+
+        <!-- Title Typography (Chosen) -->
         <div class="section">
-            <h2>Available Brand Colors</h2>
-            <div class="color-grid">
-                <div class="color-card">
-                    <div class="swatch-large" style="background: #BB292F;"></div>
-                    <div class="color-details">
-                        <div class="color-name">Primary Red</div>
-                        <div class="color-value">#BB292F</div>
-                    </div>
+            <h2>Title Typography (Chosen)</h2>
+            <p style="color: #6c757d; margin-bottom: 1.5rem;">Adobe Garamond Pro with wide tracking and uppercase treatment.</p>
+
+            <div class="font-showcase" style="border: 2px solid #a21f35; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);">
+                <div class="font-showcase-header">
+                    <span class="font-showcase-name" style="color: #a21f35; font-weight: 600;">Title Style</span>
+                    <span class="font-showcase-specs">letter-spacing: 0.15em | font-weight: 400 | text-transform: uppercase</span>
                 </div>
-                <div class="color-card">
-                    <div class="swatch-large" style="background: #FFB81C;"></div>
-                    <div class="color-details">
-                        <div class="color-name">Gold</div>
-                        <div class="color-value">#FFB81C</div>
-                    </div>
+                <div style="padding: 1.5rem 0;">
+                    <h1 style="font-family: 'Adobe Garamond Pro', Garamond, Georgia, serif; font-size: 2.2rem; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; margin: 0 0 1rem 0; color: #231F20;">Module Overview</h1>
+                    <h2 style="font-family: 'Adobe Garamond Pro', Garamond, Georgia, serif; font-size: 1.6rem; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; margin: 0 0 1rem 0; color: #a21f35;">Week Three: Foundations</h2>
+                    <h3 style="font-family: 'Adobe Garamond Pro', Garamond, Georgia, serif; font-size: 1.2rem; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; margin: 0; color: #231F20;">Discussion Topics</h3>
                 </div>
-                <div class="color-card">
-                    <div class="swatch-large" style="background: #009387;"></div>
-                    <div class="color-details">
-                        <div class="color-name">Teal</div>
-                        <div class="color-value">#009387</div>
-                    </div>
-                </div>
-                <div class="color-card">
-                    <div class="swatch-large" style="background: #89985A;"></div>
-                    <div class="color-details">
-                        <div class="color-name">Olive</div>
-                        <div class="color-value">#89985A</div>
-                    </div>
-                </div>
-                <div class="color-card">
-                    <div class="swatch-large" style="background: #6c757d;"></div>
-                    <div class="color-details">
-                        <div class="color-name">Gray</div>
-                        <div class="color-value">#6c757d</div>
-                    </div>
-                </div>
-                <div class="color-card">
-                    <div class="swatch-large" style="background: #dc3545;"></div>
-                    <div class="color-details">
-                        <div class="color-name">Danger Red</div>
-                        <div class="color-value">#dc3545</div>
-                    </div>
-                </div>
+                <p style="font-size: 0.85rem; color: #6c757d; margin: 0;">Classic luxury brand style. Very open, airy, formal.</p>
             </div>
-        </div>
 
-        <!-- Two Options Comparison -->
-        <div class="section">
-            <h2>Proposed Button Systems (Choose One)</h2>
-            <p style="color: #6c757d; margin-bottom: 1.5rem;">Both options eliminate the conflict of having two different red buttons. Red is reserved exclusively for destructive/danger actions.</p>
-
-            <div class="options-grid">
-                <!-- Option A -->
-                <div class="option-box recommended opt-a">
-                    <h3>Option A: Teal Primary <span class="recommended-badge">RECOMMENDED</span></h3>
-
-                    <div class="btn-showcase">
-                        <div class="btn-showcase-label">btn-primary (Teal) - Main CTAs</div>
-                        <div class="btn-showcase-row">
-                            <button type="button" class="btn btn-primary-new">Save</button>
-                            <button type="button" class="btn btn-primary-new">Submit</button>
-                            <button type="button" class="btn btn-primary-new">Create</button>
-                            <button type="button" class="btn btn-primary-new">Participate</button>
-                        </div>
-                    </div>
-
-                    <div class="btn-showcase">
-                        <div class="btn-showcase-label">btn-secondary (Gold) - Secondary actions</div>
-                        <div class="btn-showcase-row">
-                            <button type="button" class="btn btn-secondary-new">Cancel</button>
-                            <button type="button" class="btn btn-secondary-new">Edit</button>
-                            <button type="button" class="btn btn-secondary-new">Back</button>
-                            <button type="button" class="btn btn-secondary-new">Manage</button>
-                        </div>
-                    </div>
-
-                    <div class="btn-showcase">
-                        <div class="btn-showcase-label">btn-gray - Neutral actions</div>
-                        <div class="btn-showcase-row">
-                            <button type="button" class="btn btn-gray-new">Save Draft</button>
-                            <button type="button" class="btn btn-gray-new">Archive</button>
-                        </div>
-                    </div>
-
-                    <div class="btn-showcase">
-                        <div class="btn-showcase-label">btn-danger (Red) - Destructive only</div>
-                        <div class="btn-showcase-row">
-                            <button type="button" class="btn btn-danger-new">Delete</button>
-                            <button type="button" class="btn btn-danger-new">Reject</button>
-                            <button type="button" class="btn btn-danger-new">Remove</button>
-                        </div>
-                    </div>
-
-                    <hr style="margin: 1.5rem 0;">
-
-                    <div class="example-card">
-                        <div class="example-card-title">Example: Active Module Card</div>
-                        <div class="btn-row">
-                            <button type="button" class="btn btn-gray-new">Archive</button>
-                            <button type="button" class="btn btn-secondary-new">Manage</button>
-                            <button type="button" class="btn btn-primary-new">Participate</button>
-                        </div>
-                    </div>
-
-                    <div class="example-card">
-                        <div class="example-card-title">Example: User Management</div>
-                        <div class="btn-row">
-                            <button type="button" class="btn btn-danger-new">Reject</button>
-                            <button type="button" class="btn btn-primary-new">Approve</button>
-                        </div>
-                    </div>
-
-                    <div class="example-card">
-                        <div class="example-card-title">Example: Week Actions</div>
-                        <div class="btn-row">
-                            <button type="button" class="btn btn-danger-new">Delete</button>
-                            <button type="button" class="btn btn-secondary-new">Edit</button>
-                        </div>
-                    </div>
-
-                    <table style="margin-top: 1rem;">
-                        <thead>
-                            <tr>
-                                <th>Class</th>
-                                <th>Color</th>
-                                <th>Use For</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>btn-primary</code></td>
-                                <td><span class="swatch" style="background: #009387;"></span>Teal</td>
-                                <td>Save, Submit, Create, Participate, Approve</td>
-                            </tr>
-                            <tr>
-                                <td><code>btn-secondary</code></td>
-                                <td><span class="swatch" style="background: #FFB81C;"></span>Gold</td>
-                                <td>Cancel, Edit, Back, Manage, Reply</td>
-                            </tr>
-                            <tr>
-                                <td><code>btn-gray</code></td>
-                                <td><span class="swatch" style="background: #6c757d;"></span>Gray</td>
-                                <td>Save Draft, Archive, Dismiss</td>
-                            </tr>
-                            <tr>
-                                <td><code>btn-danger</code></td>
-                                <td><span class="swatch" style="background: #dc3545;"></span>Red</td>
-                                <td>Delete, Reject, Remove</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Option B -->
-                <div class="option-box opt-b">
-                    <h3>Option B: Gold Primary + Light Secondary</h3>
-
-                    <div class="btn-showcase">
-                        <div class="btn-showcase-label">btn-primary (Gold) - Main CTAs</div>
-                        <div class="btn-showcase-row">
-                            <button type="button" class="btn btn-primary-new">Save</button>
-                            <button type="button" class="btn btn-primary-new">Submit</button>
-                            <button type="button" class="btn btn-primary-new">Create</button>
-                        </div>
-                    </div>
-
-                    <div class="btn-showcase">
-                        <div class="btn-showcase-label">btn-teal - Active/Launch actions</div>
-                        <div class="btn-showcase-row">
-                            <button type="button" class="btn btn-teal-new">Participate</button>
-                            <button type="button" class="btn btn-teal-new">Launch</button>
-                            <button type="button" class="btn btn-teal-new">Approve</button>
-                        </div>
-                    </div>
-
-                    <div class="btn-showcase">
-                        <div class="btn-showcase-label">btn-secondary (Light Gray) - Secondary actions</div>
-                        <div class="btn-showcase-row">
-                            <button type="button" class="btn btn-secondary-new">Cancel</button>
-                            <button type="button" class="btn btn-secondary-new">Edit</button>
-                            <button type="button" class="btn btn-secondary-new">Back</button>
-                            <button type="button" class="btn btn-secondary-new">Archive</button>
-                        </div>
-                    </div>
-
-                    <div class="btn-showcase">
-                        <div class="btn-showcase-label">btn-danger (Red) - Destructive only</div>
-                        <div class="btn-showcase-row">
-                            <button type="button" class="btn btn-danger-new">Delete</button>
-                            <button type="button" class="btn btn-danger-new">Reject</button>
-                            <button type="button" class="btn btn-danger-new">Remove</button>
-                        </div>
-                    </div>
-
-                    <hr style="margin: 1.5rem 0;">
-
-                    <div class="example-card">
-                        <div class="example-card-title">Example: Active Module Card</div>
-                        <div class="btn-row">
-                            <button type="button" class="btn btn-secondary-new">Archive</button>
-                            <button type="button" class="btn btn-secondary-new">Manage</button>
-                            <button type="button" class="btn btn-teal-new">Participate</button>
-                        </div>
-                    </div>
-
-                    <div class="example-card">
-                        <div class="example-card-title">Example: User Management</div>
-                        <div class="btn-row">
-                            <button type="button" class="btn btn-danger-new">Reject</button>
-                            <button type="button" class="btn btn-teal-new">Approve</button>
-                        </div>
-                    </div>
-
-                    <div class="example-card">
-                        <div class="example-card-title">Example: Week Actions</div>
-                        <div class="btn-row">
-                            <button type="button" class="btn btn-danger-new">Delete</button>
-                            <button type="button" class="btn btn-secondary-new">Edit</button>
-                        </div>
-                    </div>
-
-                    <table style="margin-top: 1rem;">
-                        <thead>
-                            <tr>
-                                <th>Class</th>
-                                <th>Color</th>
-                                <th>Use For</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>btn-primary</code></td>
-                                <td><span class="swatch" style="background: #FFB81C;"></span>Gold</td>
-                                <td>Save, Submit, Create</td>
-                            </tr>
-                            <tr>
-                                <td><code>btn-teal</code></td>
-                                <td><span class="swatch" style="background: #009387;"></span>Teal</td>
-                                <td>Participate, Launch, Approve</td>
-                            </tr>
-                            <tr>
-                                <td><code>btn-secondary</code></td>
-                                <td><span class="swatch" style="background: #e9ecef;"></span>Light</td>
-                                <td>Cancel, Edit, Back, Archive</td>
-                            </tr>
-                            <tr>
-                                <td><code>btn-danger</code></td>
-                                <td><span class="swatch" style="background: #dc3545;"></span>Red</td>
-                                <td>Delete, Reject, Remove</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Comparison Summary -->
-        <div class="section">
-            <h2>Comparison Summary</h2>
             <table>
                 <thead>
                     <tr>
-                        <th>Aspect</th>
-                        <th>Option A (Teal Primary)</th>
-                        <th>Option B (Gold Primary)</th>
+                        <th>Property</th>
+                        <th>Value</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Primary CTA color</strong></td>
-                        <td>Teal - calming, professional</td>
-                        <td>Gold - warm, attention-grabbing</td>
+                        <td>Font Family</td>
+                        <td><code>'Adobe Garamond Pro', Garamond, Georgia, serif</code></td>
                     </tr>
                     <tr>
-                        <td><strong>Number of button types</strong></td>
-                        <td>4 (primary, secondary, gray, danger)</td>
-                        <td>4 (primary, teal, secondary, danger)</td>
+                        <td>Font Weight</td>
+                        <td><code>400</code></td>
                     </tr>
                     <tr>
-                        <td><strong>Secondary button</strong></td>
-                        <td>Gold - still prominent</td>
-                        <td>Light gray - very subtle</td>
+                        <td>Letter Spacing</td>
+                        <td><code>0.15em</code></td>
                     </tr>
                     <tr>
-                        <td><strong>Brand color usage</strong></td>
-                        <td>Teal prominent, Gold secondary</td>
-                        <td>Gold prominent, Teal for special actions</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Visual hierarchy</strong></td>
-                        <td>Clear: Teal > Gold > Gray > Red</td>
-                        <td>Gold and Teal compete for attention</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Simplicity</strong></td>
-                        <td>Simpler - fewer decisions needed</td>
-                        <td>More nuanced - need to choose between gold/teal</td>
+                        <td>Text Transform</td>
+                        <td><code>uppercase</code></td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        <!-- Benton Sans Weight Reference -->
+        <div class="section">
+            <h2>Benton Sans - Weight Reference</h2>
+            <p style="color: #6c757d; margin-bottom: 1.5rem;">All available Benton Sans weights from the brand guidelines.</p>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                <!-- Book -->
+                <div style="border: 1px solid #e9ecef; padding: 1.25rem; border-radius: 8px;">
+                    <div style="font-size: 0.75rem; color: #a21f35; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Book (400)</div>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 400; color: #231F20; margin: 0 0 0.5rem 0;">ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 400; color: #231F20; margin: 0;">abcdefghijklmnopqrstuvwxyz</p>
+                </div>
+                <!-- Book Italic -->
+                <div style="border: 1px solid #e9ecef; padding: 1.25rem; border-radius: 8px;">
+                    <div style="font-size: 0.75rem; color: #a21f35; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Book Italic (400)</div>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 400; font-style: italic; color: #231F20; margin: 0 0 0.5rem 0;">ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 400; font-style: italic; color: #231F20; margin: 0;">abcdefghijklmnopqrstuvwxyz</p>
+                </div>
+                <!-- Medium -->
+                <div style="border: 1px solid #e9ecef; padding: 1.25rem; border-radius: 8px;">
+                    <div style="font-size: 0.75rem; color: #a21f35; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Medium (500)</div>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 500; color: #231F20; margin: 0 0 0.5rem 0;">ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 500; color: #231F20; margin: 0;">abcdefghijklmnopqrstuvwxyz</p>
+                </div>
+                <!-- Medium Italic -->
+                <div style="border: 1px solid #e9ecef; padding: 1.25rem; border-radius: 8px;">
+                    <div style="font-size: 0.75rem; color: #a21f35; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Medium Italic (500)</div>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 500; font-style: italic; color: #231F20; margin: 0 0 0.5rem 0;">ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 500; font-style: italic; color: #231F20; margin: 0;">abcdefghijklmnopqrstuvwxyz</p>
+                </div>
+                <!-- Bold -->
+                <div style="border: 1px solid #e9ecef; padding: 1.25rem; border-radius: 8px;">
+                    <div style="font-size: 0.75rem; color: #a21f35; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Bold (700)</div>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 700; color: #231F20; margin: 0 0 0.5rem 0;">ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 700; color: #231F20; margin: 0;">abcdefghijklmnopqrstuvwxyz</p>
+                </div>
+                <!-- Bold Italic -->
+                <div style="border: 1px solid #e9ecef; padding: 1.25rem; border-radius: 8px;">
+                    <div style="font-size: 0.75rem; color: #a21f35; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem;">Bold Italic (700)</div>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 700; font-style: italic; color: #231F20; margin: 0 0 0.5rem 0;">ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; font-weight: 700; font-style: italic; color: #231F20; margin: 0;">abcdefghijklmnopqrstuvwxyz</p>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Weight Name</th>
+                        <th>CSS Value</th>
+                        <th>Use For</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Book</td>
+                        <td><code>font-weight: 400</code></td>
+                        <td>Body text, descriptions, general content</td>
+                    </tr>
+                    <tr>
+                        <td>Book Italic</td>
+                        <td><code>font-weight: 400; font-style: italic</code></td>
+                        <td>Emphasis, quotes, citations, terminology</td>
+                    </tr>
+                    <tr>
+                        <td>Medium</td>
+                        <td><code>font-weight: 500</code></td>
+                        <td>Subheadings, labels, navigation, UI elements</td>
+                    </tr>
+                    <tr>
+                        <td>Medium Italic</td>
+                        <td><code>font-weight: 500; font-style: italic</code></td>
+                        <td>Emphasized subheadings, featured quotes</td>
+                    </tr>
+                    <tr>
+                        <td>Bold</td>
+                        <td><code>font-weight: 700</code></td>
+                        <td>Strong emphasis, key terms, buttons</td>
+                    </tr>
+                    <tr>
+                        <td>Bold Italic</td>
+                        <td><code>font-weight: 700; font-style: italic</code></td>
+                        <td>Maximum emphasis, warnings, critical info</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Body Text (Chosen): Book Weight Airy -->
+        <div class="section">
+            <h2>Body Text Style (Chosen)</h2>
+            <p style="color: #6c757d; margin-bottom: 1.5rem;">Benton Sans Book with generous line-height for comfortable academic reading.</p>
+
+            <div class="font-showcase" style="border: 2px solid #a21f35; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);">
+                <div class="font-showcase-header">
+                    <span class="font-showcase-name" style="color: #a21f35; font-weight: 600;">Book Weight - Airy</span>
+                    <span class="font-showcase-specs">font-weight: 400 | font-size: 1rem | line-height: 1.9</span>
+                </div>
+                <div style="padding: 1.5rem 0;">
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.9; font-weight: 400; color: #231F20; margin: 0 0 1rem 0;">This week we explore Socrates' famous declaration that "the unexamined life is not worth living." What does it mean to truly examine one's life, and why might this be essential to human flourishing? Through careful reading of the Apology and guided discussion, we will consider how philosophical inquiry shapes our understanding of virtue, knowledge, and the good life.</p>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.9rem; line-height: 1.7; font-weight: 400; color: #6c757d; margin: 0;">Secondary text in gray for timestamps, captions, and metadata.</p>
+                </div>
+                <p style="font-size: 0.85rem; color: #6c757d; margin: 0;">Generous line-height for comfortable academic reading. Pairs elegantly with the serif titles.</p>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Font Family</td>
+                        <td><code>'Benton Sans', -apple-system, sans-serif</code></td>
+                    </tr>
+                    <tr>
+                        <td>Font Weight</td>
+                        <td><code>400</code> (Book)</td>
+                    </tr>
+                    <tr>
+                        <td>Font Size</td>
+                        <td><code>1rem</code> (16px)</td>
+                    </tr>
+                    <tr>
+                        <td>Line Height</td>
+                        <td><code>1.9</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mixed Weight Examples with Book Airy Base -->
+        <div class="section">
+            <h2>Mixed Weight Hierarchy</h2>
+            <p style="color: #6c757d; margin-bottom: 1.5rem;">Using Book Airy as the base, here's how all weights work together.</p>
+
+            <!-- Inline Emphasis Examples -->
+            <div class="font-showcase" style="border: 2px solid #e9ecef; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                <div class="font-showcase-header">
+                    <span class="font-showcase-name">Inline Emphasis Styles</span>
+                    <span class="font-showcase-specs">Book Airy base with inline variations</span>
+                </div>
+                <div style="padding: 1.5rem 0;">
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.9; font-weight: 400; color: #231F20; margin: 0 0 1.5rem 0;">
+                        This week we explore Socrates' famous declaration that <em style="font-style: italic;">"the unexamined life is not worth living."</em> What does it mean to truly examine one's life, and why might this be essential to <span style="font-weight: 500;">human flourishing</span>? Through careful reading of the <strong style="font-weight: 700;">Apology</strong> and guided discussion, we will consider how <em style="font-weight: 500; font-style: italic;">philosophical inquiry</em> shapes our understanding of <strong style="font-weight: 700; font-style: italic;">virtue, knowledge, and the good life.</strong>
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                        <div>
+                            <span style="font-family: 'Benton Sans', sans-serif; font-size: 0.75rem; font-weight: 500; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em;">Book Italic</span>
+                            <p style="font-family: 'Benton Sans', sans-serif; font-size: 1rem; font-weight: 400; font-style: italic; color: #231F20; margin: 0.25rem 0 0 0;">quotes, citations</p>
+                        </div>
+                        <div>
+                            <span style="font-family: 'Benton Sans', sans-serif; font-size: 0.75rem; font-weight: 500; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em;">Medium</span>
+                            <p style="font-family: 'Benton Sans', sans-serif; font-size: 1rem; font-weight: 500; color: #231F20; margin: 0.25rem 0 0 0;">key concepts</p>
+                        </div>
+                        <div>
+                            <span style="font-family: 'Benton Sans', sans-serif; font-size: 0.75rem; font-weight: 500; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em;">Bold</span>
+                            <p style="font-family: 'Benton Sans', sans-serif; font-size: 1rem; font-weight: 700; color: #231F20; margin: 0.25rem 0 0 0;">strong emphasis</p>
+                        </div>
+                        <div>
+                            <span style="font-family: 'Benton Sans', sans-serif; font-size: 0.75rem; font-weight: 500; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em;">Medium Italic</span>
+                            <p style="font-family: 'Benton Sans', sans-serif; font-size: 1rem; font-weight: 500; font-style: italic; color: #231F20; margin: 0.25rem 0 0 0;">terminology</p>
+                        </div>
+                        <div>
+                            <span style="font-family: 'Benton Sans', sans-serif; font-size: 0.75rem; font-weight: 500; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em;">Bold Italic</span>
+                            <p style="font-family: 'Benton Sans', sans-serif; font-size: 1rem; font-weight: 700; font-style: italic; color: #231F20; margin: 0.25rem 0 0 0;">critical points</p>
+                        </div>
+                        <div>
+                            <span style="font-family: 'Benton Sans', sans-serif; font-size: 0.75rem; font-weight: 500; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em;">Book (base)</span>
+                            <p style="font-family: 'Benton Sans', sans-serif; font-size: 1rem; font-weight: 400; color: #231F20; margin: 0.25rem 0 0 0;">regular text</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Labels & Metadata -->
+            <div class="font-showcase" style="border: 2px solid #e9ecef; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                <div class="font-showcase-header">
+                    <span class="font-showcase-name">Labels, Metadata &amp; UI Elements</span>
+                    <span class="font-showcase-specs">Medium (500) for UI chrome, Book (400) for content</span>
+                </div>
+                <div style="padding: 1.5rem 0;">
+                    <div style="background: #f8f9fa; padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.75rem; font-weight: 500; color: #a21f35; text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 0.5rem 0;">Week Overview</p>
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.9; font-weight: 400; color: #231F20; margin: 0 0 1rem 0;">This week we explore Socrates' famous declaration that "the unexamined life is not worth living." What does it mean to truly examine one's life?</p>
+                        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                            <span style="font-family: 'Benton Sans', sans-serif; font-size: 0.85rem;"><span style="font-weight: 500; color: #231F20;">Due:</span> <span style="font-weight: 400; color: #6c757d;">September 15, 2024</span></span>
+                            <span style="font-family: 'Benton Sans', sans-serif; font-size: 0.85rem;"><span style="font-weight: 500; color: #231F20;">Readings:</span> <span style="font-weight: 400; color: #6c757d;">3 articles</span></span>
+                            <span style="font-family: 'Benton Sans', sans-serif; font-size: 0.85rem;"><span style="font-weight: 500; color: #231F20;">Status:</span> <span style="font-weight: 500; color: #106470;">In Progress</span></span>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.85rem; color: #6c757d; margin: 0;">Labels use Medium weight for visual separation. Values use Book weight. Status badges can use Medium + color.</p>
+                </div>
+            </div>
+
+            <!-- Blockquotes & Citations -->
+            <div class="font-showcase" style="border: 2px solid #e9ecef; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                <div class="font-showcase-header">
+                    <span class="font-showcase-name">Blockquotes &amp; Citations</span>
+                    <span class="font-showcase-specs">Book Italic for quotes, Medium for attribution</span>
+                </div>
+                <div style="padding: 1.5rem 0;">
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.9; font-weight: 400; color: #231F20; margin: 0 0 1rem 0;">In his defense before the Athenian jury, Socrates makes a striking claim about the value of self-examination:</p>
+                    <blockquote style="border-left: 3px solid #a21f35; padding-left: 1.25rem; margin: 0 0 1rem 0;">
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1.1rem; line-height: 1.8; font-weight: 400; font-style: italic; color: #231F20; margin: 0 0 0.5rem 0;">"The unexamined life is not worth living for a human being."</p>
+                        <cite style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.9rem; font-weight: 500; font-style: normal; color: #6c757d;">— Plato, Apology 38a</cite>
+                    </blockquote>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.9; font-weight: 400; color: #231F20; margin: 0;">This assertion challenges us to consider what distinguishes a truly <em style="font-style: italic;">human</em> life from mere existence.</p>
+                </div>
+            </div>
+
+            <!-- Lists & Structured Content -->
+            <div class="font-showcase" style="border: 2px solid #e9ecef; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                <div class="font-showcase-header">
+                    <span class="font-showcase-name">Lists &amp; Structured Content</span>
+                    <span class="font-showcase-specs">Bold for list headers, Book for descriptions</span>
+                </div>
+                <div style="padding: 1.5rem 0;">
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.9; font-weight: 400; color: #231F20; margin: 0 0 1rem 0;">This week's readings explore three key themes:</p>
+                    <ul style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.9; font-weight: 400; color: #231F20; margin: 0 0 1rem 0; padding-left: 1.5rem;">
+                        <li style="margin-bottom: 0.75rem;"><strong style="font-weight: 700;">Self-Knowledge</strong> — The Delphic maxim "know thyself" and its role in Socratic philosophy</li>
+                        <li style="margin-bottom: 0.75rem;"><strong style="font-weight: 700;">Virtue Ethics</strong> — How examination leads to understanding of <em style="font-style: italic;">arete</em> (excellence)</li>
+                        <li style="margin-bottom: 0.75rem;"><strong style="font-weight: 700;">The Good Life</strong> — Socrates' conception of <em style="font-style: italic;">eudaimonia</em> (flourishing)</li>
+                    </ul>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.9rem; line-height: 1.7; font-weight: 400; color: #6c757d; margin: 0;"><span style="font-weight: 500;">Note:</span> Greek terms are shown in <em style="font-style: italic;">italics</em> with translations.</p>
+                </div>
+            </div>
+
+            <!-- Alerts & Notices -->
+            <div class="font-showcase" style="border: 2px solid #e9ecef; padding: 1.5rem; border-radius: 12px;">
+                <div class="font-showcase-header">
+                    <span class="font-showcase-name">Alerts &amp; Notices</span>
+                    <span class="font-showcase-specs">Bold for titles, Book for content, Bold for key info</span>
+                </div>
+                <div style="padding: 1.5rem 0;">
+                    <div style="background: #FFF8E6; border: 1px solid #FFC222; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.95rem; font-weight: 700; color: #231F20; margin: 0 0 0.5rem 0;">Submission Deadline Approaching</p>
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.7; font-weight: 400; color: #231F20; margin: 0;">Your response to <em style="font-style: italic;">"The Examined Life"</em> is due in <strong style="font-weight: 700;">2 hours</strong>.</p>
+                    </div>
+                    <div style="background: #E8F4F5; border: 1px solid #106470; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.95rem; font-weight: 700; color: #106470; margin: 0 0 0.5rem 0;">New Discussion Posted</p>
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.7; font-weight: 400; color: #231F20; margin: 0;"><span style="font-weight: 500;">John Smith</span> replied to your post about <em style="font-style: italic;">dialectic method</em>.</p>
+                    </div>
+                    <div style="background: #F8E8E8; border: 1px solid #a21f35; border-radius: 8px; padding: 1rem;">
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.95rem; font-weight: 700; color: #a21f35; margin: 0 0 0.5rem 0;">Missing Required Reading</p>
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.7; font-weight: 400; color: #231F20; margin: 0;">Complete <strong style="font-weight: 700;">Chapter 3: Virtue Ethics</strong> before participating.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Typography In-Context Examples -->
+        <div class="section">
+            <h2>Typography In-Context Examples</h2>
+            <p style="color: #6c757d; margin-bottom: 1.5rem;">Showing how Benton Sans weights work together in real layouts.</p>
+
+            <!-- Example 1: Module Card -->
+            <div style="border: 2px solid #e9ecef; border-radius: 12px; margin-bottom: 2rem; overflow: hidden;">
+                <div style="background: #f8f9fa; padding: 1.5rem;">
+                    <h2 style="font-family: 'Adobe Garamond Pro', Garamond, Georgia, serif; font-size: 1.4rem; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; margin: 0 0 1rem 0; color: #a21f35;">Week One: The Examined Life</h2>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.7; font-weight: 400; color: #231F20; margin: 0 0 1rem 0;">This week we explore Socrates' famous declaration that <em>"the unexamined life is not worth living."</em> What does it mean to truly examine one's life, and why might this be essential to <strong>human flourishing</strong>?</p>
+                    <div style="display: flex; gap: 1.5rem; margin-bottom: 1rem;">
+                        <span style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.85rem; font-weight: 500; color: #106470;">3 Readings</span>
+                        <span style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.85rem; font-weight: 500; color: #106470;">2 Discussions</span>
+                        <span style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.85rem; font-weight: 400; color: #6c757d;">Due: Sep 15</span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button class="btn btn-neutral-demo">Archive</button>
+                        <button class="btn btn-secondary-demo">Manage</button>
+                        <button class="btn btn-primary-demo">Participate</button>
+                    </div>
+                </div>
+                <div style="background: #e9ecef; padding: 0.75rem 1.5rem; font-size: 0.85rem; color: #6c757d;">
+                    Body: Book (400) | Labels: Medium (500) | Emphasis: Bold (700)
+                </div>
+            </div>
+
+            <!-- Example 2: Discussion Post -->
+            <div style="border: 2px solid #e9ecef; border-radius: 12px; margin-bottom: 2rem; overflow: hidden;">
+                <div style="background: #f8f9fa; padding: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #106470; display: flex; align-items: center; justify-content: center; color: white; font-family: 'Benton Sans', sans-serif; font-weight: 700;">JS</div>
+                        <div>
+                            <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.95rem; font-weight: 500; color: #231F20; margin: 0;">John Smith</p>
+                            <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.8rem; font-weight: 400; color: #6c757d; margin: 0;">Posted 2 hours ago</p>
+                        </div>
+                    </div>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.7; font-weight: 400; color: #231F20; margin: 0 0 1rem 0;">I found Socrates' argument particularly compelling when he states that <em>"the unexamined life is not worth living."</em> This raises an interesting question: <strong>can we truly know ourselves without external examination?</strong></p>
+                    <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; line-height: 1.7; font-weight: 400; color: #231F20; margin: 0 0 1rem 0;">Perhaps the dialectic method suggests that self-knowledge requires <em>dialogue with others</em> to challenge our assumptions.</p>
+                    <div style="display: flex; gap: 1rem;">
+                        <span style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.85rem; font-weight: 500; color: #106470; cursor: pointer;">Reply</span>
+                        <span style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.85rem; font-weight: 400; color: #6c757d;">3 replies</span>
+                    </div>
+                </div>
+                <div style="background: #e9ecef; padding: 0.75rem 1.5rem; font-size: 0.85rem; color: #6c757d;">
+                    Author: Medium (500) | Body: Book (400) | Emphasis: Book Italic + Bold
+                </div>
+            </div>
+
+            <!-- Example 3: Form Labels -->
+            <div style="border: 2px solid #e9ecef; border-radius: 12px; margin-bottom: 2rem; overflow: hidden;">
+                <div style="background: #f8f9fa; padding: 1.5rem;">
+                    <h3 style="font-family: 'Adobe Garamond Pro', Garamond, Georgia, serif; font-size: 1.2rem; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; margin: 0 0 1.5rem 0; color: #231F20;">Create New Discussion</h3>
+
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.85rem; font-weight: 500; color: #231F20; display: block; margin-bottom: 0.5rem;">Discussion Title <span style="color: #a21f35;">*</span></label>
+                        <input type="text" placeholder="Enter a descriptive title..." style="width: 100%; padding: 0.75rem; border: 1px solid #dee2e6; border-radius: 6px; font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; font-weight: 400;">
+                    </div>
+
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.85rem; font-weight: 500; color: #231F20; display: block; margin-bottom: 0.5rem;">Your Response</label>
+                        <textarea placeholder="Share your thoughts..." style="width: 100%; padding: 0.75rem; border: 1px solid #dee2e6; border-radius: 6px; font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 1rem; font-weight: 400; min-height: 100px; resize: vertical;"></textarea>
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.8rem; font-weight: 400; color: #6c757d; margin: 0.5rem 0 0 0;"><em>Tip: Use quotes and references to support your argument.</em></p>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button class="btn btn-neutral-demo">Cancel</button>
+                        <button class="btn btn-primary-demo">Post Discussion</button>
+                    </div>
+                </div>
+                <div style="background: #e9ecef; padding: 0.75rem 1.5rem; font-size: 0.85rem; color: #6c757d;">
+                    Labels: Medium (500) | Input: Book (400) | Helper: Book Italic
+                </div>
+            </div>
+
+            <!-- Example 4: Alert/Notice -->
+            <div style="border: 2px solid #e9ecef; border-radius: 12px; overflow: hidden;">
+                <div style="background: #f8f9fa; padding: 1.5rem;">
+                    <div style="background: #FFF8E6; border: 1px solid #FFC222; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.9rem; font-weight: 700; color: #231F20; margin: 0 0 0.5rem 0;">Submission Deadline Approaching</p>
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.9rem; font-weight: 400; color: #231F20; margin: 0;">Your response to <em>"The Examined Life"</em> discussion is due in <strong>2 hours</strong>. Make sure to review the rubric before submitting.</p>
+                    </div>
+                    <div style="background: #F8E8E8; border: 1px solid #a21f35; border-radius: 8px; padding: 1rem;">
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.9rem; font-weight: 700; color: #a21f35; margin: 0 0 0.5rem 0;">Missing Required Reading</p>
+                        <p style="font-family: 'Benton Sans', -apple-system, sans-serif; font-size: 0.9rem; font-weight: 400; color: #231F20; margin: 0;">You have not yet completed <strong>Chapter 3: Virtue Ethics</strong>. This reading is required before participating in this week's discussion.</p>
+                    </div>
+                </div>
+                <div style="background: #e9ecef; padding: 0.75rem 1.5rem; font-size: 0.85rem; color: #6c757d;">
+                    Alert Title: Bold (700) | Body: Book (400) | Key Info: Bold (700)
+                </div>
+            </div>
+        </div>
+
+        <!-- Text Colors Section -->
+        <div class="section">
+            <h2>Text Colors</h2>
+
+            <div class="text-color-grid">
+                <div class="text-color-sample" style="background: white;">
+                    <div class="text-color-label">--text-dark: #231F20</div>
+                    <p style="color: #231F20; margin: 0; font-size: 1rem;">Primary text on light backgrounds</p>
+                </div>
+                <div class="text-color-sample" style="background: #a21f35;">
+                    <div class="text-color-label" style="color: rgba(255,255,255,0.7);">--text-light: #ffffff</div>
+                    <p style="color: #ffffff; margin: 0; font-size: 1rem;">Text on dark/colored backgrounds</p>
+                </div>
+                <div class="text-color-sample" style="background: white;">
+                    <div class="text-color-label">--primary-color: #a21f35</div>
+                    <p style="color: #a21f35; margin: 0; font-size: 1rem;">Links, page titles, emphasis</p>
+                </div>
+                <div class="text-color-sample" style="background: white;">
+                    <div class="text-color-label">--gray: #8A8B8C</div>
+                    <p style="color: #8A8B8C; margin: 0; font-size: 1rem;">Secondary text, timestamps, captions</p>
+                </div>
+                <div class="text-color-sample" style="background: white;">
+                    <div class="text-color-label">#6c757d (muted)</div>
+                    <p style="color: #6c757d; margin: 0; font-size: 1rem;">Helper text, placeholders</p>
+                </div>
+            </div>
+
+            <table style="margin-top: 1.5rem;">
+                <thead>
+                    <tr>
+                        <th>Usage</th>
+                        <th>Color</th>
+                        <th>Variable</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Primary body text</td>
+                        <td><span class="swatch" style="background: #231F20;"></span>#231F20</td>
+                        <td><code>--text-dark</code></td>
+                    </tr>
+                    <tr>
+                        <td>Text on dark backgrounds</td>
+                        <td><span class="swatch" style="background: #ffffff; border: 1px solid #dee2e6;"></span>#ffffff</td>
+                        <td><code>--text-light</code></td>
+                    </tr>
+                    <tr>
+                        <td>Links, titles, accents</td>
+                        <td><span class="swatch" style="background: #a21f35;"></span>#a21f35</td>
+                        <td><code>--primary-color</code></td>
+                    </tr>
+                    <tr>
+                        <td>Secondary/muted text</td>
+                        <td><span class="swatch" style="background: #8A8B8C;"></span>#8A8B8C</td>
+                        <td><code>--gray</code></td>
+                    </tr>
+                    <tr>
+                        <td>Timestamps, captions</td>
+                        <td><span class="swatch" style="background: #6c757d;"></span>#6c757d</td>
+                        <td>(hardcoded)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Brand Colors Reference -->
+        <div class="section">
+            <h2>Brand Colors</h2>
+            <div class="color-grid">
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #a21f35;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Red</div>
+                        <div class="color-value">#a21f35</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #7F1F1F;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Dark Red</div>
+                        <div class="color-value">#7F1F1F</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #FFC222;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Gold</div>
+                        <div class="color-value">#FFC222</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #106470;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Teal</div>
+                        <div class="color-value">#106470</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #a2a569;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Olive</div>
+                        <div class="color-value">#a2a569</div>
+                    </div>
+                </div>
+                <div class="color-card">
+                    <div class="swatch-large" style="background: #8A8B8C;"></div>
+                    <div class="color-details">
+                        <div class="color-name">Gray</div>
+                        <div class="color-value">#8A8B8C</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
     </div>
 </body>
 </html>

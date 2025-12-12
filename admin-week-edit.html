@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Week - Admin View</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles/lectern-core.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
     <style>
@@ -89,8 +89,8 @@
     <header>
         <div class="header-content">
             <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
-                <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
-                <h1>LecternAI</h1>
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <h1>Lectern</h1>
             </a>
             <div id="header-actions"></div>
         </div>
@@ -138,7 +138,7 @@
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0;">Page 2: Intro to the Week</h3>
-                <button class="btn btn-secondary" onclick="openAddContentModal('video')">+ Add Content</button>
+                <button class="btn-f gold" onclick="openAddContentModal('video')">+ Add Content</button>
             </div>
             <div class="form-group">
                 <label for="week-intro">Week Introduction</label>
@@ -155,7 +155,7 @@
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0;">Page 3: Weekly Readings</h3>
-                <button class="btn btn-secondary" onclick="openAddContentModal('reading')">+ Add Content</button>
+                <button class="btn-f gold" onclick="openAddContentModal('reading')">+ Add Content</button>
             </div>
 
             <div class="resource-list" id="weekly-readings-list">
@@ -175,7 +175,7 @@
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0;">Page 5: Post-Zoom Reflection Questions</h3>
-                <button class="btn btn-secondary" onclick="openAddQuestionModal()">+ Add Question</button>
+                <button class="btn-f gold" onclick="openAddQuestionModal()">+ Add Question</button>
             </div>
 
             <div id="reflection-questions-list">
@@ -186,7 +186,7 @@
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h3 style="margin: 0;">Page 6: Further Study</h3>
-                <button class="btn btn-secondary" onclick="openAddContentModal('study')">+ Add Content</button>
+                <button class="btn-f gold" onclick="openAddContentModal('study')">+ Add Content</button>
             </div>
 
             <div class="resource-list" id="further-study-list">
@@ -195,8 +195,8 @@
         </div>
 
         <div style="margin-top: 2rem; display: flex; gap: 1rem; align-items: center;">
-            <a href="module-overview.html" class="btn btn-secondary">Return to Module</a>
-            <button class="btn btn-primary" onclick="saveWeek()">Save Week</button>
+            <a href="module-overview.html" class="btn-f olive">Return to Module</a>
+            <button class="btn-f teal" onclick="saveWeek()">Save Week</button>
             <span id="autosave-indicator" style="color: #6c757d; font-size: 0.9rem; margin-left: auto;">Auto-saving enabled</span>
         </div>
     </div>
@@ -225,7 +225,7 @@
         </div>
 
         <div style="margin-top: 2rem;">
-            <button class="btn btn-primary" onclick="returnToEdit()">Return to Edit Week</button>
+            <button class="btn-f teal" onclick="returnToEdit()">Return to Edit Week</button>
         </div>
     </div>
 
@@ -252,8 +252,8 @@
                 <textarea id="content-description" rows="4"></textarea>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeAddContentModal()">Cancel</button>
-                <button class="btn btn-primary" id="content-modal-submit" onclick="addContent()">Add Content</button>
+                <button class="btn-f olive" onclick="closeAddContentModal()">Cancel</button>
+                <button class="btn-f teal" id="content-modal-submit" onclick="addContent()">Add Content</button>
             </div>
         </div>
     </div>
@@ -273,8 +273,8 @@
                 <textarea id="question-text" placeholder="Enter your reflection question..." style="min-height: 120px;"></textarea>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeAddQuestionModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="addQuestion()">Add Question</button>
+                <button class="btn-f olive" onclick="closeAddQuestionModal()">Cancel</button>
+                <button class="btn-f teal" onclick="addQuestion()">Add Question</button>
             </div>
         </div>
     </div>
@@ -301,8 +301,8 @@
                 <textarea id="edit-resource-description"></textarea>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeEditResourceModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveResourceEdit()">Save Changes</button>
+                <button class="btn-f olive" onclick="closeEditResourceModal()">Cancel</button>
+                <button class="btn-f teal" onclick="saveResourceEdit()">Save Changes</button>
             </div>
         </div>
     </div>
@@ -342,8 +342,8 @@
                     <strong>${currentUser.name || currentUser.email}</strong>
                     <span class="admin-badge">Admin</span>
                 </span>
-                <a href="admin-users.html" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Manage Users</a>
-                <button onclick="logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
+                <a href="admin-users.html" class="btn-f teal" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Manage Users</a>
+                <button onclick="logoutUser()" class="btn-f olive" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
             `;
             header.style.display = 'flex';
         }
@@ -357,14 +357,14 @@
                 item.style.position = 'relative';
                 const hasUrl = resource.url && resource.url.trim();
                 item.innerHTML = `
-                    ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn btn-secondary" style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">View Resource</a>` : ''}
+                    ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn-f teal" style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">View Resource</a>` : ''}
                     <div style="padding-right: ${hasUrl ? '140px' : '0'};">
                         <strong>${resource.title}</strong>
                         ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
                     </div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
-                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
+                        <button class="btn-f gold" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
+                        <button class="btn-f red" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -384,8 +384,8 @@
                             <p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">${video.duration}</p>
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
-                            <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteVideo(${video.id})">Delete</button>
+                            <button class="btn-f gold" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
+                            <button class="btn-f red" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteVideo(${video.id})">Delete</button>
                         </div>
                     </div>
                 `;
@@ -408,8 +408,8 @@
                             <strong>Question ${index + 1}:</strong> ${question.text}
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
-                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editQuestion(${question.id})">Edit</button>
-                            <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteQuestion(${question.id})">Delete</button>
+                            <button class="btn-f gold" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editQuestion(${question.id})">Edit</button>
+                            <button class="btn-f red" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteQuestion(${question.id})">Delete</button>
                         </div>
                     </div>
                 `;
@@ -426,14 +426,14 @@
                 item.style.position = 'relative';
                 const hasUrl = resource.url && resource.url.trim();
                 item.innerHTML = `
-                    ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn btn-secondary" style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">View Resource</a>` : ''}
+                    ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn-f teal" style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">View Resource</a>` : ''}
                     <div style="padding-right: ${hasUrl ? '140px' : '0'};">
                         <strong>${resource.title}</strong>
                         ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
                     </div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
-                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
+                        <button class="btn-f gold" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
+                        <button class="btn-f red" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -609,12 +609,13 @@
             `;
 
             if (type === 'success') {
-                notification.style.backgroundColor = '#28a745';
+                notification.style.backgroundColor = 'rgba(16, 100, 112, 0.75)';
             } else if (type === 'error') {
-                notification.style.backgroundColor = '#dc3545';
+                notification.style.backgroundColor = 'rgba(139, 26, 26, 0.75)';
             } else {
-                notification.style.backgroundColor = '#17a2b8';
+                notification.style.backgroundColor = 'rgba(115, 125, 78, 0.75)';
             }
+            notification.style.backdropFilter = 'blur(10px)';
 
             notification.textContent = message;
             document.body.appendChild(notification);
@@ -815,7 +816,7 @@
             }
 
             // Show loading state
-            const saveBtn = document.querySelector('.btn-primary[onclick="saveWeek()"]');
+            const saveBtn = document.querySelector('.btn-f.teal[onclick="saveWeek()"]');
             const originalText = saveBtn.textContent;
             saveBtn.textContent = 'Saving...';
             saveBtn.disabled = true;

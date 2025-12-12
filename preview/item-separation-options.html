@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Separation Options - Lectern</title>
+    <link rel="stylesheet" href="../styles/lectern-core.css">
+    <style>
+        body {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+
+        .option-section {
+            margin-bottom: 3rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .option-title {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+            color: var(--teal);
+        }
+
+        .option-description {
+            color: #6c757d;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .preview-container {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title {
+            margin: 0;
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.2rem;
+            color: #106470;
+            letter-spacing: 0.05em;
+        }
+
+        /* Common item styles */
+        .item-content {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        .item-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-text {
+            color: #6c757d;
+            margin: 0.5rem 0;
+        }
+
+        .item-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        /* Option 1: Subtle Border Cards */
+        .option1-item {
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #fafbfc;
+        }
+
+        .option1-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Option 2: Divider Lines with Spacing */
+        .option2-items {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .option2-item {
+            padding-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .option2-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #d1d5db 10%, #d1d5db 90%, transparent);
+        }
+
+        /* Option 3: Alternating Background */
+        .option3-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .option3-item {
+            padding: 1rem;
+            border-radius: 6px;
+            background: transparent;
+        }
+
+        .option3-item:nth-child(even) {
+            background: rgba(16, 100, 112, 0.03);
+        }
+
+        .resource-meta {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="font-family: 'Adobe Garamond Pro', Georgia, serif; margin-bottom: 2rem; text-align: center;">Item Separation Styling Options</h1>
+
+    <!-- Option 1: Subtle Border Cards -->
+    <div class="option-section">
+        <h2 class="option-title">Option 1: Subtle Border Cards</h2>
+        <p class="option-description">Each item is wrapped in a light bordered card with subtle background color. Clean, distinct, and familiar.</p>
+
+        <div class="preview-container">
+            <div class="page-header">
+                <h4 class="page-title">PAGE 1: OPENING REFLECTION QUESTION</h4>
+                <button class="btn-f gold">+ Add Question</button>
+            </div>
+
+            <div class="option1-item">
+                <div class="item-title">Question 1: Opening reflection question will appear here</div>
+                <div class="item-actions">
+                    <button class="btn-f gold">Edit</button>
+                    <button class="btn-f red">Delete</button>
+                </div>
+            </div>
+
+            <div class="option1-item">
+                <div class="item-title">Question 2: If you have a second question, it will appear here</div>
+                <div class="item-actions">
+                    <button class="btn-f gold">Edit</button>
+                    <button class="btn-f red">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-container" style="margin-top: 2rem;">
+            <div class="page-header">
+                <h4 class="page-title">PAGE 3: WEEKLY READINGS</h4>
+                <button class="btn-f gold">+ Add Resource</button>
+            </div>
+
+            <div class="option1-item">
+                <div class="item-title">Test reading number one</div>
+                <div class="item-text">This is testing number one</div>
+                <div class="item-actions">
+                    <button class="btn-f gold">Edit</button>
+                    <button class="btn-f red">Delete</button>
+                </div>
+            </div>
+
+            <div class="option1-item">
+                <div class="item-title">Testing number two</div>
+                <div class="item-text">This is test reading number two</div>
+                <div class="item-actions">
+                    <button class="btn-f gold">Edit</button>
+                    <button class="btn-f red">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Option 2: Divider Lines -->
+    <div class="option-section">
+        <h2 class="option-title">Option 2: Gradient Divider Lines</h2>
+        <p class="option-description">Items separated by subtle gradient divider lines that fade at the edges. Minimal and elegant, similar to page section dividers.</p>
+
+        <div class="preview-container">
+            <div class="page-header">
+                <h4 class="page-title">PAGE 1: OPENING REFLECTION QUESTION</h4>
+                <button class="btn-f gold">+ Add Question</button>
+            </div>
+
+            <div class="option2-items">
+                <div class="option2-item">
+                    <div class="item-title">Question 1: Opening reflection question will appear here</div>
+                    <div class="item-actions">
+                        <button class="btn-f gold">Edit</button>
+                        <button class="btn-f red">Delete</button>
+                    </div>
+                </div>
+
+                <div class="option2-item">
+                    <div class="item-title">Question 2: If you have a second question, it will appear here</div>
+                    <div class="item-actions">
+                        <button class="btn-f gold">Edit</button>
+                        <button class="btn-f red">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-container" style="margin-top: 2rem;">
+            <div class="page-header">
+                <h4 class="page-title">PAGE 3: WEEKLY READINGS</h4>
+                <button class="btn-f gold">+ Add Resource</button>
+            </div>
+
+            <div class="option2-items">
+                <div class="option2-item">
+                    <div class="item-title">Test reading number one</div>
+                    <div class="item-text">This is testing number one</div>
+                    <div class="item-actions">
+                        <button class="btn-f gold">Edit</button>
+                        <button class="btn-f red">Delete</button>
+                    </div>
+                </div>
+
+                <div class="option2-item">
+                    <div class="item-title">Testing number two</div>
+                    <div class="item-text">This is test reading number two</div>
+                    <div class="item-actions">
+                        <button class="btn-f gold">Edit</button>
+                        <button class="btn-f red">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Option 3: Alternating Background -->
+    <div class="option-section">
+        <h2 class="option-title">Option 3: Alternating Subtle Background</h2>
+        <p class="option-description">Items alternate between white and very subtle teal background. Provides rhythm and separation without borders or lines.</p>
+
+        <div class="preview-container">
+            <div class="page-header">
+                <h4 class="page-title">PAGE 1: OPENING REFLECTION QUESTION</h4>
+                <button class="btn-f gold">+ Add Question</button>
+            </div>
+
+            <div class="option3-items">
+                <div class="option3-item">
+                    <div class="item-title">Question 1: Opening reflection question will appear here</div>
+                    <div class="item-actions">
+                        <button class="btn-f gold">Edit</button>
+                        <button class="btn-f red">Delete</button>
+                    </div>
+                </div>
+
+                <div class="option3-item">
+                    <div class="item-title">Question 2: If you have a second question, it will appear here</div>
+                    <div class="item-actions">
+                        <button class="btn-f gold">Edit</button>
+                        <button class="btn-f red">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preview-container" style="margin-top: 2rem;">
+            <div class="page-header">
+                <h4 class="page-title">PAGE 3: WEEKLY READINGS</h4>
+                <button class="btn-f gold">+ Add Resource</button>
+            </div>
+
+            <div class="option3-items">
+                <div class="option3-item">
+                    <div class="item-title">Test reading number one</div>
+                    <div class="item-text">This is testing number one</div>
+                    <div class="item-actions">
+                        <button class="btn-f gold">Edit</button>
+                        <button class="btn-f red">Delete</button>
+                    </div>
+                </div>
+
+                <div class="option3-item">
+                    <div class="item-title">Testing number two</div>
+                    <div class="item-text">This is test reading number two</div>
+                    <div class="item-actions">
+                        <button class="btn-f gold">Edit</button>
+                        <button class="btn-f red">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

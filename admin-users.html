@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Users - LecternAI</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Manage Users - Lectern</title>
+    <link rel="stylesheet" href="styles/lectern-core.css">
     <style>
         .user-header {
             background: var(--light-bg);
@@ -185,10 +185,10 @@
     <header>
         <div class="header-content">
             <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
-                <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
-                <h1>LecternAI</h1>
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <h1>Lectern</h1>
             </a>
-            <a href="index.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; text-decoration: none;">Back to Modules</a>
+            <a href="index.html" class="btn-f olive" style="padding: 0.5rem 1rem;">Back to Modules</a>
         </div>
     </header>
 
@@ -374,14 +374,39 @@
         }
 
         function showNotification(message, type) {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 9999;
+                max-width: 400px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                backdrop-filter: blur(10px);
+            `;
+
+            if (type === 'success') {
+                notification.style.backgroundColor = 'rgba(16, 100, 112, 0.75)';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = 'rgba(139, 26, 26, 0.75)';
+            } else {
+                notification.style.backgroundColor = 'rgba(115, 125, 78, 0.75)';
+            }
+
             notification.textContent = message;
             document.body.appendChild(notification);
 
             setTimeout(() => {
                 notification.remove();
-            }, 3000);
+            }, 4000);
         }
 
         // Export functions to window

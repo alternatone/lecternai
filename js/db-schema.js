@@ -1,7 +1,7 @@
 /**
- * LecternAI Database Schema
+ * Lectern Database Schema
  *
- * This file defines the normalized database schema for LecternAI.
+ * This file defines the normalized database schema for Lectern.
  * Designed to be compatible with both localStorage and future backend sync.
  *
  * Schema Version: 1.0.0

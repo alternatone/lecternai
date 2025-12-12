@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Module Overview - LecternAI</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Module Overview - Lectern</title>
+    <link rel="stylesheet" href="styles/lectern-core.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
     <style>
@@ -23,7 +23,7 @@
             background-color: var(--card-background);
             margin: 5% auto;
             padding: 2rem;
-            border-radius: 12px;
+            border-radius: 8px;
             width: 90%;
             max-width: 600px;
             max-height: 80vh;
@@ -59,18 +59,24 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            padding: 0.5rem 1rem;
-            background: var(--light-bg);
-            border-bottom: 1px solid #e9ecef;
+            padding: 0.75rem 1.5rem;
+            background: rgba(16, 100, 112, 0.08);
+            border-bottom: 1px solid rgba(16, 100, 112, 0.2);
         }
-        .user-header .user-info { flex: 1; }
+        .user-header .user-info {
+            flex: 1;
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.1rem;
+            color: #106470;
+        }
         .user-header .admin-badge {
-            background: var(--primary-color);
+            background: var(--teal);
             color: white;
-            padding: 0.15rem 0.5rem;
+            padding: 0.25rem 0.6rem;
             border-radius: 4px;
             font-size: 0.75rem;
             margin-left: 0.5rem;
+            font-family: 'Benton Sans', Arial, sans-serif;
         }
         /* Loading state styles */
         .page-loading {
@@ -101,6 +107,134 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Stacked Cards with Color Accents */
+        .stacked-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .stacked-card-header {
+            padding: 0.6rem 1rem;
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border-bottom: none;
+        }
+        .stacked-card-header.teal-accent {
+            background: rgba(16, 100, 112, 0.15);
+            color: var(--teal);
+        }
+        .stacked-card-header.gold-accent {
+            background: rgba(255, 194, 34, 0.15);
+            color: #8b6914;
+        }
+        .stacked-card-body {
+            padding: 1rem;
+            font-weight: 300;
+            color: #212529;
+        }
+
+        /* Module Weeks - Simple Dividers */
+        .divided-week {
+            padding: 1.25rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .divided-week:last-child {
+            border-bottom: none;
+        }
+        .divided-week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .divided-week-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+            margin-top: 1.1rem;
+        }
+        .divided-week-label {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #8b6914;
+            margin-bottom: 0.25rem;
+        }
+        .divided-week h5 {
+            margin: 0;
+            font-size: 1.05rem;
+        }
+        .divided-week .meta {
+            font-size: 0.8rem;
+            color: var(--teal);
+        }
+        .divided-week p {
+            margin: 0;
+            color: #212529;
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        /* Status Badges - Transparent Background Pills */
+        .status-badge {
+            padding: 0.4rem 0.9rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .status-badge.in-progress {
+            background: rgba(115, 125, 78, 0.15);
+            color: #5a5f3e;
+        }
+        .status-badge.not-started {
+            background: rgba(255, 194, 34, 0.15);
+            color: #8b6914;
+        }
+        .status-badge.completed {
+            background: rgba(16, 100, 112, 0.15);
+            color: #106470;
+        }
+
+        /* Create Week Modal - Page Sections with Bottom Border */
+        .page-section {
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .page-section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background: #d1d5db;
+        }
+
+        .page-section:last-of-type::after {
+            display: none;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .page-title {
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -109,8 +243,8 @@
     <header>
         <div class="header-content">
             <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
-                <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
-                <h1>LecternAI</h1>
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <h1>Lectern</h1>
             </a>
             <div id="header-actions"></div>
         </div>
@@ -133,63 +267,76 @@
             <span id="module-title">Module Overview</span>
         </h2>
 
-        <div class="card">
-            <h3 style="margin-bottom: 1.5rem;">Module Info</h3>
-            <div id="module-description" style="line-height: 1.6;"></div>
+        <div class="section-panel teal-outline">
+            <h3 class="teal-title">Module Info</h3>
 
-            <div style="margin-top: 1.5rem;">
-                <p><strong>Instructor:</strong> <span id="module-instructor"></span></p>
-                <p><strong>Duration:</strong> <span id="module-duration"></span></p>
+            <div class="stacked-card">
+                <div class="stacked-card-header teal-accent">Overview</div>
+                <div class="stacked-card-body" id="module-description"></div>
             </div>
 
-            <div id="zoom-info-display" style="margin-top: 1.5rem; display: none; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
-                <p style="margin-bottom: 0.5rem;"><strong>Zoom Meeting Info:</strong></p>
-                <p id="zoom-display-day-time" style="margin: 0.25rem 0;"></p>
-                <p id="zoom-display-id" style="margin: 0.25rem 0;"></p>
-                <p id="zoom-display-url" style="margin: 0.25rem 0;"></p>
+            <div class="stacked-card">
+                <div class="stacked-card-header teal-accent">Course Details</div>
+                <div class="stacked-card-body">
+                    <p style="margin: 0.25rem 0;"><strong>Instructor:</strong> <span id="module-instructor"></span></p>
+                    <p style="margin: 0.25rem 0;"><strong>Duration:</strong> <span id="module-duration"></span></p>
+                </div>
             </div>
 
-            <div id="additional-info" style="margin-top: 1.5rem; display: none;">
-                <div style="margin-top: 1rem;"><strong>Participation Requirements:</strong></div>
-                <div id="participation-requirements" style="margin-top: 0.5rem; line-height: 1.6;"></div>
+            <div id="zoom-info-display" class="stacked-card" style="display: none;">
+                <div class="stacked-card-header gold-accent">Zoom Meeting</div>
+                <div class="stacked-card-body">
+                    <p id="zoom-display-day-time" style="margin: 0 0 0.25rem 0;"></p>
+                    <p id="zoom-display-id" style="margin: 0 0 0.25rem 0;"></p>
+                    <div id="zoom-display-url" style="margin-top: 0.75rem;"></div>
+                </div>
+            </div>
 
-                <div style="margin-top: 1rem;"><strong>Time Expectations:</strong></div>
-                <div id="time-expectations" style="margin-top: 0.5rem; line-height: 1.6;"></div>
+            <div id="additional-info" style="display: none;">
+                <div class="stacked-card">
+                    <div class="stacked-card-header teal-accent">Participation Requirements</div>
+                    <div class="stacked-card-body" id="participation-requirements"></div>
+                </div>
+
+                <div class="stacked-card">
+                    <div class="stacked-card-header teal-accent">Time Expectations</div>
+                    <div class="stacked-card-body" id="time-expectations"></div>
+                </div>
             </div>
 
             <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
-                <button id="edit-description-btn" class="btn btn-secondary" style="display: none; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openEditDescriptionModal()">Edit Module Info</button>
+                <button id="edit-description-btn" class="btn-f gold" style="display: none; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openEditDescriptionModal()">Edit Module Info</button>
             </div>
         </div>
 
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0;">Module Weeks</h3>
-                <button id="create-week-btn" class="btn btn-primary" style="display: none; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openCreateWeekModal()">New Week</button>
+        <div class="section-panel gold-outline">
+            <h3 class="gold-title">Module Weeks</h3>
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                <button id="create-week-btn" class="btn-f gold" style="display: none; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openCreateWeekModal()">+ New Week</button>
             </div>
-            <div id="draft-week-notice" style="display: none; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+            <div id="draft-week-notice" style="display: none; background: rgba(255, 194, 34, 0.15); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <strong style="color: #856404;">Draft: <span id="draft-week-name">Untitled Week</span></strong>
-                        <p style="margin: 0.5rem 0 0 0; color: #856404; font-size: 0.9rem;">You have an unsaved week draft</p>
+                        <strong style="color: #8b6914;">Draft: <span id="draft-week-name">Untitled Week</span></strong>
+                        <p style="margin: 0.5rem 0 0 0; color: #8b6914; font-size: 0.9rem;">You have an unsaved week draft</p>
                     </div>
                     <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn btn-primary" onclick="resumeDraft()" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Resume</button>
-                        <button class="btn btn-secondary" onclick="discardDraft()" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Discard</button>
+                        <button class="btn-f gold" onclick="resumeDraft()" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Resume</button>
+                        <button class="btn-f olive" onclick="discardDraft()" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Discard</button>
                     </div>
                 </div>
             </div>
-            <div class="module-list" id="weeks-list">
+            <div id="weeks-list">
                 <!-- Weeks will be populated by JavaScript -->
             </div>
         </div>
 
         <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
-            <a href="index.html" class="btn btn-secondary" style="line-height: 1.5;">← Back to Modules</a>
+            <a href="index.html" class="btn-f olive" style="line-height: 1.5;">← Back to Modules</a>
             <div id="admin-action-btns" style="display: none; gap: 1rem;">
-                <button id="update-from-template-btn" class="btn btn-secondary" style="line-height: 1.5; display: none;" onclick="updateFromTemplate()">Update Active Module</button>
-                <button id="launch-module-btn" class="btn btn-teal" style="line-height: 1.5;" onclick="launchModule()">Launch Module</button>
-                <button id="save-template-btn" class="btn btn-primary" style="line-height: 1.5;" onclick="saveModuleProgress()">Save Template</button>
+                <button id="update-from-template-btn" class="btn-f olive" style="line-height: 1.5; display: none;" onclick="updateFromTemplate()">Update Active Module</button>
+                <button id="launch-module-btn" class="btn-f teal" style="line-height: 1.5;" onclick="launchModule()">Launch Module</button>
+                <button id="save-template-btn" class="btn-f gold" style="line-height: 1.5;" onclick="saveModuleProgress()">Save Template</button>
             </div>
         </div>
     </div><!-- end main-content -->
@@ -265,8 +412,8 @@
                 </select>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeEditDescriptionModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveDescription()">Save & Close</button>
+                <button class="btn-f olive" onclick="closeEditDescriptionModal()">Cancel</button>
+                <button class="btn-f teal" onclick="saveDescription()">Save & Close</button>
             </div>
         </div>
     </div>
@@ -295,20 +442,20 @@
                 <small style="color: #6c757d; margin-top: 0.25rem; display: block;">Required. This date determines when students can access this week.</small>
             </div>
 
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="margin: 0;">Page 1: Opening Reflection Question</h3>
-                    <button class="btn btn-secondary" onclick="openAddPage1QuestionModal()">+ Add Question</button>
+            <div class="page-section">
+                <div class="page-header">
+                    <h4 class="page-title">Page 1: Opening Reflection Question</h4>
+                    <button class="btn-f gold" onclick="openAddPage1QuestionModal()">+ Add Question</button>
                 </div>
                 <div id="page1-questions-list">
                     <!-- Questions will be populated here -->
                 </div>
             </div>
 
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="margin: 0;">Page 2: Intro to the Week</h3>
-                    <button class="btn btn-secondary" onclick="openAddResourceModal('intro')">+ Add Resource</button>
+            <div class="page-section">
+                <div class="page-header">
+                    <h4 class="page-title">Page 2: Intro to the Week</h4>
+                    <button class="btn-f gold" onclick="openAddResourceModal('intro')">+ Add Resource</button>
                 </div>
                 <div class="form-group">
                     <label for="page2-intro-text">Week Introduction</label>
@@ -319,37 +466,39 @@
                 </div>
             </div>
 
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="margin: 0;">Page 3: Weekly Readings</h3>
-                    <button class="btn btn-secondary" onclick="openAddResourceModal('readings')">+ Add Resource</button>
+            <div class="page-section">
+                <div class="page-header">
+                    <h4 class="page-title">Page 3: Weekly Readings</h4>
+                    <button class="btn-f gold" onclick="openAddResourceModal('readings')">+ Add Resource</button>
                 </div>
                 <div class="resource-list" id="weekly-readings-list">
                     <!-- Resources will be populated here -->
                 </div>
             </div>
 
-            <div class="card">
-                <h3 style="margin-bottom: 1rem;">Page 4: Preparation for Zoom Session</h3>
+            <div class="page-section">
+                <div class="page-header">
+                    <h4 class="page-title">Page 4: Preparation for Zoom Session</h4>
+                </div>
                 <div class="form-group">
                     <textarea id="zoom-prep-text" style="min-height: 120px;" placeholder="Enter instructions, agenda, or any preparation content for the upcoming Zoom session..."></textarea>
                 </div>
             </div>
 
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="margin: 0;">Page 5: Post-Zoom Reflection</h3>
-                    <button class="btn btn-secondary" onclick="openAddQuestionModal()">+ Add Question</button>
+            <div class="page-section">
+                <div class="page-header">
+                    <h4 class="page-title">Page 5: Post-Zoom Reflection</h4>
+                    <button class="btn-f gold" onclick="openAddQuestionModal()">+ Add Question</button>
                 </div>
                 <div id="reflection-questions-list">
                     <!-- Questions will be populated here -->
                 </div>
             </div>
 
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="margin: 0;">Page 6: Further Study</h3>
-                    <button class="btn btn-secondary" onclick="openAddResourceModal('furtherStudy')">+ Add Resource</button>
+            <div class="page-section">
+                <div class="page-header">
+                    <h4 class="page-title">Page 6: Further Study</h4>
+                    <button class="btn-f gold" onclick="openAddResourceModal('furtherStudy')">+ Add Resource</button>
                 </div>
                 <div class="resource-list" id="further-study-list">
                     <!-- Further study resources will be populated here -->
@@ -360,9 +509,9 @@
             </div>
 
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeCreateWeekModal()">Cancel</button>
-                <button class="btn btn-secondary" onclick="saveWeekAsDraft()" style="background: #6c757d; color: white;">Save as Draft</button>
-                <button class="btn btn-primary" onclick="saveNewWeek()">Create Week</button>
+                <button class="btn-f olive" onclick="closeCreateWeekModal()">Cancel</button>
+                <button class="btn-f olive" onclick="saveWeekAsDraft()">Save as Draft</button>
+                <button class="btn-f teal" onclick="saveNewWeek()">Create Week</button>
             </div>
         </div>
     </div>
@@ -504,8 +653,8 @@
                     <strong>${currentUser.name || currentUser.email}</strong>
                     ${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
                 </span>
-                ${isAdmin ? '<a href="admin-users.html" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Manage Users</a>' : ''}
-                <button onclick="logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
+                ${isAdmin ? '<a href="admin-users.html" class="btn-f teal">Manage Users</a>' : ''}
+                <button onclick="logoutUser()" class="btn-f olive">Logout</button>
             `;
             header.style.display = 'flex';
         }
@@ -592,66 +741,74 @@
                 }
 
                 const weekItem = document.createElement('div');
-                weekItem.className = 'module-item';
+                weekItem.className = 'divided-week';
 
-                const weekInfo = document.createElement('div');
-
-                // Show unlock date info for admins
                 // Parse date as local timezone to avoid off-by-one day issue
                 const formatUnlockDate = (dateStr) => {
                     const [year, month, day] = dateStr.split('-').map(Number);
-                    return new Date(year, month - 1, day).toLocaleDateString();
+                    return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 };
-                const unlockInfo = currentView === 'admin' && week.unlockDate ?
-                    `<span style="color: ${week.unlockDate <= today ? 'var(--teal)' : 'var(--secondary-color)'}; font-size: 0.85rem;">
-                        (Unlocks: ${formatUnlockDate(week.unlockDate)})
-                    </span>` : '';
 
-                weekInfo.innerHTML = `
-                    <strong>Week ${week.id}: ${week.title}</strong> ${unlockInfo}
-                    <p style="margin-top: 0.5rem; color: #6c757d;">${week.description}</p>
-                `;
-
-                const weekAction = document.createElement('div');
+                // Determine meta text (unlock status)
+                let metaHtml = '';
+                if (currentView === 'admin' && week.unlockDate) {
+                    if (week.unlockDate <= today) {
+                        metaHtml = '<div class="meta">Available now</div>';
+                    } else {
+                        metaHtml = `<div class="meta" style="color: #8b6914;">Unlocks ${formatUnlockDate(week.unlockDate)}</div>`;
+                    }
+                } else if (currentView === 'student') {
+                    metaHtml = '<div class="meta">Available now</div>';
+                }
 
                 // Use batch-fetched progress data (no additional queries)
                 const weekProgress = progressMap[week.id] || {};
                 const hasProgress = weekProgress.page;
                 const isComplete = weekProgress.completed;
 
-                weekAction.style.display = 'flex';
-                weekAction.style.alignItems = 'center';
-                weekAction.style.gap = '1rem';
-
                 // Build week viewer URL (include participant param if in participant mode)
                 const weekViewerUrl = `week-viewer.html?week=${week.id}&page=1${isParticipantMode ? '&participant=true' : ''}`;
 
+                let actionsHtml = '';
                 if (currentView === 'admin' && !isParticipantMode) {
-                    // Admin view: Show Preview Week, Edit Week, and Delete Week buttons for all weeks
-                    weekAction.innerHTML = `
-                        <button class="btn btn-secondary" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">Preview Week</button>
-                        <button class="btn btn-primary" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="openEditWeekModal(${week.id})">Edit Week</button>
-                        <button class="btn btn-danger" style="padding: 0.4rem 1rem; font-size: 0.9rem;" onclick="deleteWeek(${week.id})">Delete</button>
+                    // Admin view: Show Preview, Edit, and Delete buttons
+                    actionsHtml = `
+                        <div class="divided-week-actions">
+                            <button class="btn-f olive" type="button" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Preview</button>
+                            <button class="btn-f gold" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="openEditWeekModal(${week.id})">Edit</button>
+                            <button class="btn-f red" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="deleteWeek(${week.id})">Delete</button>
+                        </div>
                     `;
                 } else {
                     // Student view (or participant mode): Show status and View Week button
+                    let statusBadge = '';
                     if (week.status === 'complete' || isComplete) {
-                        weekAction.innerHTML = `
-                            <button class="status-badge status-complete" style="cursor: default;">Completed</button>
-                            <button class="btn btn-secondary" onclick="location.href='${weekViewerUrl}'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
-                        `;
+                        statusBadge = '<span class="status-badge completed">Completed</span>';
                     } else {
                         const statusText = hasProgress && !isComplete ? 'In Progress' : 'Not Started';
-                        const statusClass = hasProgress && !isComplete ? 'status-inprogress' : 'status-incomplete';
-                        weekAction.innerHTML = `
-                            <button class="status-badge ${statusClass}" style="cursor: default;">${statusText}</button>
-                            <button class="btn btn-secondary" onclick="location.href='${weekViewerUrl}'" style="padding: 0.4rem 1rem; font-size: 0.9rem;">View Week</button>
-                        `;
+                        const statusClass = hasProgress && !isComplete ? 'in-progress' : 'not-started';
+                        statusBadge = `<span class="status-badge ${statusClass}">${statusText}</span>`;
                     }
+                    actionsHtml = `
+                        <div class="divided-week-actions">
+                            ${statusBadge}
+                            <button class="btn-f olive" type="button" onclick="location.href='${weekViewerUrl}'" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">View Week</button>
+                        </div>
+                    `;
                 }
 
-                weekItem.appendChild(weekInfo);
-                weekItem.appendChild(weekAction);
+                weekItem.innerHTML = `
+                    <div class="divided-week-header">
+                        <div>
+                            <div class="divided-week-label">Week ${week.id}</div>
+                            <h5>${week.title}</h5>
+                            ${metaHtml}
+                        </div>
+                        ${actionsHtml}
+                    </div>
+                    <p>${week.description || ''}</p>
+                `;
+
                 weeksList.appendChild(weekItem);
             }
 
@@ -684,6 +841,13 @@
             // Load any unsaved draft
             loadModuleInfoDraft();
 
+            // Reset save button state
+            const saveBtn = document.querySelector('#edit-description-modal .btn-f.teal');
+            if (saveBtn) {
+                saveBtn.textContent = 'Save & Close';
+                saveBtn.disabled = false;
+            }
+
             document.getElementById('edit-description-modal').style.display = 'block';
             document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
         }
@@ -708,7 +872,7 @@
             }
 
             // Show loading state
-            const saveBtn = document.querySelector('#edit-description-modal .btn-primary');
+            const saveBtn = document.querySelector('#edit-description-modal .btn-f.teal');
             const originalText = saveBtn.textContent;
             saveBtn.textContent = 'Saving...';
             saveBtn.disabled = true;
@@ -799,19 +963,22 @@
                 right: 20px;
                 padding: 1rem 1.5rem;
                 border-radius: 8px;
-                color: white;
                 font-weight: 500;
                 z-index: 9999;
                 max-width: 400px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                backdrop-filter: blur(10px);
             `;
 
             if (type === 'success') {
-                notification.style.backgroundColor = '#28a745';
+                notification.style.backgroundColor = 'rgba(16, 100, 112, 0.75)';
+                notification.style.color = '#ffffff';
             } else if (type === 'error') {
-                notification.style.backgroundColor = '#dc3545';
+                notification.style.backgroundColor = 'rgba(139, 26, 26, 0.75)';
+                notification.style.color = '#ffffff';
             } else {
-                notification.style.backgroundColor = '#17a2b8';
+                notification.style.backgroundColor = 'rgba(115, 125, 78, 0.75)';
+                notification.style.color = '#ffffff';
             }
 
             notification.textContent = message;
@@ -855,9 +1022,9 @@
                 idElement.textContent = '';
             }
 
-            // Display URL
+            // Display URL as button
             if (zoomInfo.url) {
-                urlElement.innerHTML = `URL: <a href="${zoomInfo.url}" target="_blank" style="color: var(--primary-color);">${zoomInfo.url}</a>`;
+                urlElement.innerHTML = `<a href="${zoomInfo.url}" target="_blank" class="btn-f teal">Join Meeting</a>`;
             } else {
                 urlElement.textContent = '';
             }
@@ -946,7 +1113,7 @@
 
             // Update modal title and button text for create mode
             document.querySelector('#create-week-modal h3').textContent = 'Create New Week';
-            const saveBtn = document.querySelector('#create-week-modal .btn-primary');
+            const saveBtn = document.querySelector('#create-week-modal .btn-f.teal');
             saveBtn.textContent = 'Create Week';
 
             document.getElementById('create-week-modal').style.display = 'block';
@@ -1029,7 +1196,7 @@
 
             // Update modal title and button text for edit mode
             document.querySelector('#create-week-modal h3').textContent = 'Edit Week';
-            const saveBtn = document.querySelector('#create-week-modal .btn-primary');
+            const saveBtn = document.querySelector('#create-week-modal .btn-f.teal');
             saveBtn.textContent = 'Save Changes';
 
             document.getElementById('create-week-modal').style.display = 'block';
@@ -1047,12 +1214,16 @@
             weeklyReadings.forEach(resource => {
                 const item = document.createElement('div');
                 item.className = 'resource-item';
+                item.style.borderRadius = '6px';
+                item.style.padding = '1rem';
+                item.style.marginBottom = '1rem';
+                item.style.background = '#f0f2f5';
                 item.innerHTML = `
                     <strong>${resource.title}</strong>
                     <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description || 'No description'}</p>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'reading')">Edit</button>
-                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
+                        <button class="btn-f gold" onclick="editResource(${resource.id}, 'reading')">Edit</button>
+                        <button class="btn-f red" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1071,12 +1242,16 @@
             furtherStudy.forEach(resource => {
                 const item = document.createElement('div');
                 item.className = 'resource-item';
+                item.style.borderRadius = '6px';
+                item.style.padding = '1rem';
+                item.style.marginBottom = '1rem';
+                item.style.background = '#f0f2f5';
                 item.innerHTML = `
                     <strong>${resource.title}</strong>
                     <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description || 'No description'}</p>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editResource(${resource.id}, 'study')">Edit</button>
-                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
+                        <button class="btn-f gold" onclick="editResource(${resource.id}, 'study')">Edit</button>
+                        <button class="btn-f red" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1236,15 +1411,15 @@
             }
             page1Questions.forEach((question, index) => {
                 const item = document.createElement('div');
+                item.style.borderRadius = '6px';
                 item.style.padding = '1rem';
-                item.style.background = 'var(--background)';
-                item.style.borderRadius = '8px';
                 item.style.marginBottom = '1rem';
+                item.style.background = '#f0f2f5';
                 item.innerHTML = `
                     <strong>Question ${index + 1}:</strong> ${question.text}
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editPage1Question(${question.id})">Edit</button>
-                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deletePage1Question(${question.id})">Delete</button>
+                        <button class="btn-f gold" onclick="editPage1Question(${question.id})">Edit</button>
+                        <button class="btn-f red" onclick="deletePage1Question(${question.id})">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1293,13 +1468,17 @@
             videos.forEach(video => {
                 const item = document.createElement('div');
                 item.className = 'playlist-item';
+                item.style.borderRadius = '6px';
+                item.style.padding = '1rem';
+                item.style.marginBottom = '1rem';
+                item.style.background = '#f0f2f5';
                 const durationHtml = video.duration ? `<p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">Duration: ${video.duration}</p>` : '';
                 item.innerHTML = `
                     <strong>${video.title}</strong>
                     ${durationHtml}
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editVideo(${video.id})">Edit</button>
-                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteVideo(${video.id})">Delete</button>
+                        <button class="btn-f gold" onclick="editVideo(${video.id})">Edit</button>
+                        <button class="btn-f red" onclick="deleteVideo(${video.id})">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1395,13 +1574,17 @@
             page5Videos.forEach(video => {
                 const item = document.createElement('div');
                 item.className = 'playlist-item';
+                item.style.borderRadius = '6px';
+                item.style.padding = '1rem';
+                item.style.marginBottom = '1rem';
+                item.style.background = '#f0f2f5';
                 const durationHtml = video.duration ? `<p style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">Duration: ${video.duration}</p>` : '';
                 item.innerHTML = `
                     <strong>${video.title}</strong>
                     ${durationHtml}
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editPage5Video(${video.id})">Edit</button>
-                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deletePage5Video(${video.id})">Delete</button>
+                        <button class="btn-f gold" onclick="editPage5Video(${video.id})">Edit</button>
+                        <button class="btn-f red" onclick="deletePage5Video(${video.id})">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1486,15 +1669,15 @@
             }
             reflectionQuestions.forEach((question, index) => {
                 const item = document.createElement('div');
+                item.style.borderRadius = '6px';
                 item.style.padding = '1rem';
-                item.style.background = 'var(--background)';
-                item.style.borderRadius = '8px';
                 item.style.marginBottom = '1rem';
+                item.style.background = '#f0f2f5';
                 item.innerHTML = `
                     <strong>Question ${index + 1}:</strong> ${question.text}
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
-                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="editQuestion(${question.id})">Edit</button>
-                        <button class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="deleteQuestion(${question.id})">Delete</button>
+                        <button class="btn-f gold" onclick="editQuestion(${question.id})">Edit</button>
+                        <button class="btn-f red" onclick="deleteQuestion(${question.id})">Delete</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -1633,7 +1816,7 @@
             }
 
             // Show loading state
-            const saveBtn = document.querySelector('#create-week-modal .btn-primary');
+            const saveBtn = document.querySelector('#create-week-modal .btn-f.teal');
             const originalText = saveBtn.textContent;
             saveBtn.textContent = isEditMode ? 'Saving...' : 'Creating...';
             saveBtn.disabled = true;
@@ -1879,10 +2062,10 @@
         function showParticipantModeBanner() {
             const banner = document.createElement('div');
             banner.id = 'participant-mode-banner';
-            banner.style.cssText = 'background: var(--teal); color: white; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;';
+            banner.style.cssText = 'background: rgba(16, 100, 112, 0.15); color: #106470; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(16, 100, 112, 0.3);';
             banner.innerHTML = `
-                <span><strong>Participant Mode</strong> - You are viewing this module as a participant</span>
-                <button class="btn" style="background: white; color: var(--teal); padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="exitParticipantMode()">Exit to Admin View</button>
+                <span style="font-family: 'Adobe Garamond Pro', Georgia, serif; font-size: 1.05rem;"><strong>Participant Mode</strong> - You are viewing this module as a participant</span>
+                <button class="btn-f teal" onclick="exitParticipantMode()">Exit to Admin View</button>
             `;
             const header = document.querySelector('header');
             header.insertAdjacentElement('afterend', banner);

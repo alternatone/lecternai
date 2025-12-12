@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week Viewer - LecternAI</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Week Viewer - Lectern</title>
+    <link rel="stylesheet" href="styles/lectern-core.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
     <style>
@@ -55,23 +55,33 @@
             to { transform: rotate(360deg); }
         }
         /* Discussion textarea styles */
-        .discussion-section textarea {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            font-size: 1rem;
+        .discussion-section textarea,
+        textarea[id^="response-"],
+        textarea[id^="reply-text-"],
+        textarea[id^="post-edit-text-"],
+        textarea[id^="reply-edit-text-"] {
+            font-family: 'Benton Sans', Arial, sans-serif;
+            font-size: 0.95rem;
             line-height: 1.5;
-            padding: 0.875rem 1rem;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
+            padding: 0.875rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
             resize: vertical;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: border-color 0.2s ease;
             background: #fff;
         }
-        .discussion-section textarea:focus {
+        .discussion-section textarea:focus,
+        textarea[id^="response-"]:focus,
+        textarea[id^="reply-text-"]:focus,
+        textarea[id^="post-edit-text-"]:focus,
+        textarea[id^="reply-edit-text-"]:focus {
             outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb, 37, 99, 235), 0.1);
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(16, 100, 112, 0.1);
         }
-        .discussion-section textarea::placeholder {
+        .discussion-section textarea::placeholder,
+        textarea[id^="response-"]::placeholder,
+        textarea[id^="reply-text-"]::placeholder {
             color: #9ca3af;
         }
     </style>
@@ -82,8 +92,8 @@
     <header>
         <div class="header-content">
             <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
-                <img src="brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
-                <h1>LecternAI</h1>
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <h1>Lectern</h1>
             </a>
             <div id="header-actions"></div>
         </div>
@@ -118,13 +128,13 @@
 
         <!-- Navigation -->
         <div style="display: flex; justify-content: space-between; margin-top: 2rem;">
-            <div style="display: flex; gap: 0.5rem;">
-                <button class="btn btn-secondary" onclick="goToModuleOverview()">← Back to Module Overview</button>
-                <button class="btn btn-secondary" id="prev-btn" onclick="previousPage()" style="display: none;">← Previous</button>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-f olive" type="button" onclick="goToModuleOverview()">← Back to Module Overview</button>
+                <button class="btn-f olive" type="button" id="prev-btn" onclick="previousPage()" style="display: none;">← Previous</button>
             </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button class="btn btn-secondary" id="save-exit-btn" onclick="saveProgressAndExit()" style="display: none;">Save Progress & Exit</button>
-                <button class="btn btn-primary" id="next-btn" onclick="nextPage()">Next →</button>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-f olive" type="button" id="save-exit-btn" onclick="saveProgressAndExit()" style="display: none;">Save Progress & Exit</button>
+                <button class="btn-f gold" type="button" id="next-btn" onclick="nextPage()">Next →</button>
             </div>
         </div>
     </div>
@@ -149,8 +159,8 @@
                     <strong>${currentUser.name || currentUser.email}</strong>
                     ${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
                 </span>
-                ${isAdmin ? '<a href="admin-users.html" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Manage Users</a>' : ''}
-                <button onclick="logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
+                ${isAdmin ? '<a href="admin-users.html" class="btn-f olive" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Manage Users</a>' : ''}
+                <button onclick="logoutUser()" class="btn-f olive" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Logout</button>
             `;
             header.style.display = 'flex';
         }
@@ -383,22 +393,25 @@
             if (questions.length > 0) {
                 for (let index = 0; index < questions.length; index++) {
                     const question = questions[index];
-                    html += `
-                        <h3>${questions.length > 1 ? 'Question ' + (index + 1) : pageData.title}</h3>
-                        <p style="margin-top: 1rem; margin-bottom: 1.5rem; width: 100%;">${question.text}</p>
-                    `;
 
                     // Show discussion thread for everyone (isolated per module)
                     const posts = await dataService.getDiscussionPosts(currentModuleId, currentWeek.id, pageIndex, index);
+
+                    // Open question box
+                    html += `
+                        <div style="background: transparent; border: 2px solid var(--teal); border-radius: 16px; padding: 1.75rem; margin-bottom: 3rem; position: relative;">
+                            <h3 style="position: absolute; top: -0.7rem; left: 1.5rem; background: white; padding: 0 0.75rem; font-size: 1rem; color: var(--teal); margin: 0;">Question ${index + 1}</h3>
+                            <div style="font-family: 'Adobe Garamond Pro', Georgia, serif; font-size: 1.3rem; font-style: italic; color: #2c3e50; line-height: 1.6; margin-bottom: 1.5rem;">${question.text}</div>
+                    `;
 
                     // Show input form when module is launched (not read-only)
                     if (!isReadOnly) {
                         html += `
                             <div class="discussion-section">
                                 <div class="discussion-form" style="margin-bottom: 2rem;">
-                                    <textarea id="response-${index}" placeholder="Share your thoughts..." style="min-height: 120px; width: 100%;"></textarea>
+                                    <textarea id="response-${index}" placeholder="Share your thoughts on this question..." style="min-height: 120px; width: 100%; padding: 0.875rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.95rem; resize: vertical; transition: border-color 0.2s ease;"></textarea>
                                     <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
-                                        <button class="btn btn-primary" onclick="postDiscussion(${index})">Post Response</button>
+                                        <button class="btn-f teal" onclick="postDiscussion(${index})">Post Response</button>
                                     </div>
                                 </div>
                                 <div id="discussion-thread-${index}">
@@ -416,6 +429,9 @@
                             </div>
                         `;
                     }
+
+                    // Close question box
+                    html += '</div>';
 
                     if (index < questions.length - 1) {
                         html += '<hr style="margin: 2rem 0;">';
@@ -435,7 +451,7 @@
                 return `<p style="color: #6c757d; font-style: italic; margin-top: 1rem;">${msg}</p>`;
             }
 
-            let html = '<div style="margin-top: 1.5rem;">';
+            let html = '';
             posts.forEach(post => {
                 const postDate = new Date(post.createdAt).toLocaleDateString();
                 const postTime = new Date(post.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -444,7 +460,7 @@
                 const editedText = post.editedAt ? ' <span style="font-size: 0.75rem; color: #6c757d;">(edited)</span>' : '';
                 const postAuthorColor = getAuthorColor(post.author);
                 html += `
-                    <div style="background: #f8f9fa; border-left: 3px solid ${postAuthorColor}; padding: 1rem; margin-bottom: 1rem; border-radius: 4px;">
+                    <div style="background: #eef0e8; padding: 1rem 1.25rem; margin-bottom: 1rem; border-radius: 12px 12px 12px 4px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                             <strong style="color: ${postAuthorColor};">${escapeHtml(post.author) || 'Anonymous'}${editedText}</strong>
                             <span style="color: #6c757d; font-size: 0.85rem;">${postDate} at ${postTime}</span>
@@ -453,33 +469,33 @@
                             <p style="margin: 0.5rem 0; white-space: pre-wrap;">${escapeHtml(post.content)}</p>
                         </div>
                         <div id="post-edit-form-${post.id}" style="display: none; margin-top: 0.5rem;">
-                            <textarea id="post-edit-text-${post.id}" style="width: 100%; min-height: 80px; margin-bottom: 0.5rem;">${escapeHtml(post.content)}</textarea>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn btn-primary" onclick="savePostEdit(${pageIndex}, ${questionIndex}, ${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Save</button>
-                                <button class="btn btn-secondary" onclick="cancelPostEdit(${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Cancel</button>
+                            <textarea id="post-edit-text-${post.id}" style="width: 100%; min-height: 100px; margin-bottom: 0.5rem; padding: 0.875rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.95rem;">${escapeHtml(post.content)}</textarea>
+                            <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                <button class="btn-f teal" onclick="savePostEdit(${pageIndex}, ${questionIndex}, ${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Save</button>
+                                <button class="btn-f olive" onclick="cancelPostEdit(${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Cancel</button>
                             </div>
                         </div>
                 `;
 
                 // Show buttons for non-read-only mode
                 if (!readOnly) {
-                    html += `<div id="post-actions-${post.id}" style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                            <button class="btn btn-secondary" onclick="toggleReplyForm(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Reply</button>`;
+                    html += `<div id="post-actions-${post.id}" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.75rem;">
+                            <button class="btn-f olive" onclick="toggleReplyForm(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Reply</button>`;
 
                     // Only show Edit/Delete for own posts
                     if (isOwnPost) {
                         html += `
-                            <button class="btn btn-secondary" onclick="editPost(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Edit</button>
-                            <button class="btn btn-secondary" onclick="deletePost(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem; color: #dc3545;">Delete</button>`;
+                            <button class="btn-f gold" onclick="editPost(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Edit</button>
+                            <button class="btn-f red" onclick="deletePost(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Delete</button>`;
                     }
 
                     html += `</div>
 
                         <div id="reply-form-${post.id}" style="display: none; margin-top: 1rem; padding-left: 1rem; border-left: 2px solid #dee2e6;">
-                            <textarea id="reply-text-${post.id}" placeholder="Write your reply..." style="width: 100%; min-height: 80px; margin-bottom: 0.5rem;"></textarea>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn btn-primary" onclick="postReply(${pageIndex}, ${questionIndex}, ${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Post Reply</button>
-                                <button class="btn btn-secondary" onclick="toggleReplyForm(${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Cancel</button>
+                            <textarea id="reply-text-${post.id}" placeholder="Write your reply..." style="width: 100%; min-height: 80px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.9rem;"></textarea>
+                            <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                <button class="btn-f teal" onclick="postReply(${pageIndex}, ${questionIndex}, ${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Post Reply</button>
+                                <button class="btn-f olive" onclick="toggleReplyForm(${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Cancel</button>
                             </div>
                         </div>
                     `;
@@ -487,7 +503,7 @@
 
                 // Render replies
                 if (post.replies && post.replies.length > 0) {
-                    html += '<div style="margin-top: 1rem; padding-left: 1.5rem; border-left: 2px solid #dee2e6;">';
+                    html += '<div style="margin-top: 1rem; padding-left: 2rem;">';
                     post.replies.forEach(reply => {
                         const replyDate = new Date(reply.createdAt).toLocaleDateString();
                         const replyTime = new Date(reply.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -496,7 +512,7 @@
                         const isOwnReply = currentUserId && reply.userId === currentUserId;
 
                         html += `
-                            <div style="background: white; border-left: 2px solid ${replyAuthorColor}; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 4px;">
+                            <div style="background: white; border: 1px solid #e5e7eb; padding: 0.75rem 1rem; margin-bottom: 0.75rem; border-radius: 12px 12px 4px 12px;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                                     <strong style="color: ${replyAuthorColor}; font-size: 0.9rem;">${escapeHtml(reply.author) || 'Anonymous'}${replyEditedText}</strong>
                                     <span style="color: #6c757d; font-size: 0.8rem;">${replyDate} at ${replyTime}</span>
@@ -505,16 +521,16 @@
                                     <p style="margin: 0; font-size: 0.9rem; white-space: pre-wrap;">${escapeHtml(reply.content)}</p>
                                 </div>
                                 <div id="reply-edit-form-${reply.id}" style="display: none; margin-top: 0.5rem;">
-                                    <textarea id="reply-edit-text-${reply.id}" style="width: 100%; min-height: 60px; margin-bottom: 0.5rem; font-size: 0.9rem;">${escapeHtml(reply.content)}</textarea>
-                                    <div style="display: flex; gap: 0.5rem;">
-                                        <button class="btn btn-primary" onclick="saveReplyEdit(${pageIndex}, ${questionIndex}, ${post.id}, ${reply.id})" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Save</button>
-                                        <button class="btn btn-secondary" onclick="cancelReplyEdit(${reply.id})" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Cancel</button>
+                                    <textarea id="reply-edit-text-${reply.id}" style="width: 100%; min-height: 70px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.9rem;">${escapeHtml(reply.content)}</textarea>
+                                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                        <button class="btn-f teal" onclick="saveReplyEdit(${pageIndex}, ${questionIndex}, ${post.id}, ${reply.id})" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Save</button>
+                                        <button class="btn-f olive" onclick="cancelReplyEdit(${reply.id})" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Cancel</button>
                                     </div>
                                 </div>
                                 ${!readOnly && isOwnReply ? `
-                                    <div id="reply-actions-${reply.id}" style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                                        <button class="btn btn-secondary" onclick="editReply(${reply.id})" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;">Edit</button>
-                                        <button class="btn btn-secondary" onclick="deleteReply(${reply.id})" style="padding: 0.2rem 0.6rem; font-size: 0.8rem; color: #dc3545;">Delete</button>
+                                    <div id="reply-actions-${reply.id}" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+                                        <button class="btn-f gold" onclick="editReply(${reply.id})" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;">Edit</button>
+                                        <button class="btn-f red" onclick="deleteReply(${reply.id})" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;">Delete</button>
                                     </div>
                                 ` : ''}
                             </div>
@@ -531,8 +547,10 @@
         }
 
         function renderIntroPage(pageData, container) {
-            let html = '<div class="card">';
-            html += `<h3>${pageData.title}</h3>`;
+            let html = `
+                <div style="background: transparent; border: 2px solid var(--teal); border-radius: 16px; padding: 1.75rem; position: relative;">
+                    <h3 style="position: absolute; top: -0.7rem; left: 1.5rem; background: white; padding: 0 0.75rem; font-size: 1rem; color: var(--teal); margin: 0;">${pageData.title}</h3>
+            `;
 
             // Show intro text
             if (pageData.content) {
@@ -548,7 +566,7 @@
                     const embedUrl = getVideoEmbedUrl(video.url);
 
                     html += `
-                        <div class="playlist-item">
+                        <div class="playlist-item" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                             <strong>${video.title}${durationText}</strong>
                             ${embedUrl ? `
                                 <div style="margin-top: 1rem; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
@@ -556,7 +574,7 @@
                                 </div>
                             ` : `
                                 <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
-                                    <a href="${video.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">View Resource</a>
+                                    <a href="${video.url}" target="_blank" class="btn-f teal" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">View Resource</a>
                                 </div>
                             `}
                         </div>
@@ -584,12 +602,12 @@
                     resources.forEach(resource => {
                         const hasUrl = resource.url && resource.url.trim();
                         html += `
-                            <div class="resource-item" style="position: relative;">
+                            <div class="resource-item" style="position: relative; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                                 <div style="padding-right: ${hasUrl ? '140px' : '0'};">
                                     <strong>${resource.title}</strong>
                                     ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
                                 </div>
-                                ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn btn-secondary" style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">View Resource</a>` : ''}
+                                ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn-f teal" style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">View Resource</a>` : ''}
                             </div>
                         `;
                     });
@@ -604,7 +622,7 @@
                         const embedUrl = getVideoEmbedUrl(video.url);
 
                         html += `
-                            <div class="playlist-item">
+                            <div class="playlist-item" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                                 <strong>${video.title}${durationText}</strong>
                                 ${embedUrl ? `
                                     <div style="margin-top: 1rem; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
@@ -612,7 +630,7 @@
                                     </div>
                                 ` : `
                                     <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
-                                        <a href="${video.url}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">View Resource</a>
+                                        <a href="${video.url}" target="_blank" class="btn-f teal" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">View Resource</a>
                                     </div>
                                 `}
                             </div>
@@ -971,10 +989,10 @@
         function showParticipantModeBanner() {
             const banner = document.createElement('div');
             banner.id = 'participant-mode-banner';
-            banner.style.cssText = 'background: var(--teal); color: white; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;';
+            banner.style.cssText = 'background: rgba(16, 100, 112, 0.15); color: #106470; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(16, 100, 112, 0.3);';
             banner.innerHTML = `
-                <span><strong>Participant Mode</strong> - You are viewing this module as a participant</span>
-                <button class="btn" style="background: white; color: var(--teal); padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="exitParticipantMode()">Exit to Admin View</button>
+                <span style="font-family: \'Adobe Garamond Pro\', Georgia, serif; font-size: 1.05rem;"><strong>Participant Mode</strong> - You are viewing this module as a participant</span>
+                <button class="btn-f teal" onclick="exitParticipantMode()">Exit to Admin View</button>
             `;
             const header = document.querySelector('header');
             header.insertAdjacentElement('afterend', banner);

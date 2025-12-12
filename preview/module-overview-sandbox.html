@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Overview - Lectern (Sandbox)</title>
+    <link rel="stylesheet" href="../styles/lectern-core.css">
+    <style>
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--light-bg);
+            border-bottom: 1px solid #e9ecef;
+        }
+        .user-header .user-info { flex: 1; }
+        .user-header .admin-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+
+        /* Stacked Cards with Color Accents */
+        .stacked-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .stacked-card-header {
+            padding: 0.6rem 1rem;
+            font-family: 'Adobe Garamond Pro', 'Garamond', Georgia, serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            border-bottom: none;
+        }
+        .stacked-card-header.teal-accent {
+            background: rgba(16, 100, 112, 0.15);
+            color: var(--teal);
+        }
+        .stacked-card-header.gold-accent {
+            background: rgba(255, 194, 34, 0.15);
+            color: #8b6914;
+        }
+        .stacked-card-body {
+            padding: 1rem;
+            font-weight: 300;
+            color: #212529;
+        }
+
+        /* Module Weeks - Simple Dividers */
+        .divided-week {
+            padding: 1.25rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .divided-week:last-child {
+            border-bottom: none;
+        }
+        .divided-week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .divided-week-actions {
+            margin-top: 1.1rem;
+        }
+        .divided-week-label {
+            font-family: 'Adobe Garamond Pro', 'Garamond', Georgia, serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #8b6914;
+            margin-bottom: 0.25rem;
+        }
+        .divided-week h5 {
+            margin: 0;
+            font-size: 1.05rem;
+        }
+        .divided-week .meta {
+            font-size: 0.8rem;
+            color: var(--teal);
+        }
+        .divided-week p {
+            margin: 0;
+            color: #212529;
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+        .divided-week-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="user-header" class="user-header">
+        <span class="user-info">
+            <strong>Admin User</strong>
+            <span class="admin-badge">Admin</span>
+        </span>
+        <a href="#" class="btn-f olive" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Manage Users</a>
+        <button class="btn-f olive" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Logout</button>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <a href="#" class="logo" style="text-decoration: none; color: inherit;">
+                <img src="../brand-assets/aquinas-seal.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <h1>Lectern</h1>
+            </a>
+            <div id="header-actions"></div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="#">Home</a>
+            <span>›</span>
+            <span>Introduction to Thomistic Philosophy</span>
+        </div>
+
+        <h2 class="page-title">
+            <span>Introduction to Thomistic Philosophy</span>
+        </h2>
+
+        <!-- Module Info Section -->
+        <div class="section-panel teal-outline" style="margin-bottom: 2rem;">
+            <h3 class="teal-title">Module Info</h3>
+
+            <div class="stacked-card">
+                <div class="stacked-card-header teal-accent">Overview</div>
+                <div class="stacked-card-body">
+                    This module provides a comprehensive introduction to the philosophical thought of St. Thomas Aquinas, exploring his metaphysics, epistemology, and natural theology within the broader context of medieval scholasticism.
+                </div>
+            </div>
+
+            <div class="stacked-card">
+                <div class="stacked-card-header teal-accent">Course Details</div>
+                <div class="stacked-card-body">
+                    <p style="margin: 0.25rem 0;"><strong>Instructor:</strong> Fr. John Smith, O.P.</p>
+                    <p style="margin: 0.25rem 0;"><strong>Duration:</strong> 8 weeks</p>
+                    <p style="margin: 0.25rem 0;"><strong>Schedule:</strong> Thursdays at 7:00 PM EST</p>
+                </div>
+            </div>
+
+            <div class="stacked-card">
+                <div class="stacked-card-header gold-accent">Zoom Meeting</div>
+                <div class="stacked-card-body" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="margin: 0;">Meeting ID: 123 456 7890 · Passcode: aquinas</p>
+                    </div>
+                    <button class="btn-f gold" type="button">Join</button>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn-f gold" type="button" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Edit Module Info</button>
+            </div>
+        </div>
+
+        <!-- Module Weeks Section -->
+        <div class="section-panel gold-outline">
+            <h3 class="gold-title">Module Weeks</h3>
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                <button class="btn-f gold" type="button" style="padding: 0.5rem 1rem; font-size: 0.9rem;">+ New Week</button>
+            </div>
+
+            <div class="divided-week">
+                <div class="divided-week-header">
+                    <div>
+                        <div class="divided-week-label">Week 1</div>
+                        <h5>The Life and Times of Aquinas</h5>
+                        <div class="meta">Available now</div>
+                    </div>
+                    <div class="divided-week-actions">
+                        <button class="btn-f olive" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Preview</button>
+                        <button class="btn-f gold" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Edit</button>
+                        <button class="btn-f red" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Delete</button>
+                    </div>
+                </div>
+                <p>An introduction to the historical context and biography of St. Thomas Aquinas.</p>
+            </div>
+
+            <div class="divided-week">
+                <div class="divided-week-header">
+                    <div>
+                        <div class="divided-week-label">Week 2</div>
+                        <h5>Metaphysics - Being and Essence</h5>
+                        <div class="meta" style="color: #8b6914;">Unlocks Dec 8, 2025</div>
+                    </div>
+                    <div class="divided-week-actions">
+                        <button class="btn-f olive" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Preview</button>
+                        <button class="btn-f gold" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Edit</button>
+                        <button class="btn-f red" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Delete</button>
+                    </div>
+                </div>
+                <p>Exploring Aquinas's fundamental distinction between essence and existence.</p>
+            </div>
+
+            <div class="divided-week">
+                <div class="divided-week-header">
+                    <div>
+                        <div class="divided-week-label">Week 3</div>
+                        <h5>The Five Ways</h5>
+                        <div class="meta" style="color: #8b6914;">Unlocks Dec 15, 2025</div>
+                    </div>
+                    <div class="divided-week-actions">
+                        <button class="btn-f olive" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Preview</button>
+                        <button class="btn-f gold" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Edit</button>
+                        <button class="btn-f red" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Delete</button>
+                    </div>
+                </div>
+                <p>A detailed examination of Aquinas's five arguments for God's existence.</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+            <a href="#" class="btn-f olive" style="line-height: 1.5;">← Back to Modules</a>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn-f teal" style="line-height: 1.5;">Launch Module</button>
+                <button class="btn-f gold" style="line-height: 1.5;">Save Template</button>
+            </div>
+        </div>
+    </div>
+
+    <img src="../brand-assets/aquinas-seal.svg" alt="" class="decorative-cross" style="width: 20rem; height: 20rem; opacity: 0.05;">
+</body>
+</html>

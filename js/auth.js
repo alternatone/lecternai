@@ -1,5 +1,5 @@
 /**
- * LecternAI Authentication Utilities
+ * Lectern Authentication Utilities
  *
  * Provides auth guards and user management functions for the app.
  * All pages should use these to ensure proper access control.

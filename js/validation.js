@@ -1,5 +1,5 @@
 /**
- * LecternAI Data Validation
+ * Lectern Data Validation
  *
  * Centralized validation for all data entities.
  * Ensures data integrity before saving to storage or sending to API.

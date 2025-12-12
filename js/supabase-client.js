@@ -1,5 +1,5 @@
 /**
- * Supabase Client for LecternAI
+ * Supabase Client for Lectern
  *
  * This module initializes the Supabase client for database operations.
  * Import this in any file that needs to interact with Supabase.
