@@ -319,16 +319,12 @@ export function renderUserHeader(user, container) {
     const isAdmin = user.role === 'admin';
 
     container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; background: var(--light-bg); border-bottom: 1px solid #e9ecef;">
-            <span>
-                <strong>${user.name || user.email}</strong>
-                ${isAdmin ? '<span style="background: var(--teal); color: white; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Admin</span>' : ''}
-            </span>
-            <div style="display: flex; align-items: center; gap: 1.5rem;">
-                ${isAdmin ? '<a href="admin-users.html" style="color: var(--teal); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Manage Users</a>' : ''}
-                <a href="#" onclick="window.logoutUser(); return false;" style="color: var(--olive); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Logout</a>
-            </div>
-        </div>
+        <span class="user-info">
+            <strong>${user.name || user.email}</strong>
+            ${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
+        </span>
+        ${isAdmin ? '<a href="admin-users.html" class="btn-f olive" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Manage Users</a>' : ''}
+        <button onclick="window.logoutUser()" class="btn-f olive" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Logout</button>
     `;
 
     // Export logout function to window
