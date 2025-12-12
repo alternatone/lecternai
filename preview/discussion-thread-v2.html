@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discussion Thread Options v2</title>
+    <style>
+        :root {
+            --teal: #106470;
+            --olive: #a2a569;
+            --gold: #FFC222;
+            --text-dark: #231F20;
+            --border-light: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Benton Sans', Arial, sans-serif;
+            background: #f8f9fa;
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 2rem;
+            color: var(--teal);
+        }
+
+        h2 {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .option-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .option-label {
+            background: var(--teal);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .option-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Question box - consistent across all options */
+        .question-box {
+            background: transparent;
+            border: 2px solid var(--teal);
+            border-radius: 16px;
+            padding: 1.75rem;
+            position: relative;
+        }
+
+        .question-label {
+            position: absolute;
+            top: -0.7rem;
+            left: 1.5rem;
+            background: white;
+            padding: 0 0.75rem;
+            font-size: 1rem;
+            color: var(--teal);
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .question-text {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.3rem;
+            font-style: italic;
+            color: #2c3e50;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Shared button styles */
+        .btn-text {
+            background: none;
+            border: none;
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            transition: background 0.15s;
+        }
+        .btn-text:hover { background: rgba(0,0,0,0.05); }
+        .btn-text.teal { color: var(--teal); }
+        .btn-text.olive { color: #7a7d4e; }
+        .btn-text.gold { color: #b8860b; }
+        .btn-text.red { color: #a21f35; }
+
+        /* Collapse toggle */
+        .collapse-toggle {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0;
+        }
+        .collapse-toggle:hover { color: var(--teal); }
+        .collapse-toggle .arrow {
+            transition: transform 0.2s;
+            font-size: 0.7rem;
+        }
+        .collapse-toggle.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+
+        .replies-container {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .replies-container.collapsed {
+            max-height: 0 !important;
+        }
+
+        /* ========== OPTION 1: Clean Lines ========== */
+        .opt1-post {
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .opt1-post:last-child { border-bottom: none; }
+
+        .opt1-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        .opt1-author {
+            font-weight: 600;
+            color: var(--teal);
+        }
+        .opt1-time {
+            color: #999;
+            font-size: 0.8rem;
+        }
+        .opt1-content {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .opt1-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .opt1-replies {
+            margin-left: 1.5rem;
+            padding-left: 1rem;
+            border-left: 2px solid #eee;
+            margin-top: 0.75rem;
+        }
+        .opt1-reply {
+            padding: 0.75rem 0;
+        }
+        .opt1-reply:first-child { padding-top: 0; }
+        .opt1-reply-author {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .opt1-reply-content {
+            font-size: 0.95rem;
+            color: #444;
+        }
+
+        /* ========== OPTION 2: Minimal Cards ========== */
+        .opt2-post {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .opt2-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .opt2-author-group {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+        .opt2-author {
+            font-weight: 600;
+            color: #333;
+        }
+        .opt2-time {
+            color: #aaa;
+            font-size: 0.75rem;
+        }
+        .opt2-content {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .opt2-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .opt2-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .opt2-replies {
+            margin-left: 2rem;
+            margin-top: 0.5rem;
+        }
+        .opt2-reply {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .opt2-reply-content {
+            font-size: 0.9rem;
+        }
+
+        /* ========== OPTION 3: Conversation Flow ========== */
+        .opt3-thread {
+            position: relative;
+        }
+
+        .opt3-post {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+        }
+
+        .opt3-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--teal);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .opt3-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .opt3-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+        .opt3-author {
+            font-weight: 600;
+            color: #333;
+        }
+        .opt3-time {
+            color: #999;
+            font-size: 0.8rem;
+        }
+        .opt3-content {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        .opt3-actions {
+            display: flex;
+            gap: 0.25rem;
+            opacity: 0.7;
+        }
+        .opt3-post:hover .opt3-actions {
+            opacity: 1;
+        }
+
+        .opt3-replies {
+            margin-left: 3rem;
+            border-left: 2px solid #e8e8e8;
+            padding-left: 1rem;
+        }
+        .opt3-reply {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+        }
+        .opt3-reply .opt3-avatar {
+            width: 28px;
+            height: 28px;
+            font-size: 0.75rem;
+        }
+        .opt3-reply-content {
+            font-size: 0.9rem;
+        }
+
+        /* Textarea for response */
+        .response-area {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+        .response-area textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+        .response-area textarea:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
+        .response-area .btn-post {
+            margin-top: 0.5rem;
+            background: none;
+            border: 2px solid transparent;
+            color: var(--teal);
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            float: right;
+        }
+        .response-area .btn-post:hover {
+            border-color: var(--teal);
+        }
+    </style>
+</head>
+<body>
+    <h1>Discussion Thread Options v2</h1>
+    <p style="color: #666; margin-bottom: 2rem;">Focus: Minimal visual noise, maximum readability, collapsible replies</p>
+
+    <!-- OPTION 1: Clean Lines -->
+    <div class="option-container">
+        <span class="option-label">Option 1</span>
+        <h2>Clean Lines</h2>
+        <p class="option-description">
+            Minimal styling with subtle separators. Content-first approach with actions that stay out of the way.
+            Uses a thin left border to show reply hierarchy.
+        </p>
+
+        <div class="question-box">
+            <span class="question-label">Question 1</span>
+            <div class="question-text">How does Aquinas's concept of natural law relate to contemporary ethical frameworks?</div>
+
+            <div class="opt1-post">
+                <div class="opt1-header">
+                    <span class="opt1-author">Sarah Mitchell</span>
+                    <span class="opt1-time">Dec 10 at 2:34 PM</span>
+                </div>
+                <div class="opt1-content">
+                    Aquinas's natural law theory provides a foundation that many contemporary virtue ethicists build upon.
+                    The idea that moral truths can be discovered through reason remains influential, though modern
+                    interpretations often secularize his theological framework.
+                </div>
+                <div class="opt1-actions">
+                    <button class="btn-text teal">Reply</button>
+                    <button class="btn-text gold">Edit</button>
+                    <button class="btn-text red">Delete</button>
+                </div>
+
+                <button class="collapse-toggle" onclick="toggleReplies(this)">
+                    <span class="arrow">&#9660;</span>
+                    <span class="reply-count">2 replies</span>
+                </button>
+
+                <div class="replies-container opt1-replies">
+                    <div class="opt1-reply">
+                        <div class="opt1-header">
+                            <span class="opt1-reply-author" style="color: #7c3aed;">James Chen</span>
+                            <span class="opt1-time">Dec 10 at 3:15 PM</span>
+                        </div>
+                        <div class="opt1-reply-content">
+                            That's a great point about secularization. I'd add that natural law thinking also
+                            shows up in human rights discourse, even if not explicitly acknowledged.
+                        </div>
+                        <div class="opt1-actions">
+                            <button class="btn-text teal">Reply</button>
+                        </div>
+                    </div>
+                    <div class="opt1-reply">
+                        <div class="opt1-header">
+                            <span class="opt1-reply-author" style="color: var(--teal);">Sarah Mitchell</span>
+                            <span class="opt1-time">Dec 10 at 4:02 PM</span>
+                        </div>
+                        <div class="opt1-reply-content">
+                            Absolutely - the UN Declaration of Human Rights has clear natural law influences.
+                        </div>
+                        <div class="opt1-actions">
+                            <button class="btn-text teal">Reply</button>
+                            <button class="btn-text gold">Edit</button>
+                            <button class="btn-text red">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="opt1-post">
+                <div class="opt1-header">
+                    <span class="opt1-author" style="color: #059669;">Michael Torres</span>
+                    <span class="opt1-time">Dec 11 at 9:22 AM</span>
+                </div>
+                <div class="opt1-content">
+                    I think the teleological aspect is what separates Aquinas most clearly from modern ethics.
+                    The idea that things have inherent purposes isn't widely accepted in secular philosophy today.
+                </div>
+                <div class="opt1-actions">
+                    <button class="btn-text teal">Reply</button>
+                </div>
+            </div>
+
+            <div class="response-area">
+                <textarea placeholder="Share your thoughts..."></textarea>
+                <button class="btn-post">Post Response</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OPTION 2: Minimal Cards -->
+    <div class="option-container">
+        <span class="option-label">Option 2</span>
+        <h2>Minimal Cards</h2>
+        <p class="option-description">
+            Subtle background differentiation without heavy borders. Main posts have a light gray background,
+            replies are white with a thin border. Clean hierarchy without being visually heavy.
+        </p>
+
+        <div class="question-box">
+            <span class="question-label">Question 1</span>
+            <div class="question-text">How does Aquinas's concept of natural law relate to contemporary ethical frameworks?</div>
+
+            <div class="opt2-post">
+                <div class="opt2-header">
+                    <div class="opt2-author-group">
+                        <span class="opt2-author">Sarah Mitchell</span>
+                        <span class="opt2-time">Dec 10 at 2:34 PM</span>
+                    </div>
+                </div>
+                <div class="opt2-content">
+                    Aquinas's natural law theory provides a foundation that many contemporary virtue ethicists build upon.
+                    The idea that moral truths can be discovered through reason remains influential, though modern
+                    interpretations often secularize his theological framework.
+                </div>
+                <div class="opt2-footer">
+                    <button class="collapse-toggle" onclick="toggleReplies(this)">
+                        <span class="arrow">&#9660;</span>
+                        <span class="reply-count">2 replies</span>
+                    </button>
+                    <div class="opt2-actions">
+                        <button class="btn-text teal">Reply</button>
+                        <button class="btn-text gold">Edit</button>
+                        <button class="btn-text red">Delete</button>
+                    </div>
+                </div>
+
+                <div class="replies-container opt2-replies">
+                    <div class="opt2-reply">
+                        <div class="opt2-header">
+                            <div class="opt2-author-group">
+                                <span class="opt2-author" style="color: #7c3aed;">James Chen</span>
+                                <span class="opt2-time">Dec 10 at 3:15 PM</span>
+                            </div>
+                            <div class="opt2-actions">
+                                <button class="btn-text teal">Reply</button>
+                            </div>
+                        </div>
+                        <div class="opt2-reply-content">
+                            That's a great point about secularization. I'd add that natural law thinking also
+                            shows up in human rights discourse, even if not explicitly acknowledged.
+                        </div>
+                    </div>
+                    <div class="opt2-reply">
+                        <div class="opt2-header">
+                            <div class="opt2-author-group">
+                                <span class="opt2-author" style="color: var(--teal);">Sarah Mitchell</span>
+                                <span class="opt2-time">Dec 10 at 4:02 PM</span>
+                            </div>
+                            <div class="opt2-actions">
+                                <button class="btn-text teal">Reply</button>
+                                <button class="btn-text gold">Edit</button>
+                                <button class="btn-text red">Delete</button>
+                            </div>
+                        </div>
+                        <div class="opt2-reply-content">
+                            Absolutely - the UN Declaration of Human Rights has clear natural law influences.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="opt2-post">
+                <div class="opt2-header">
+                    <div class="opt2-author-group">
+                        <span class="opt2-author" style="color: #059669;">Michael Torres</span>
+                        <span class="opt2-time">Dec 11 at 9:22 AM</span>
+                    </div>
+                </div>
+                <div class="opt2-content">
+                    I think the teleological aspect is what separates Aquinas most clearly from modern ethics.
+                    The idea that things have inherent purposes isn't widely accepted in secular philosophy today.
+                </div>
+                <div class="opt2-footer">
+                    <span></span>
+                    <div class="opt2-actions">
+                        <button class="btn-text teal">Reply</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="response-area">
+                <textarea placeholder="Share your thoughts..."></textarea>
+                <button class="btn-post">Post Response</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OPTION 3: Conversation Flow -->
+    <div class="option-container">
+        <span class="option-label">Option 3</span>
+        <h2>Conversation Flow</h2>
+        <p class="option-description">
+            Clean conversation flow without avatars. Uses left border to show thread hierarchy.
+            Actions appear on hover for cleaner look. Minimal visual elements, maximum readability.
+        </p>
+
+        <div class="question-box">
+            <span class="question-label">Question 1</span>
+            <div class="question-text">How does Aquinas's concept of natural law relate to contemporary ethical frameworks?</div>
+
+            <div class="opt3-thread">
+                <div class="opt3-post" style="padding-left: 0;">
+                    <div class="opt3-body">
+                        <div class="opt3-header">
+                            <span class="opt3-author" style="color: var(--teal);">Sarah Mitchell</span>
+                            <span class="opt3-time">Dec 10 at 2:34 PM</span>
+                        </div>
+                        <div class="opt3-content">
+                            Aquinas's natural law theory provides a foundation that many contemporary virtue ethicists build upon.
+                            The idea that moral truths can be discovered through reason remains influential, though modern
+                            interpretations often secularize his theological framework.
+                        </div>
+                        <div class="opt3-actions">
+                            <button class="btn-text teal">Reply</button>
+                            <button class="btn-text gold">Edit</button>
+                            <button class="btn-text red">Delete</button>
+                        </div>
+
+                        <button class="collapse-toggle" onclick="toggleReplies(this)" style="margin-top: 0.5rem;">
+                            <span class="arrow">&#9660;</span>
+                            <span class="reply-count">2 replies</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="replies-container opt3-replies">
+                    <div class="opt3-reply" style="padding-left: 0;">
+                        <div class="opt3-body">
+                            <div class="opt3-header">
+                                <span class="opt3-author" style="color: #7c3aed;">James Chen</span>
+                                <span class="opt3-time">Dec 10 at 3:15 PM</span>
+                            </div>
+                            <div class="opt3-reply-content">
+                                That's a great point about secularization. I'd add that natural law thinking also
+                                shows up in human rights discourse, even if not explicitly acknowledged.
+                            </div>
+                            <div class="opt3-actions">
+                                <button class="btn-text teal">Reply</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="opt3-reply" style="padding-left: 0;">
+                        <div class="opt3-body">
+                            <div class="opt3-header">
+                                <span class="opt3-author" style="color: var(--teal);">Sarah Mitchell</span>
+                                <span class="opt3-time">Dec 10 at 4:02 PM</span>
+                            </div>
+                            <div class="opt3-reply-content">
+                                Absolutely - the UN Declaration of Human Rights has clear natural law influences.
+                            </div>
+                            <div class="opt3-actions">
+                                <button class="btn-text teal">Reply</button>
+                                <button class="btn-text gold">Edit</button>
+                                <button class="btn-text red">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="opt3-post" style="padding-left: 0;">
+                    <div class="opt3-body">
+                        <div class="opt3-header">
+                            <span class="opt3-author" style="color: #059669;">Michael Torres</span>
+                            <span class="opt3-time">Dec 11 at 9:22 AM</span>
+                        </div>
+                        <div class="opt3-content">
+                            I think the teleological aspect is what separates Aquinas most clearly from modern ethics.
+                            The idea that things have inherent purposes isn't widely accepted in secular philosophy today.
+                        </div>
+                        <div class="opt3-actions">
+                            <button class="btn-text teal">Reply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="response-area">
+                <textarea placeholder="Share your thoughts..."></textarea>
+                <button class="btn-post">Post Response</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleReplies(btn) {
+            const container = btn.closest('.opt1-post, .opt2-post, .opt3-post, .opt3-thread > div')
+                                 .querySelector('.replies-container');
+            if (container) {
+                container.classList.toggle('collapsed');
+                btn.classList.toggle('collapsed');
+
+                const countSpan = btn.querySelector('.reply-count');
+                const isCollapsed = container.classList.contains('collapsed');
+                if (isCollapsed) {
+                    countSpan.textContent = countSpan.textContent.replace('replies', 'replies (hidden)');
+                } else {
+                    countSpan.textContent = countSpan.textContent.replace(' (hidden)', '');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

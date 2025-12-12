@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lectern - Seminary Learning Platform</title>
+    <title>Lectern - Aquinas Institute of Theology</title>
     <link rel="stylesheet" href="styles/lectern-core.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
+    <script src="js/rich-text.js"></script>
     <style>
         .modal {
             display: none;
@@ -82,9 +83,12 @@
         .user-header .admin-badge {
             background: var(--primary-color);
             color: white;
-            padding: 0.15rem 0.5rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
             margin-left: 0.5rem;
         }
         /* Loading state styles */
@@ -124,7 +128,7 @@
     <header>
         <div class="header-content">
             <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
-                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon">
                 <h1>Lectern</h1>
             </a>
             <div id="header-actions"></div>
@@ -257,7 +261,7 @@
         </div>
     </div>
 
-    <img src="brand-assets/aquinas-seal.svg" alt="" class="decorative-cross" style="width: 20rem; height: 20rem; opacity: 0.05;">
+    <img src="brand-assets/aquinas-seal.svg" alt="" class="decorative-cross">
 
     <script type="module">
         import { dataService } from './js/data-service-supabase.js';
@@ -282,6 +286,9 @@
 
             // Show content after everything is loaded
             showContent();
+
+            // Initialize rich text on all textareas
+            RichText.initAll('textarea');
         }
 
         // Show content and hide loading spinner
@@ -544,10 +551,10 @@
             moduleCard.innerHTML = `
                 <div class="module-card-header teal-bg">
                     <h4>${module.title}</h4>
-                    <span style="font-size: 0.8rem; color: #6c757d;">${module.instructor || ''} ${module.duration ? '· ' + module.duration : ''}</span>
+                    <span class="card-meta">${module.instructor || ''} ${module.duration ? '· ' + module.duration : ''}</span>
                 </div>
                 <div class="module-card-body">
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+                    <div class="card-actions">
                         <button class="btn-f teal" type="button" onclick="accessModule(${module.id})">Participate</button>
                         <button class="btn-f gold" type="button" onclick="manageModule(${module.id})">Edit</button>
                         <button class="btn-f olive" type="button" onclick="archiveModule(${module.id})">Archive</button>
@@ -565,10 +572,10 @@
             moduleCard.innerHTML = `
                 <div class="module-card-header gold-bg">
                     <h4>${module.title}</h4>
-                    <span style="font-size: 0.8rem; color: #6c757d;">${module.instructor || ''} ${module.duration ? '· ' + module.duration : ''}</span>
+                    <span class="card-meta">${module.instructor || ''} ${module.duration ? '· ' + module.duration : ''}</span>
                 </div>
                 <div class="module-card-body">
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+                    <div class="card-actions">
                         <button class="btn-f gold" type="button" onclick="editModule(${module.id})">Edit</button>
                         <button class="btn-f red" type="button" onclick="deleteModule(${module.id})">Delete</button>
                     </div>
@@ -587,10 +594,10 @@
             moduleCard.innerHTML = `
                 <div class="module-card-header gray-bg">
                     <h4>${module.title}</h4>
-                    <span style="font-size: 0.8rem; color: #6c757d;">${module.instructor || ''} ${archivedDate ? '· Archived: ' + archivedDate : ''}</span>
+                    <span class="card-meta">${module.instructor || ''} ${archivedDate ? '· Archived: ' + archivedDate : ''}</span>
                 </div>
                 <div class="module-card-body">
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+                    <div class="card-actions">
                         <button class="btn-f olive" type="button" onclick="viewArchivedModule(${module.id})">View</button>
                         <button class="btn-f teal" type="button" onclick="restoreModule(${module.id})">Restore</button>
                         <button class="btn-f red" type="button" onclick="deleteArchivedModule(${module.id})">Delete</button>
@@ -715,10 +722,10 @@
                 moduleCard.innerHTML = `
                     <div class="module-card-header ${isArchived ? 'gray-bg' : 'teal-bg'}">
                         <h4>${module.title}</h4>
-                        <span style="font-size: 0.8rem; color: #6c757d;">${module.instructor || ''} · ${visibleWeekCount} weeks available</span>
+                        <span class="card-meta">${module.instructor || ''} · ${visibleWeekCount} weeks available</span>
                     </div>
                     <div class="module-card-body">
-                        <div style="display: flex; justify-content: flex-end;">
+                        <div class="card-actions">
                             <button class="btn-f ${isArchived ? 'olive' : 'teal'}" type="button" onclick="event.stopPropagation(); dataService.setCurrentModuleId(${module.id}); location.href='module-overview.html';">${isArchived ? 'View Archive' : 'View Module'}</button>
                         </div>
                     </div>

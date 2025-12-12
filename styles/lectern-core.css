@@ -5,6 +5,31 @@
 
 /* Font fallbacks: Adobe Garamond Pro → Georgia, Benton Sans → Arial */
 
+/* Benton Sans font-face declarations (per brand style guide) */
+@font-face {
+    font-family: 'Benton Sans';
+    src: url('../fonts/BentonSans Book.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Benton Sans';
+    src: url('../fonts/BentonSans Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Benton Sans';
+    src: url('../fonts/BentonSans Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* ========== CSS VARIABLES ========== */
 :root {
     /* Aquinas Primary Colors */
@@ -39,9 +64,10 @@ body {
     font-family: 'Benton Sans', Arial, sans-serif;
     background-color: var(--background);
     color: var(--text-dark);
-    line-height: 1.9;
+    line-height: 1.8;
     font-size: 1rem;
     font-weight: 400;
+    letter-spacing: 0.01em;
 }
 
 /* ========== TYPOGRAPHY ========== */
@@ -67,6 +93,7 @@ h4 { font-size: 1.1rem; color: var(--text-dark); }
     font-family: inherit;
     font-size: 0.9rem;
     font-weight: 500;
+    letter-spacing: 0.03em;
     cursor: pointer;
     transition: all 0.2s ease;
     text-decoration: none;
@@ -87,33 +114,32 @@ h4 { font-size: 1.1rem; color: var(--text-dark); }
 header {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     color: var(--text-light);
-    padding: 1.5rem 2rem;
+    padding: 0.5rem 2rem;
     box-shadow: var(--shadow);
 }
 
 .header-content {
-    max-width: 1200px;
-    margin: 0 auto;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
 }
 
 .logo {
     display: flex;
+    flex-direction: row-reverse;
     align-items: center;
-    gap: 1rem;
+    gap: 1.25rem;
     text-decoration: none;
     color: inherit;
 }
 
 .logo-icon {
-    width: 2.5rem;
-    height: 2.5rem;
+    height: 5rem;
+    width: auto;
 }
 
 .logo h1 {
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     color: var(--text-light);
 }
 
@@ -134,9 +160,12 @@ header {
 .user-header .admin-badge {
     background: var(--primary-color);
     color: white;
-    padding: 0.15rem 0.5rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
     margin-left: 0.5rem;
 }
 
@@ -159,8 +188,9 @@ header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--gray);
-    font-size: 0.95rem;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
 }
 
 .breadcrumb a {
@@ -214,8 +244,17 @@ header {
     gap: 2rem;
 }
 
-/* ========== MODULE CARDS ========== */
-.module-card {
+/* ========== UNIFIED CARD SYSTEM ========== */
+/*
+ * Standard card proportions:
+ * - Header: 0.75rem 1.25rem padding (compact colored section)
+ * - Body: 1.25rem padding (white section with content)
+ * - Border-radius: 12px on card, 0 on header/body
+ * - Buttons: always bottom-right with gap 0.5rem
+ */
+
+/* Base card structure */
+.card-base {
     background: white;
     border-radius: 12px;
     overflow: hidden;
@@ -223,38 +262,127 @@ header {
     transition: all 0.2s ease;
 }
 
+.card-base:hover {
+    border-color: #d1d5db;
+}
+
+/* Standard card header (compact) */
+.card-header {
+    padding: 0.75rem 1.25rem;
+}
+
+/* Standard card body */
+.card-body {
+    padding: 1.25rem;
+    background: white;
+}
+
+/* Card footer for buttons - always bottom right */
+.card-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+/* Header color variants */
+.card-header.teal-bg {
+    background: rgba(16, 100, 112, 0.12);
+}
+
+.card-header.gold-bg {
+    background: rgba(255, 194, 34, 0.15);
+}
+
+.card-header.gray-bg {
+    background: rgba(138, 139, 140, 0.10);
+}
+
+.card-header.red-bg {
+    background: rgba(162, 31, 53, 0.08);
+}
+
+/* Header label text */
+.card-header-label {
+    font-family: 'Adobe Garamond Pro', Georgia, serif;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 400;
+}
+
+.card-header-label.teal { color: var(--teal); }
+.card-header-label.gold { color: #8b6914; }
+.card-header-label.gray { color: var(--gray); }
+.card-header-label.red { color: var(--primary-color); }
+
+/* ========== MODULE CARDS ========== */
+.module-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
 .module-card:hover {
     border-color: #d1d5db;
 }
 
 .module-card-header {
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.25rem;
+    height: 7rem;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .module-card-header.teal-bg {
-    background: rgba(16, 100, 112, 0.08);
+    background: rgba(16, 100, 112, 0.12);
 }
 
 .module-card-header.gold-bg {
-    background: rgba(255, 194, 34, 0.12);
+    background: rgba(255, 194, 34, 0.15);
 }
 
 .module-card-header.gray-bg {
-    background: rgba(138, 139, 140, 0.08);
+    background: rgba(138, 139, 140, 0.10);
 }
 
 .module-card-header.red-bg {
-    background: rgba(162, 31, 53, 0.06);
+    background: rgba(162, 31, 53, 0.08);
 }
 
 .module-card-header h4 {
     font-size: 1rem;
-    margin-bottom: 0.25rem;
+    margin: 0;
+}
+
+.module-card-header .card-meta {
+    font-size: 0.8rem;
+    color: #6c757d;
 }
 
 .module-card-body {
-    padding: 1rem 1.5rem 1.25rem;
+    padding: 1.25rem;
     background: white;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+/* Card actions - buttons aligned bottom right */
+.card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 /* ========== CONTENT CARDS ========== */
@@ -262,34 +390,32 @@ header {
     background: white;
     border-radius: 12px;
     border: 1px solid #e5e7eb;
-    padding: 1.5rem;
+    overflow: hidden;
     margin-bottom: 1rem;
 }
 
 .content-card-header {
-    padding: 1rem 1.5rem;
-    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-    border-radius: 12px 12px 0 0;
+    padding: 0.75rem 1.25rem;
 }
 
 .content-card-header.gray-bg {
-    background: rgba(138, 139, 140, 0.08);
-    border-bottom: 1px solid #e5e7eb;
+    background: rgba(138, 139, 140, 0.10);
 }
 
 .content-card-header.teal-bg {
-    background: rgba(16, 100, 112, 0.08);
-    border-bottom: 1px solid #e5e7eb;
+    background: rgba(16, 100, 112, 0.12);
 }
 
 .content-card-header.gold-bg {
-    background: rgba(255, 194, 34, 0.12);
-    border-bottom: 1px solid #e5e7eb;
+    background: rgba(255, 194, 34, 0.15);
 }
 
 .content-card-header.red-bg {
-    background: rgba(162, 31, 53, 0.06);
-    border-bottom: 1px solid #e5e7eb;
+    background: rgba(162, 31, 53, 0.08);
+}
+
+.content-card-body {
+    padding: 1.25rem;
 }
 
 /* ========== LIST ITEMS ========== */
@@ -349,40 +475,41 @@ header {
     display: inline-block;
     padding: 0.4rem 1rem;
     border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 400;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
     border: none;
 }
 
 .status-complete {
-    background: var(--teal);
-    color: var(--text-light);
+    background: rgba(40, 167, 69, 0.12);
+    color: #1e7e34;
 }
 
 .status-incomplete {
-    background: var(--secondary-color);
-    color: var(--text-dark);
+    background: rgba(162, 31, 53, 0.12);
+    color: #a21f35;
 }
 
 .status-inprogress {
-    background: var(--olive);
-    color: var(--text-light);
+    background: rgba(255, 194, 34, 0.12);
+    color: #8b6914;
 }
 
 /* ========== PROGRESS BAR ========== */
 .progress-bar {
     width: 100%;
-    height: 8px;
-    background: var(--border-color);
-    border-radius: 4px;
-    overflow: hidden;
-    margin-bottom: 1rem;
+    height: 2px;
+    background: #e0e0e0;
+    margin-bottom: 0.75rem;
 }
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    background: var(--teal);
     width: 50%;
+    transition: width 0.3s ease;
 }
 
 /* ========== FORM ELEMENTS ========== */
@@ -394,6 +521,8 @@ header {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
     color: var(--text-dark);
 }
 
@@ -409,7 +538,15 @@ header {
     border-radius: 8px;
     font-family: inherit;
     font-size: 1rem;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
     transition: border-color 0.3s ease;
+}
+
+.form-group textarea::placeholder,
+.form-group input::placeholder {
+    color: #9ca3af;
+    letter-spacing: 0.01em;
 }
 
 .form-group textarea:focus,
@@ -422,6 +559,14 @@ header {
 .form-group textarea {
     min-height: 120px;
     resize: vertical;
+}
+
+/* Helper text below form fields */
+.helper-text {
+    color: #9ca3af;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    letter-spacing: 0.01em;
 }
 
 /* ========== MODAL ========== */
@@ -480,13 +625,68 @@ header {
 /* ========== DECORATIVE ========== */
 .decorative-cross {
     position: fixed;
-    right: -8rem;
-    bottom: -8rem;
-    width: 35rem;
-    height: 35rem;
+    right: -25vh;
+    bottom: -25vh;
+    width: 90vh;
+    height: 90vh;
     opacity: 0.05;
     z-index: -1;
     pointer-events: none;
+}
+
+/* ========== TABLES ========== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+    letter-spacing: 0.01em;
+}
+
+th {
+    font-weight: 500;
+    background: #f8f9fa;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #6b7280;
+}
+
+td {
+    font-size: 0.95rem;
+}
+
+/* ========== SECONDARY TEXT ========== */
+.text-muted {
+    color: #9ca3af;
+}
+
+.text-secondary {
+    color: #6b7280;
+}
+
+/* ========== NOTICES & ALERTS ========== */
+.notice {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+/* ========== PROGRESS TEXT ========== */
+.progress-text {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    letter-spacing: 0.02em;
 }
 
 /* ========== RESPONSIVE ========== */

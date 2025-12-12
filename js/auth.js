@@ -319,13 +319,15 @@ export function renderUserHeader(user, container) {
     const isAdmin = user.role === 'admin';
 
     container.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 1rem; padding: 0.5rem 1rem; background: var(--light-bg); border-bottom: 1px solid #e9ecef;">
-            <span style="flex: 1;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; background: var(--light-bg); border-bottom: 1px solid #e9ecef;">
+            <span>
                 <strong>${user.name || user.email}</strong>
-                ${isAdmin ? '<span style="background: var(--primary-color); color: white; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">Admin</span>' : ''}
+                ${isAdmin ? '<span style="background: var(--teal); color: white; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Admin</span>' : ''}
             </span>
-            ${isAdmin ? '<a href="admin-users.html" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Manage Users</a>' : ''}
-            <button onclick="window.logoutUser()" class="btn btn-secondary" style="padding: 0.3rem 0.75rem; font-size: 0.85rem;">Logout</button>
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                ${isAdmin ? '<a href="admin-users.html" style="color: var(--teal); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Manage Users</a>' : ''}
+                <a href="#" onclick="window.logoutUser(); return false;" style="color: var(--olive); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Logout</a>
+            </div>
         </div>
     `;
 

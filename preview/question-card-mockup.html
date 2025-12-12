@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Card Mockup</title>
+    <style>
+        /* ========== CSS VARIABLES (from lectern-core.css) ========== */
+        :root {
+            --primary-color: #a21f35;
+            --primary-dark: #7F1F1F;
+            --secondary-color: #FFC222;
+            --olive: #a2a569;
+            --teal: #106470;
+            --gray: #8A8B8C;
+            --text-dark: #231F20;
+            --text-light: #ffffff;
+            --background: #f8f9fa;
+            --card-background: #ffffff;
+            --border-color: #dee2e6;
+        }
+
+        /* ========== RESET & BASE (from lectern-core.css) ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Benton Sans', Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--text-dark);
+            line-height: 1.9;
+            font-size: 1rem;
+            font-weight: 400;
+            padding: 2rem;
+        }
+
+        /* ========== TYPOGRAPHY (from lectern-core.css) ========== */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-weight: 400;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        h1 { font-size: 2rem; color: var(--teal); margin-bottom: 0.5rem; }
+        h2 { font-size: 1.75rem; }
+        h3 { font-size: 1.25rem; color: var(--text-dark); }
+
+        /* ========== BUTTONS (from lectern-core.css) ========== */
+        .btn-f {
+            padding: 0.4rem 0.75rem;
+            background: none;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-f.teal { color: var(--teal); }
+        .btn-f.teal:hover { border-color: var(--teal); }
+
+        /* ========== MOCKUP DISPLAY STYLES ========== */
+        .intro {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .option-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .option-label {
+            background: var(--teal);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 0.75rem;
+        }
+
+        .option-title {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.1rem;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .option-description {
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .demo-area {
+            background: var(--background);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        /* ========== CURRENT STYLE - Teal bordered box ========== */
+        .current-style .question-box {
+            background: transparent;
+            border: 2px solid var(--teal);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .current-style .question-label {
+            position: absolute;
+            top: -0.7rem;
+            left: 1.5rem;
+            background: var(--background);
+            padding: 0 0.75rem;
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1rem;
+            font-weight: 400;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--teal);
+        }
+
+        .current-style .question-text {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.3rem;
+            font-style: italic;
+            color: #2c3e50;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ========== NEW STYLE - Card with question in header, wrapped in teal border ========== */
+        .card-style .question-wrapper {
+            background: transparent;
+            border: 2px solid var(--teal);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .card-style .question-label {
+            position: absolute;
+            top: -0.7rem;
+            left: 1.5rem;
+            background: var(--background);
+            padding: 0 0.75rem;
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1rem;
+            font-weight: 400;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--teal);
+        }
+
+        .card-style .question-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .card-style .question-header {
+            background: #d5dde0;
+            padding: 1rem 1.25rem;
+        }
+
+        .card-style .question-text {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.2rem;
+            font-style: italic;
+            color: #2c3e50;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .card-style .question-body {
+            padding: 1.5rem;
+        }
+
+        /* ========== SHARED FORM STYLES ========== */
+        textarea {
+            min-height: 120px;
+            width: 100%;
+            padding: 0.875rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: 'Benton Sans', Arial, sans-serif;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border-color 0.2s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
+
+        .form-footer {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Question Card Options</h1>
+    <p class="intro">Comparing current teal-bordered style vs. card with header bar style</p>
+
+    <!-- Current Style -->
+    <div class="option-container">
+        <span class="option-label">Current</span>
+        <h2 class="option-title">Teal Bordered Box</h2>
+        <p class="option-description">Current style with floating label on teal border</p>
+        <div class="demo-area current-style">
+            <div class="question-box">
+                <span class="question-label">Question 1</span>
+                <div class="question-text">Opening reflection question will appear here</div>
+                <textarea placeholder="Share your thoughts on this question..."></textarea>
+                <div class="form-footer">
+                    <button type="button" class="btn-f teal">Post Response</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Style - Card with question in header, wrapped in teal border -->
+    <div class="option-container">
+        <span class="option-label">Option 1</span>
+        <h2 class="option-title">Question in Header Bar</h2>
+        <p class="option-description">Question text in gray header bar, response area below, all wrapped in teal bordered box with "Question 1" label</p>
+        <div class="demo-area card-style">
+            <div class="question-wrapper">
+                <span class="question-label">Question 1</span>
+                <div class="question-card">
+                    <div class="question-header">
+                        <div class="question-text">Opening reflection question will appear here</div>
+                    </div>
+                    <div class="question-body">
+                        <textarea placeholder="Share your thoughts on this question..."></textarea>
+                        <div class="form-footer">
+                            <button type="button" class="btn-f teal">Post Response</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Body Text Showcase - Lectern</title>
+    <link rel="stylesheet" href="../styles/lectern-core.css">
+    <style>
+        /* ========== ELEGANT TYPOGRAPHY TUNING ========== */
+        /* Goal: airy, elegant, readable */
+
+        body {
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+            /* Lighter base weight + increased letter-spacing for airiness */
+            font-weight: 400;
+            letter-spacing: 0.01em;
+            line-height: 1.8;
+        }
+
+        .section-title {
+            color: var(--teal);
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--teal);
+        }
+
+        .section-title:first-of-type {
+            margin-top: 1rem;
+        }
+
+        .context-label {
+            background: var(--teal);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 0.75rem;
+        }
+
+        .demo-box {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Question box styling (from week-viewer) */
+        .question-box {
+            background: transparent;
+            border: 2px solid var(--teal);
+            border-radius: 16px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .question-box h3 {
+            position: absolute;
+            top: -0.7rem;
+            left: 1.5rem;
+            background: var(--background);
+            padding: 0 0.75rem;
+            font-size: 1rem;
+            color: var(--teal);
+            margin: 0;
+        }
+        .question-text {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.3rem;
+            font-style: italic;
+            color: #2c3e50;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Discussion post styling */
+        .discussion-post {
+            background: #eef0e8;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 12px 12px 12px 4px;
+        }
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .post-author {
+            color: var(--teal);
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+        .post-time {
+            color: #9ca3af;
+            font-size: 0.8rem;
+            letter-spacing: 0.02em;
+        }
+        .post-content {
+            margin: 0.5rem 0;
+            white-space: pre-wrap;
+            line-height: 1.7;
+        }
+
+        /* Reply styling */
+        .discussion-reply {
+            background: white;
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            margin-left: 2rem;
+            border-radius: 12px 12px 4px 12px;
+        }
+        .reply-author {
+            color: #7c3aed;
+            font-weight: 500;
+            font-size: 0.9rem;
+            letter-spacing: 0.02em;
+        }
+        .reply-content {
+            margin: 0;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        /* Resource card */
+        .resource-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .resource-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.01em;
+        }
+        .resource-description {
+            color: #6b7280;
+            line-height: 1.7;
+        }
+
+        /* Form elements */
+        textarea {
+            min-height: 100px;
+            width: 100%;
+            padding: 0.875rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: 'Benton Sans', Arial, sans-serif;
+            font-size: 0.95rem;
+            resize: vertical;
+            line-height: 1.6;
+            letter-spacing: 0.01em;
+        }
+        textarea::placeholder {
+            color: #9ca3af;
+            letter-spacing: 0.01em;
+        }
+
+        /* Intro content */
+        .intro-content {
+            line-height: 1.85;
+            letter-spacing: 0.01em;
+        }
+        .intro-content p {
+            margin-bottom: 1.25rem;
+        }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .status-complete {
+            background: rgba(40, 167, 69, 0.12);
+            color: #1e7e34;
+        }
+        .status-incomplete {
+            background: rgba(162, 31, 53, 0.12);
+            color: #a21f35;
+        }
+        .status-inprogress {
+            background: rgba(255, 194, 34, 0.12);
+            color: #8b6914;
+        }
+
+        /* Navigation text */
+        .breadcrumb {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            letter-spacing: 0.02em;
+        }
+        .breadcrumb a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        /* Week card */
+        .week-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .week-header {
+            padding: 0.6rem 1rem;
+            background: rgba(16, 100, 112, 0.15);
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--teal);
+        }
+        .week-body {
+            padding: 1rem;
+        }
+        .week-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.01em;
+        }
+        .week-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        /* Button row */
+        .button-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Modal text */
+        .modal-text {
+            line-height: 1.75;
+            letter-spacing: 0.01em;
+        }
+
+        /* Helper text */
+        .helper-text {
+            color: #9ca3af;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            letter-spacing: 0.01em;
+        }
+
+        /* Label */
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            font-size: 0.9rem;
+        }
+
+        /* User info bar */
+        .user-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            background: rgba(16, 100, 112, 0.08);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .user-name {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.1rem;
+            color: var(--teal);
+        }
+        .admin-badge {
+            background: var(--teal);
+            color: white;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Progress text */
+        .progress-text {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            letter-spacing: 0.02em;
+        }
+
+        /* Table text */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+            letter-spacing: 0.01em;
+        }
+        th {
+            font-weight: 500;
+            background: #f8f9fa;
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+        td {
+            font-size: 0.95rem;
+        }
+
+        /* Notification/alert text */
+        .notice {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Override buttons for more elegance */
+        .btn-f {
+            letter-spacing: 0.03em;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <h1>Body Text Showcase</h1>
+    <p style="color: #666; margin-bottom: 2rem;">All instances where Benton Sans body text appears in the application</p>
+
+    <!-- Navigation/Breadcrumb -->
+    <h2 class="section-title">Navigation & Breadcrumbs</h2>
+    <div class="demo-box">
+        <span class="context-label">Breadcrumb</span>
+        <div class="breadcrumb">
+            <a href="#">Home</a> &gt; <a href="#">Modules</a> &gt; Introduction to Thomistic Philosophy
+        </div>
+    </div>
+
+    <!-- User Info -->
+    <h2 class="section-title">User Info Bar</h2>
+    <div class="demo-box">
+        <span class="context-label">User Header</span>
+        <div class="user-bar">
+            <span class="user-name">Welcome, John Smith</span>
+            <span class="admin-badge">Admin</span>
+        </div>
+    </div>
+
+    <!-- Week/Module Cards -->
+    <h2 class="section-title">Week & Module Cards</h2>
+    <div class="demo-box">
+        <span class="context-label">Week Card</span>
+        <div class="week-card">
+            <div class="week-header">Week 1</div>
+            <div class="week-body">
+                <div class="week-title">Introduction to Natural Law</div>
+                <div class="week-description">This week explores the foundational concepts of natural law theory as developed by Thomas Aquinas and its relationship to divine and human law.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Introduction/Content Pages -->
+    <h2 class="section-title">Introduction & Content Pages</h2>
+    <div class="demo-box">
+        <span class="context-label">Intro Page Content</span>
+        <div class="intro-content">
+            <p>Welcome to Week 3 of our exploration of Thomistic philosophy. This week we will examine the relationship between faith and reason, a central theme in Aquinas's work that continues to influence contemporary theological discourse.</p>
+            <p>Aquinas's synthesis of Aristotelian philosophy with Christian theology represents one of the most significant intellectual achievements of the medieval period. His approach to reconciling philosophical inquiry with religious faith offers valuable insights for modern scholars and believers alike.</p>
+        </div>
+    </div>
+
+    <!-- Question/Discussion Section -->
+    <h2 class="section-title">Discussion Questions</h2>
+    <div class="demo-box">
+        <span class="context-label">Question Box</span>
+        <div class="question-box">
+            <h3>Question 1</h3>
+            <div class="question-text">How does Aquinas's concept of natural law relate to contemporary ethical frameworks?</div>
+            <textarea placeholder="Share your thoughts on this question..."></textarea>
+            <div class="button-row">
+                <button class="btn-f teal">Post Response</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discussion Posts -->
+    <h2 class="section-title">Discussion Posts & Replies</h2>
+    <div class="demo-box">
+        <span class="context-label">Discussion Thread</span>
+        <div class="discussion-post">
+            <div class="post-header">
+                <strong class="post-author">Sarah Mitchell</strong>
+                <span class="post-time">Dec 10 at 2:34 PM</span>
+            </div>
+            <p class="post-content">Aquinas's natural law theory provides a foundation that many contemporary virtue ethicists build upon. The idea that moral truths can be discovered through reason remains influential, though modern interpretations often secularize his theological framework.</p>
+        </div>
+
+        <div class="discussion-reply">
+            <div class="post-header">
+                <strong class="reply-author">James Chen</strong>
+                <span class="post-time">Dec 10 at 3:15 PM</span>
+            </div>
+            <p class="reply-content">That's a great point about secularization. I'd add that natural law thinking also shows up in human rights discourse, even if not explicitly acknowledged.</p>
+        </div>
+    </div>
+
+    <!-- Resources -->
+    <h2 class="section-title">Resources & Reading Materials</h2>
+    <div class="demo-box">
+        <span class="context-label">Resource Card</span>
+        <div class="resource-item">
+            <div class="resource-title">Summa Theologica - First Part, Question 2</div>
+            <p class="resource-description">This primary source reading covers Aquinas's famous "Five Ways" or proofs for the existence of God. Pay particular attention to the teleological argument and its relationship to natural law.</p>
+        </div>
+        <div class="resource-item">
+            <div class="resource-title">Commentary on Aristotle's Ethics</div>
+            <p class="resource-description">Aquinas's commentary demonstrates how he synthesizes Aristotelian virtue ethics with Christian moral teaching. Focus on chapters 3-5 for this week's discussion.</p>
+        </div>
+    </div>
+
+    <!-- Status Badges -->
+    <h2 class="section-title">Status & Progress</h2>
+    <div class="demo-box">
+        <span class="context-label">Status Badges</span>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem;">
+            <span class="status-badge status-complete">Completed</span>
+            <span class="status-badge status-inprogress">In Progress</span>
+            <span class="status-badge status-incomplete">Not Started</span>
+        </div>
+        <p class="progress-text">Page 3 of 6</p>
+    </div>
+
+    <!-- Forms -->
+    <h2 class="section-title">Form Elements</h2>
+    <div class="demo-box">
+        <span class="context-label">Form Fields</span>
+        <div style="margin-bottom: 1rem;">
+            <label class="form-label">Email Address</label>
+            <input type="email" placeholder="your.email@example.com" style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 1rem;">
+            <p class="helper-text">We'll never share your email with anyone else.</p>
+        </div>
+        <div>
+            <label class="form-label">Additional Comments</label>
+            <textarea placeholder="Enter any additional comments or questions..."></textarea>
+        </div>
+    </div>
+
+    <!-- Tables -->
+    <h2 class="section-title">Tables & Lists</h2>
+    <div class="demo-box">
+        <span class="context-label">Data Table</span>
+        <table>
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Module</th>
+                    <th>Progress</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>John Smith</td>
+                    <td>Introduction to Thomistic Philosophy</td>
+                    <td>Week 3, Page 4</td>
+                    <td><span class="status-badge status-inprogress">In Progress</span></td>
+                </tr>
+                <tr>
+                    <td>Jane Doe</td>
+                    <td>Introduction to Thomistic Philosophy</td>
+                    <td>Completed</td>
+                    <td><span class="status-badge status-complete">Completed</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Notices/Alerts -->
+    <h2 class="section-title">Notices & Alerts</h2>
+    <div class="demo-box">
+        <span class="context-label">Warning Notice</span>
+        <div class="notice">
+            This module has not been launched yet. You can preview the content, but your responses will not be saved until the instructor launches the module.
+        </div>
+    </div>
+
+    <!-- Modal/Dialog Text -->
+    <h2 class="section-title">Modal & Dialog Text</h2>
+    <div class="demo-box">
+        <span class="context-label">Modal Content</span>
+        <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem;">
+            <h3 style="margin-bottom: 1rem;">Week 2: The Nature of Being</h3>
+            <p class="modal-text">This week examines Aquinas's metaphysical framework, particularly his understanding of being (esse) and essence (essentia). Students will explore how these concepts form the foundation for his theological and ethical arguments.</p>
+            <p class="modal-text" style="margin-top: 1rem;"><strong>6 pages</strong> &bull; Estimated time: 45 minutes</p>
+            <div class="button-row">
+                <button class="btn-f teal">Begin Week</button>
+                <button class="btn-f olive">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buttons with text -->
+    <h2 class="section-title">Buttons</h2>
+    <div class="demo-box">
+        <span class="context-label">Button Text</span>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button class="btn-f teal">Post Response</button>
+            <button class="btn-f gold">Edit Post</button>
+            <button class="btn-f olive">Cancel</button>
+            <button class="btn-f red">Delete</button>
+        </div>
+    </div>
+
+</body>
+</html>

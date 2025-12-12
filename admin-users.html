@@ -7,8 +7,24 @@
     <link rel="stylesheet" href="styles/lectern-core.css">
     <style>
         .user-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
             background: var(--light-bg);
             border-bottom: 1px solid #e9ecef;
+        }
+        .user-header .user-info { flex: 1; }
+        .user-header .admin-badge {
+            background: var(--teal);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
         }
 
         .page-header {
@@ -39,7 +55,8 @@
             margin-bottom: -2px;
             cursor: pointer;
             font-size: 1rem;
-            color: #6c757d;
+            color: #9ca3af;
+            letter-spacing: 0.01em;
             transition: all 0.2s;
         }
 
@@ -50,7 +67,7 @@
         .tab-btn.active {
             color: var(--primary-color);
             border-bottom-color: var(--primary-color);
-            font-weight: 600;
+            font-weight: 500;
         }
 
         .tab-btn .badge {
@@ -80,8 +97,11 @@
 
         .user-table th {
             background: var(--light-bg);
-            font-weight: 600;
-            color: var(--text-color);
+            font-weight: 500;
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: #6b7280;
         }
 
         .user-table tr:hover {
@@ -92,8 +112,10 @@
             display: inline-block;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
         }
 
         .status-pending {
@@ -185,16 +207,16 @@
     <header>
         <div class="header-content">
             <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
-                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon">
                 <h1>Lectern</h1>
             </a>
-            <a href="index.html" class="btn-f olive" style="padding: 0.5rem 1rem;">Back to Modules</a>
         </div>
     </header>
 
     <main class="container" style="padding: 2rem;">
         <div class="page-header">
             <h2>User Management</h2>
+            <a href="index.html" class="btn-f olive" style="padding: 0.5rem 1rem; text-decoration: none;">Back to Modules</a>
         </div>
 
         <div class="tabs">
@@ -243,16 +265,32 @@
     </main>
 
     <script type="module">
-        import { requireAdmin, getAllUsers, approveUser, rejectUser, updateUserRole, renderUserHeader } from './js/auth.js';
+        import { requireAdmin, getAllUsers, approveUser, rejectUser, updateUserRole, logout } from './js/auth.js';
 
         let currentUser = null;
         let allUsers = [];
+
+        function renderUserHeader() {
+            const header = document.getElementById('user-header');
+            const isAdmin = currentUser.role === 'admin';
+
+            header.innerHTML = `
+                <span class="user-info">
+                    <strong>${currentUser.name || currentUser.email}</strong>
+                    ${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}
+                </span>
+                <a href="admin-users.html" style="color: var(--teal); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Manage Users</a>
+                <a href="#" onclick="logoutUser(); return false;" style="color: var(--olive); text-decoration: none; font-size: 0.9rem; font-weight: 500;">Logout</a>
+            `;
+        }
+
+        window.logoutUser = logout;
 
         async function init() {
             currentUser = await requireAdmin();
             if (!currentUser) return;
 
-            renderUserHeader(currentUser, document.getElementById('user-header'));
+            renderUserHeader();
             await loadUsers();
         }
 
@@ -284,8 +322,8 @@
                         <td>${user.email}</td>
                         <td>${formatDate(user.created_at)}</td>
                         <td class="action-btns">
-                            <button class="btn btn-teal" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="approveUserClick('${user.id}')">Approve</button>
-                            <button class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="rejectUserClick('${user.id}')">Reject</button>
+                            <button class="btn-f teal" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="approveUserClick('${user.id}')">Approve</button>
+                            <button class="btn-f red" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="rejectUserClick('${user.id}')">Reject</button>
                         </td>
                     </tr>
                 `).join('');
@@ -312,8 +350,8 @@
                         </td>
                         <td>${formatDate(user.created_at)}</td>
                         <td class="action-btns">
-                            ${user.role === 'student' ? `<a href="admin-enrollments.html?user=${user.id}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">Enrollments</a>` : ''}
-                            ${user.id !== currentUser.id ? `<button class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="rejectUserClick('${user.id}')">Delete</button>` : '<span style="color: #6c757d; font-size: 0.85rem;">(You)</span>'}
+                            ${user.role === 'student' ? `<a href="admin-enrollments.html?user=${user.id}" class="btn-f olive" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">Enrollments</a>` : ''}
+                            ${user.id !== currentUser.id ? `<button class="btn-f red" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="rejectUserClick('${user.id}')">Delete</button>` : '<span style="color: #6c757d; font-size: 0.85rem;">(You)</span>'}
                         </td>
                     </tr>
                 `).join('');

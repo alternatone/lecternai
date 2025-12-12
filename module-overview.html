@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles/lectern-core.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
+    <script src="js/rich-text.js"></script>
     <style>
         .modal {
             display: none;
@@ -74,7 +75,10 @@
             color: white;
             padding: 0.25rem 0.6rem;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
             margin-left: 0.5rem;
             font-family: 'Benton Sans', Arial, sans-serif;
         }
@@ -118,8 +122,8 @@
         .stacked-card-header {
             padding: 0.6rem 1rem;
             font-family: 'Adobe Garamond Pro', Georgia, serif;
-            font-size: 0.75rem;
-            letter-spacing: 0.15em;
+            font-size: 0.85rem;
+            letter-spacing: 0.12em;
             text-transform: uppercase;
             border-bottom: none;
         }
@@ -133,8 +137,10 @@
         }
         .stacked-card-body {
             padding: 1rem;
-            font-weight: 300;
+            font-weight: 400;
+            font-size: 0.9rem;
             color: #212529;
+            line-height: 1.6;
         }
 
         /* Module Weeks - Simple Dividers */
@@ -176,29 +182,32 @@
         }
         .divided-week p {
             margin: 0;
-            color: #212529;
-            font-size: 0.95rem;
-            font-weight: 300;
+            color: #6b7280;
+            font-size: 0.9rem;
+            font-weight: 400;
+            line-height: 1.7;
         }
 
         /* Status Badges - Transparent Background Pills */
         .status-badge {
             padding: 0.4rem 0.9rem;
             border-radius: 6px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
         }
         .status-badge.in-progress {
-            background: rgba(115, 125, 78, 0.15);
-            color: #5a5f3e;
-        }
-        .status-badge.not-started {
-            background: rgba(255, 194, 34, 0.15);
+            background: rgba(255, 194, 34, 0.12);
             color: #8b6914;
         }
+        .status-badge.not-started {
+            background: rgba(162, 31, 53, 0.12);
+            color: #a21f35;
+        }
         .status-badge.completed {
-            background: rgba(16, 100, 112, 0.15);
-            color: #106470;
+            background: rgba(40, 167, 69, 0.12);
+            color: #1e7e34;
         }
 
         /* Create Week Modal - Page Sections with Bottom Border */
@@ -235,6 +244,34 @@
             margin-bottom: 2rem;
             font-size: 2rem;
         }
+
+        .module-status-tag {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            vertical-align: middle;
+            margin-left: 0.75rem;
+            font-family: 'Benton Sans', Arial, sans-serif;
+        }
+
+        .module-status-tag.active {
+            background: rgba(16, 100, 112, 0.12);
+            color: #106470;
+        }
+
+        .module-status-tag.template {
+            background: rgba(255, 194, 34, 0.12);
+            color: #8b6914;
+        }
+
+        .module-status-tag.archived {
+            background: rgba(138, 139, 140, 0.12);
+            color: #6b6c6d;
+        }
     </style>
 </head>
 <body>
@@ -243,7 +280,7 @@
     <header>
         <div class="header-content">
             <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
-                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon">
                 <h1>Lectern</h1>
             </a>
             <div id="header-actions"></div>
@@ -334,14 +371,18 @@
         <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
             <a href="index.html" class="btn-f olive" style="line-height: 1.5;">← Back to Modules</a>
             <div id="admin-action-btns" style="display: none; gap: 1rem;">
-                <button id="update-from-template-btn" class="btn-f olive" style="line-height: 1.5; display: none;" onclick="updateFromTemplate()">Update Active Module</button>
+                <!-- For LAUNCHED modules: Save Changes button -->
+                <button id="save-active-module-btn" class="btn-f teal" style="line-height: 1.5; display: none;" onclick="saveActiveModule()">Save Changes to Active Module</button>
+                <!-- For DRAFT/TEMPLATE modules: Launch and Save Template buttons -->
                 <button id="launch-module-btn" class="btn-f teal" style="line-height: 1.5;" onclick="launchModule()">Launch Module</button>
                 <button id="save-template-btn" class="btn-f gold" style="line-height: 1.5;" onclick="saveModuleProgress()">Save Template</button>
+                <!-- For DRAFT/TEMPLATE modules: Update Active Modules button -->
+                <button id="update-active-modules-btn" class="btn-f olive" style="line-height: 1.5; display: none;" onclick="openUpdateActiveModulesModal()">Update Active Modules</button>
             </div>
         </div>
     </div><!-- end main-content -->
 
-    <img src="brand-assets/aquinas-seal.svg" alt="" class="decorative-cross" style="width: 20rem; height: 20rem; opacity: 0.05;">
+    <img src="brand-assets/aquinas-seal.svg" alt="" class="decorative-cross">
 
     <!-- Edit Description Modal -->
     <div id="edit-description-modal" class="modal">
@@ -542,8 +583,8 @@
                 <textarea id="resource-description"></textarea>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeAddResourceModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="addResource()">Add Resource</button>
+                <button class="btn-f olive" onclick="closeAddResourceModal()">Cancel</button>
+                <button class="btn-f teal" onclick="addResource()">Add Resource</button>
             </div>
         </div>
     </div>
@@ -570,8 +611,8 @@
                 <textarea id="edit-resource-description"></textarea>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeEditResourceModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveResourceEdit()">Save Changes</button>
+                <button class="btn-f olive" onclick="closeEditResourceModal()">Cancel</button>
+                <button class="btn-f teal" onclick="saveResourceEdit()">Save Changes</button>
             </div>
         </div>
     </div>
@@ -597,8 +638,8 @@
                 <input type="text" id="video-duration">
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeAddVideoModal()">Cancel</button>
-                <button class="btn btn-primary" id="video-modal-submit-btn" onclick="addVideo()">Add Resource</button>
+                <button class="btn-f olive" onclick="closeAddVideoModal()">Cancel</button>
+                <button class="btn-f teal" id="video-modal-submit-btn" onclick="addVideo()">Add Resource</button>
             </div>
         </div>
     </div>
@@ -614,8 +655,26 @@
                 <textarea id="question-text" placeholder="Enter your question..." style="min-height: 120px;"></textarea>
             </div>
             <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
-                <button class="btn btn-secondary" onclick="closeAddQuestionModal()">Cancel</button>
-                <button class="btn btn-primary" id="question-modal-submit-btn" onclick="addQuestion()">Add Question</button>
+                <button class="btn-f olive" onclick="closeAddQuestionModal()">Cancel</button>
+                <button class="btn-f teal" id="question-modal-submit-btn" onclick="addQuestion()">Add Question</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Active Modules Modal -->
+    <div id="update-active-modules-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Update Active Modules</h3>
+                <button class="modal-close" onclick="closeUpdateActiveModulesModal()">&times;</button>
+            </div>
+            <p style="color: #6c757d; margin-bottom: 1rem;">Select which active modules should receive changes from this template. Student discussions and progress will be preserved.</p>
+            <div id="active-modules-list" style="max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px; padding: 0.5rem;">
+                <div style="text-align: center; padding: 2rem; color: #6c757d;">Loading active modules...</div>
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+                <button class="btn-f olive" onclick="closeUpdateActiveModulesModal()">Cancel</button>
+                <button class="btn-f teal" id="sync-selected-btn" onclick="syncSelectedModules()" disabled>Update Selected</button>
             </div>
         </div>
     </div>
@@ -687,22 +746,17 @@
                 const currentModule = currentModuleId ? await dataService.getModule(currentModuleId) : null;
 
                 if (currentModule && currentModule.status === 'launched') {
-                    // Launched module: show Update button (if template exists), hide Launch/Save buttons
+                    // Launched/Active module: show Save Changes button, hide Launch/Save Template/Update Active buttons
                     document.getElementById('launch-module-btn').style.display = 'none';
                     document.getElementById('save-template-btn').style.display = 'none';
-
-                    // Show Update button only if template still exists
-                    const templateModule = currentModule.templateId ? await dataService.getModule(currentModule.templateId) : null;
-                    if (currentModule.templateId && templateModule) {
-                        document.getElementById('update-from-template-btn').style.display = 'inline-block';
-                    } else {
-                        document.getElementById('update-from-template-btn').style.display = 'none';
-                    }
+                    document.getElementById('update-active-modules-btn').style.display = 'none';
+                    document.getElementById('save-active-module-btn').style.display = 'inline-block';
                 } else {
-                    // Draft/template module: show Launch/Save buttons, hide Update button
+                    // Draft/template module: show Launch/Save Template buttons, and Update Active Modules button
                     document.getElementById('launch-module-btn').style.display = 'inline-block';
                     document.getElementById('save-template-btn').style.display = 'inline-block';
-                    document.getElementById('update-from-template-btn').style.display = 'none';
+                    document.getElementById('update-active-modules-btn').style.display = 'inline-block';
+                    document.getElementById('save-active-module-btn').style.display = 'none';
                 }
 
                 checkForDraft();
@@ -774,7 +828,7 @@
                     // Admin view: Show Preview, Edit, and Delete buttons
                     actionsHtml = `
                         <div class="divided-week-actions">
-                            <button class="btn-f olive" type="button" onclick="location.href='week-viewer.html?week=${week.id}&page=1'" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Preview</button>
+                            <button class="btn-f olive" type="button" onclick="location.href='week-viewer.html?week=${week.id}&page=1&preview=true'" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Preview</button>
                             <button class="btn-f gold" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="openEditWeekModal(${week.id})">Edit</button>
                             <button class="btn-f red" type="button" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="deleteWeek(${week.id})">Delete</button>
                         </div>
@@ -1054,10 +1108,28 @@
                         timeExpectations: currentModule.timeExpectations || ''
                     };
 
-                    // Update page title
-                    const titleElement = document.querySelector('.breadcrumb span:last-child');
-                    if (titleElement) {
-                        titleElement.textContent = currentModule.title || 'Module Overview';
+                    // Update breadcrumb
+                    const breadcrumbElement = document.querySelector('.breadcrumb span:last-child');
+                    if (breadcrumbElement) {
+                        breadcrumbElement.textContent = currentModule.title || 'Module';
+                    }
+
+                    // Update main page title with module name and status tag
+                    const moduleTitleElement = document.getElementById('module-title');
+                    if (moduleTitleElement) {
+                        const moduleTitle = currentModule.title || 'Module Overview';
+                        let statusTag = '';
+
+                        if (currentModule.status === 'launched') {
+                            statusTag = '<span class="module-status-tag active">Active</span>';
+                        } else if (currentModule.status === 'archived') {
+                            statusTag = '<span class="module-status-tag archived">Archived</span>';
+                        } else {
+                            // Draft/template
+                            statusTag = '<span class="module-status-tag template">Template</span>';
+                        }
+
+                        moduleTitleElement.innerHTML = moduleTitle + statusTag;
                     }
                 }
             }
@@ -2047,6 +2119,9 @@
 
             // Show content after everything is loaded
             showContent();
+
+            // Initialize rich text on all textareas
+            RichText.initAll('textarea');
         };
 
         // Show content and hide loading spinner
@@ -2306,9 +2381,9 @@
             }
         }
 
-        async function updateFromTemplate() {
+        // Save changes directly to an active module
+        async function saveActiveModule() {
             const currentModuleId = dataService.getCurrentModuleId();
-
             if (!currentModuleId) {
                 showNotification('No module selected', 'error');
                 return;
@@ -2316,39 +2391,110 @@
 
             const currentModule = await dataService.getModule(currentModuleId);
             if (!currentModule || currentModule.status !== 'launched') {
-                showNotification('This feature is only available for launched modules', 'error');
+                showNotification('This feature is only available for active modules', 'error');
                 return;
             }
 
-            if (!currentModule.templateId) {
-                showNotification('This module has no linked template', 'error');
+            showNotification('Changes saved to active module!', 'success');
+        }
+
+        // Open the Update Active Modules modal (for templates)
+        async function openUpdateActiveModulesModal() {
+            const currentModuleId = dataService.getCurrentModuleId();
+            if (!currentModuleId) {
+                showNotification('No module selected', 'error');
                 return;
             }
 
-            // Check if template still exists
-            const template = await dataService.getModule(currentModule.templateId);
-            if (!template) {
-                showNotification('Source template no longer exists', 'error');
+            const modal = document.getElementById('update-active-modules-modal');
+            const listContainer = document.getElementById('active-modules-list');
+            const syncBtn = document.getElementById('sync-selected-btn');
+
+            // Show modal with loading state
+            modal.style.display = 'block';
+            document.body.classList.add('modal-open');
+            listContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6c757d;">Loading active modules...</div>';
+            syncBtn.disabled = true;
+
+            // Fetch all active modules
+            const activeModules = await dataService.getActiveModules();
+
+            if (activeModules.length === 0) {
+                listContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6c757d;">No active modules found. Launch a module first to sync changes.</div>';
+                return;
+            }
+
+            // Render checkboxes for each active module
+            listContainer.innerHTML = activeModules.map(module => `
+                <label style="display: flex; align-items: center; padding: 0.75rem; cursor: pointer; border-bottom: 1px solid #f0f0f0;">
+                    <input type="checkbox" class="active-module-checkbox" value="${module.id}" style="margin-right: 0.75rem; width: 18px; height: 18px;">
+                    <div>
+                        <strong>${module.title}</strong>
+                        <div style="font-size: 0.85rem; color: #6c757d;">${module.instructor || 'No instructor'} · Launched ${module.launchedAt ? new Date(module.launchedAt).toLocaleDateString() : 'Unknown'}</div>
+                    </div>
+                </label>
+            `).join('');
+
+            // Add event listeners for checkboxes to enable/disable the sync button
+            listContainer.querySelectorAll('.active-module-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateSyncButtonState);
+            });
+        }
+
+        function updateSyncButtonState() {
+            const checkedBoxes = document.querySelectorAll('.active-module-checkbox:checked');
+            document.getElementById('sync-selected-btn').disabled = checkedBoxes.length === 0;
+        }
+
+        function closeUpdateActiveModulesModal() {
+            document.getElementById('update-active-modules-modal').style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        // Sync template to selected active modules
+        async function syncSelectedModules() {
+            const currentModuleId = dataService.getCurrentModuleId();
+            if (!currentModuleId) {
+                showNotification('No template selected', 'error');
+                return;
+            }
+
+            const checkedBoxes = document.querySelectorAll('.active-module-checkbox:checked');
+            const selectedModuleIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+
+            if (selectedModuleIds.length === 0) {
+                showNotification('Please select at least one module to update', 'error');
                 return;
             }
 
             // Confirm sync
-            if (!confirm('Update this module from its template?\n\nThis will sync all content (module info, weeks, resources) from the template.\n\nStudent discussions and progress will be preserved.')) {
+            const moduleCount = selectedModuleIds.length;
+            if (!confirm(`Update ${moduleCount} active module${moduleCount > 1 ? 's' : ''} from this template?\n\nThis will sync module info and week content.\nStudent discussions and progress will be preserved.`)) {
                 return;
             }
 
-            // Sync from template
-            const result = await dataService.syncFromTemplate(currentModuleId);
+            closeUpdateActiveModulesModal();
 
-            if (result.success) {
-                showNotification('Module updated from template successfully!', 'success');
-                // Reload the page to show updated content
-                await loadWeeks();
-                await loadModuleInfo();
-                await displayZoomInfo();
-                await renderWeeks();
+            // Sync each selected module
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const moduleId of selectedModuleIds) {
+                const result = await dataService.syncToActiveModule(currentModuleId, moduleId);
+                if (result.success) {
+                    successCount++;
+                } else {
+                    failCount++;
+                    console.error(`Failed to sync to module ${moduleId}:`, result.message);
+                }
+            }
+
+            if (failCount === 0) {
+                showNotification(`Successfully updated ${successCount} module${successCount > 1 ? 's' : ''}!`, 'success');
+            } else if (successCount === 0) {
+                showNotification(`Failed to update modules. Please try again.`, 'error');
             } else {
-                showNotification(result.message || 'Failed to update from template', 'error');
+                showNotification(`Updated ${successCount} module${successCount > 1 ? 's' : ''}, ${failCount} failed.`, 'warning');
             }
         }
 
@@ -2416,7 +2562,10 @@
         window.deleteQuestion = deleteQuestion;
         window.saveModuleProgress = saveModuleProgress;
         window.launchModule = launchModule;
-        window.updateFromTemplate = updateFromTemplate;
+        window.saveActiveModule = saveActiveModule;
+        window.openUpdateActiveModulesModal = openUpdateActiveModulesModal;
+        window.closeUpdateActiveModulesModal = closeUpdateActiveModulesModal;
+        window.syncSelectedModules = syncSelectedModules;
         window.deleteWeek = deleteWeek;
         window.dataService = dataService;
     </script>

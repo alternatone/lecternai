@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles/lectern-core.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
+    <script src="js/rich-text.js"></script>
     <style>
         .modal {
             display: none;
@@ -76,9 +77,12 @@
         .user-header .admin-badge {
             background: var(--primary-color);
             color: white;
-            padding: 0.15rem 0.5rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
             margin-left: 0.5rem;
         }
     </style>
@@ -89,7 +93,7 @@
     <header>
         <div class="header-content">
             <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
-                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon">
                 <h1>Lectern</h1>
             </a>
             <div id="header-actions"></div>
@@ -229,7 +233,7 @@
         </div>
     </div>
 
-    <img src="brand-assets/aquinas-seal.svg" alt="" class="decorative-cross" style="width: 20rem; height: 20rem; opacity: 0.05;">
+    <img src="brand-assets/aquinas-seal.svg" alt="" class="decorative-cross">
 
     <!-- Unified Add Content Modal -->
     <div id="add-content-modal" class="modal">
@@ -332,6 +336,9 @@
             renderReflectionQuestions();
             renderFurtherStudy();
             setupAutoSave();
+
+            // Initialize rich text on all textareas
+            RichText.initAll('textarea');
         }
 
         function renderUserHeader() {

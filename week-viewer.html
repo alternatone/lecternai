@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles/lectern-core.css">
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
+    <script src="js/rich-text.js"></script>
     <style>
         .user-header {
             display: flex;
@@ -20,9 +21,12 @@
         .user-header .admin-badge {
             background: var(--primary-color);
             color: white;
-            padding: 0.15rem 0.5rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
             margin-left: 0.5rem;
         }
         /* Loading state styles */
@@ -62,7 +66,8 @@
         textarea[id^="reply-edit-text-"] {
             font-family: 'Benton Sans', Arial, sans-serif;
             font-size: 0.95rem;
-            line-height: 1.5;
+            line-height: 1.6;
+            letter-spacing: 0.01em;
             padding: 0.875rem;
             border: 1px solid #d1d5db;
             border-radius: 6px;
@@ -83,7 +88,26 @@
         textarea[id^="response-"]::placeholder,
         textarea[id^="reply-text-"]::placeholder {
             color: #9ca3af;
+            letter-spacing: 0.01em;
         }
+        /* Text button styles for discussion actions */
+        .btn-text {
+            background: none;
+            border: none;
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            transition: background 0.15s;
+            font-family: inherit;
+        }
+        .btn-text:hover { background: rgba(0,0,0,0.05); }
+        .btn-text.teal { color: var(--teal); }
+        .btn-text.olive { color: #7a7d4e; }
+        .btn-text.gold { color: #b8860b; }
+        .btn-text.red { color: #a21f35; }
+        /* Collapse toggle hover */
+        .collapse-toggle:hover { color: var(--teal) !important; }
     </style>
 </head>
 <body>
@@ -92,7 +116,7 @@
     <header>
         <div class="header-content">
             <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
-                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon" style="width: 2.5rem; height: 2.5rem;">
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon">
                 <h1>Lectern</h1>
             </a>
             <div id="header-actions"></div>
@@ -121,7 +145,7 @@
         <div class="progress-bar">
             <div class="progress-fill" id="progress-fill"></div>
         </div>
-        <p style="text-align: center; color: #6c757d; margin-bottom: 2rem;" id="progress-text">Page 1 of 5</p>
+        <p style="text-align: center; color: #9ca3af; font-size: 0.85rem; letter-spacing: 0.02em; margin-bottom: 2rem;" id="progress-text">Page 1 of 5</p>
 
         <!-- Page Content Container -->
         <div id="page-content"></div>
@@ -148,6 +172,7 @@
         let currentPage = 1;
         let currentModuleId = null;
         let isParticipantMode = false;
+        let isPreviewMode = false;
         let currentUser = null;
 
         function renderUserHeader() {
@@ -371,20 +396,25 @@
             const questions = pageData.questions || [];
             const pageIndex = currentPage - 1;
 
-            // Determine read-only based on module status and participant mode
-            // Read-only when: archived, OR draft without participant mode (preview for testing links)
-            // Full read/write when: launched, OR draft WITH participant mode (admin simulating student)
+            // Determine read-only based on module status, participant mode, and preview mode
+            // Read-only when: archived, OR preview mode, OR draft without participant mode
+            // Full read/write when: launched (not preview), OR draft WITH participant mode (admin simulating student)
             const module = await dataService.getModule(currentModuleId);
             const moduleStatus = module ? module.status : 'draft';
-            const isReadOnly = moduleStatus === 'archived' || (moduleStatus === 'draft' && !isParticipantMode);
+            const isReadOnly = moduleStatus === 'archived' || isPreviewMode || (moduleStatus === 'draft' && !isParticipantMode);
 
             let html = '<div class="card" style="width: 100%;">';
 
             // Show read-only notice
             if (isReadOnly) {
-                const noticeText = moduleStatus === 'archived'
-                    ? '<strong>Archived Module:</strong> This module is archived. Discussion posts and replies are disabled.'
-                    : '<strong>Preview Mode:</strong> This is a read-only preview for testing links and embeds. Use Participant Mode to test discussions.';
+                let noticeText;
+                if (moduleStatus === 'archived') {
+                    noticeText = '<strong>Archived Module:</strong> This module is archived. Discussion posts and replies are disabled.';
+                } else if (isPreviewMode) {
+                    noticeText = '<strong>Preview Mode:</strong> This is a read-only preview. Use Participant Mode to test discussions.';
+                } else {
+                    noticeText = '<strong>Preview Mode:</strong> This is a read-only preview for testing links and embeds. Use Participant Mode to test discussions.';
+                }
                 html += `<div style="background: #fff3cd; border: 1px solid #ffc107; padding: 0.75rem; margin-bottom: 1rem; border-radius: 4px; font-size: 0.9rem;">
                     ${noticeText}
                 </div>`;
@@ -397,32 +427,37 @@
                     // Show discussion thread for everyone (isolated per module)
                     const posts = await dataService.getDiscussionPosts(currentModuleId, currentWeek.id, pageIndex, index);
 
-                    // Open question box
+                    // Open question box - teal bordered wrapper with card inside
                     html += `
                         <div style="background: transparent; border: 2px solid var(--teal); border-radius: 16px; padding: 1.75rem; margin-bottom: 3rem; position: relative;">
-                            <h3 style="position: absolute; top: -0.7rem; left: 1.5rem; background: white; padding: 0 0.75rem; font-size: 1rem; color: var(--teal); margin: 0;">Question ${index + 1}</h3>
-                            <div style="font-family: 'Adobe Garamond Pro', Georgia, serif; font-size: 1.3rem; font-style: italic; color: #2c3e50; line-height: 1.6; margin-bottom: 1.5rem;">${question.text}</div>
+                            <h3 style="position: absolute; top: -0.7rem; left: 1.5rem; background: #f8f9fa; padding: 0 0.75rem; font-size: 1rem; color: var(--teal); margin: 0;">Question ${index + 1}</h3>
+                            <div style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb;">
+                                <div style="background: #d5dde0; padding: 1rem 1.25rem;">
+                                    <div style="font-family: 'Adobe Garamond Pro', Georgia, serif; font-size: 1.2rem; font-style: italic; color: #2c3e50; line-height: 1.5; margin: 0;">${question.text}</div>
+                                </div>
                     `;
 
                     // Show input form when module is launched (not read-only)
                     if (!isReadOnly) {
                         html += `
-                            <div class="discussion-section">
-                                <div class="discussion-form" style="margin-bottom: 2rem;">
+                                <div style="padding: 1.5rem;">
                                     <textarea id="response-${index}" placeholder="Share your thoughts on this question..." style="min-height: 120px; width: 100%; padding: 0.875rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.95rem; resize: vertical; transition: border-color 0.2s ease;"></textarea>
                                     <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
                                         <button class="btn-f teal" onclick="postDiscussion(${index})">Post Response</button>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="discussion-section" style="margin-top: 1.5rem;">
                                 <div id="discussion-thread-${index}">
                                     ${renderDiscussionThread(posts, pageIndex, index, false, currentUser.id)}
                                 </div>
                             </div>
                         `;
                     } else {
-                        // Read-only mode (draft preview or archived) - show threads but no input
+                        // Read-only mode (draft preview or archived) - show threads but no input, close the card
                         html += `
-                            <div class="discussion-section">
+                            </div>
+                            <div class="discussion-section" style="margin-top: 1.5rem;">
                                 <div id="discussion-thread-${index}">
                                     ${renderDiscussionThread(posts, pageIndex, index, true, currentUser.id)}
                                 </div>
@@ -430,7 +465,7 @@
                         `;
                     }
 
-                    // Close question box
+                    // Close question wrapper
                     html += '</div>';
 
                     if (index < questions.length - 1) {
@@ -443,6 +478,11 @@
 
             html += '</div>';
             container.innerHTML = html;
+
+            // Initialize rich text on all textareas
+            setTimeout(() => {
+                RichText.initAll('textarea[id^="response-"], textarea[id^="reply-text-"], textarea[id^="post-edit-text-"], textarea[id^="reply-edit-text-"]');
+            }, 0);
         }
 
         function renderDiscussionThread(posts, pageIndex, questionIndex, readOnly = false, currentUserId = null) {
@@ -451,86 +491,96 @@
                 return `<p style="color: #6c757d; font-style: italic; margin-top: 1rem;">${msg}</p>`;
             }
 
-            let html = '';
+            let html = '<div class="discussion-thread">';
             posts.forEach(post => {
-                const postDate = new Date(post.createdAt).toLocaleDateString();
-                const postTime = new Date(post.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const postDate = new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const postTime = new Date(post.createdAt).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
                 const isOwnPost = currentUserId && post.userId === currentUserId;
-
-                const editedText = post.editedAt ? ' <span style="font-size: 0.75rem; color: #6c757d;">(edited)</span>' : '';
+                const editedText = post.editedAt ? ' <span style="font-size: 0.75rem; color: #9ca3af;">(edited)</span>' : '';
                 const postAuthorColor = getAuthorColor(post.author);
+                const replyCount = post.replies ? post.replies.length : 0;
+
                 html += `
-                    <div style="background: #eef0e8; padding: 1rem 1.25rem; margin-bottom: 1rem; border-radius: 12px 12px 12px 4px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <strong style="color: ${postAuthorColor};">${escapeHtml(post.author) || 'Anonymous'}${editedText}</strong>
-                            <span style="color: #6c757d; font-size: 0.85rem;">${postDate} at ${postTime}</span>
+                    <div class="thread-post" style="padding: 1rem 0; border-bottom: 1px solid #f0f0f0;">
+                        <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span style="font-weight: 500; letter-spacing: 0.02em; color: ${postAuthorColor};">${escapeHtml(post.author) || 'Anonymous'}${editedText}</span>
+                            <span style="color: #9ca3af; font-size: 0.8rem; letter-spacing: 0.02em;">${postDate} at ${postTime}</span>
                         </div>
                         <div id="post-content-${post.id}">
-                            <p style="margin: 0.5rem 0; white-space: pre-wrap;">${escapeHtml(post.content)}</p>
+                            <div style="margin: 0.5rem 0; color: #333; line-height: 1.7;">${RichText.toHTML(post.content)}</div>
                         </div>
                         <div id="post-edit-form-${post.id}" style="display: none; margin-top: 0.5rem;">
-                            <textarea id="post-edit-text-${post.id}" style="width: 100%; min-height: 100px; margin-bottom: 0.5rem; padding: 0.875rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.95rem;">${escapeHtml(post.content)}</textarea>
+                            <textarea id="post-edit-text-${post.id}" style="width: 100%; min-height: 100px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.95rem;">${escapeHtml(post.content)}</textarea>
                             <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-                                <button class="btn-f teal" onclick="savePostEdit(${pageIndex}, ${questionIndex}, ${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Save</button>
-                                <button class="btn-f olive" onclick="cancelPostEdit(${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Cancel</button>
+                                <button class="btn-text teal" onclick="savePostEdit(${pageIndex}, ${questionIndex}, ${post.id})">Save</button>
+                                <button class="btn-text olive" onclick="cancelPostEdit(${post.id})">Cancel</button>
                             </div>
                         </div>
                 `;
 
-                // Show buttons for non-read-only mode
+                // Action buttons
                 if (!readOnly) {
-                    html += `<div id="post-actions-${post.id}" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.75rem;">
-                            <button class="btn-f olive" onclick="toggleReplyForm(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Reply</button>`;
-
-                    // Only show Edit/Delete for own posts
+                    html += `<div id="post-actions-${post.id}" style="display: flex; gap: 0.25rem; margin-top: 0.5rem;">
+                            <button class="btn-text teal" onclick="toggleReplyForm(${post.id})">Reply</button>`;
                     if (isOwnPost) {
                         html += `
-                            <button class="btn-f gold" onclick="editPost(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Edit</button>
-                            <button class="btn-f red" onclick="deletePost(${post.id})" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;">Delete</button>`;
+                            <button class="btn-text gold" onclick="editPost(${post.id})">Edit</button>
+                            <button class="btn-text red" onclick="deletePost(${post.id})">Delete</button>`;
                     }
+                    html += `</div>`;
 
-                    html += `</div>
-
-                        <div id="reply-form-${post.id}" style="display: none; margin-top: 1rem; padding-left: 1rem; border-left: 2px solid #dee2e6;">
-                            <textarea id="reply-text-${post.id}" placeholder="Write your reply..." style="width: 100%; min-height: 80px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.9rem;"></textarea>
+                    // Reply form
+                    html += `
+                        <div id="reply-form-${post.id}" style="display: none; margin-top: 1rem; margin-left: 1.5rem; padding-left: 1rem; border-left: 2px solid #e8e8e8;">
+                            <textarea id="reply-text-${post.id}" placeholder="Write your reply..." style="width: 100%; min-height: 80px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.9rem;"></textarea>
                             <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-                                <button class="btn-f teal" onclick="postReply(${pageIndex}, ${questionIndex}, ${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Post Reply</button>
-                                <button class="btn-f olive" onclick="toggleReplyForm(${post.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Cancel</button>
+                                <button class="btn-text teal" onclick="postReply(${pageIndex}, ${questionIndex}, ${post.id})">Post Reply</button>
+                                <button class="btn-text olive" onclick="toggleReplyForm(${post.id})">Cancel</button>
                             </div>
                         </div>
                     `;
                 }
 
-                // Render replies
-                if (post.replies && post.replies.length > 0) {
-                    html += '<div style="margin-top: 1rem; padding-left: 2rem;">';
+                // Collapsible replies (hidden by default)
+                if (replyCount > 0) {
+                    html += `
+                        <button class="collapse-toggle collapsed" onclick="toggleRepliesCollapse(this)" style="background: none; border: none; color: #888; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem 0; margin-top: 0.5rem;">
+                            <span class="arrow" style="transition: transform 0.2s; font-size: 0.7rem; transform: rotate(-90deg);">&#9660;</span>
+                            <span class="reply-count">View ${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}</span>
+                        </button>
+                        <div class="replies-container" style="display: none; margin-left: 1.5rem; padding-left: 1rem; border-left: 2px solid #e8e8e8;">
+                    `;
+
                     post.replies.forEach(reply => {
-                        const replyDate = new Date(reply.createdAt).toLocaleDateString();
-                        const replyTime = new Date(reply.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        const replyEditedText = reply.editedAt ? ' <span style="font-size: 0.7rem; color: #6c757d;">(edited)</span>' : '';
+                        const replyDate = new Date(reply.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        const replyTime = new Date(reply.createdAt).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
+                        const replyEditedText = reply.editedAt ? ' <span style="font-size: 0.7rem; color: #9ca3af;">(edited)</span>' : '';
                         const replyAuthorColor = getAuthorColor(reply.author);
                         const isOwnReply = currentUserId && reply.userId === currentUserId;
 
                         html += `
-                            <div style="background: white; border: 1px solid #e5e7eb; padding: 0.75rem 1rem; margin-bottom: 0.75rem; border-radius: 12px 12px 4px 12px;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <strong style="color: ${replyAuthorColor}; font-size: 0.9rem;">${escapeHtml(reply.author) || 'Anonymous'}${replyEditedText}</strong>
-                                    <span style="color: #6c757d; font-size: 0.8rem;">${replyDate} at ${replyTime}</span>
+                            <div class="thread-reply" style="padding: 0.75rem 0;">
+                                <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                    <span style="font-weight: 500; letter-spacing: 0.02em; color: ${replyAuthorColor}; font-size: 0.9rem;">${escapeHtml(reply.author) || 'Anonymous'}${replyEditedText}</span>
+                                    <span style="color: #9ca3af; font-size: 0.8rem; letter-spacing: 0.02em;">${replyDate} at ${replyTime}</span>
                                 </div>
                                 <div id="reply-content-${reply.id}">
-                                    <p style="margin: 0; font-size: 0.9rem; white-space: pre-wrap;">${escapeHtml(reply.content)}</p>
+                                    <div style="margin: 0; font-size: 0.9rem; color: #444; line-height: 1.7;">${RichText.toHTML(reply.content)}</div>
                                 </div>
                                 <div id="reply-edit-form-${reply.id}" style="display: none; margin-top: 0.5rem;">
-                                    <textarea id="reply-edit-text-${reply.id}" style="width: 100%; min-height: 70px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.9rem;">${escapeHtml(reply.content)}</textarea>
+                                    <textarea id="reply-edit-text-${reply.id}" style="width: 100%; min-height: 70px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.9rem;">${escapeHtml(reply.content)}</textarea>
                                     <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-                                        <button class="btn-f teal" onclick="saveReplyEdit(${pageIndex}, ${questionIndex}, ${post.id}, ${reply.id})" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Save</button>
-                                        <button class="btn-f olive" onclick="cancelReplyEdit(${reply.id})" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Cancel</button>
+                                        <button class="btn-text teal" onclick="saveReplyEdit(${pageIndex}, ${questionIndex}, ${post.id}, ${reply.id})">Save</button>
+                                        <button class="btn-text olive" onclick="cancelReplyEdit(${reply.id})">Cancel</button>
                                     </div>
                                 </div>
-                                ${!readOnly && isOwnReply ? `
-                                    <div id="reply-actions-${reply.id}" style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
-                                        <button class="btn-f gold" onclick="editReply(${reply.id})" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;">Edit</button>
-                                        <button class="btn-f red" onclick="deleteReply(${reply.id})" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;">Delete</button>
+                                ${!readOnly ? `
+                                    <div id="reply-actions-${reply.id}" style="display: flex; gap: 0.25rem; margin-top: 0.25rem;">
+                                        <button class="btn-text teal" onclick="toggleReplyForm(${post.id})">Reply</button>
+                                        ${isOwnReply ? `
+                                            <button class="btn-text gold" onclick="editReply(${reply.id})">Edit</button>
+                                            <button class="btn-text red" onclick="deleteReply(${reply.id})">Delete</button>
+                                        ` : ''}
                                     </div>
                                 ` : ''}
                             </div>
@@ -546,10 +596,35 @@
             return html;
         }
 
+        function toggleRepliesCollapse(btn) {
+            const container = btn.nextElementSibling;
+            if (container && container.classList.contains('replies-container')) {
+                const isCollapsed = container.style.display === 'none';
+                container.style.display = isCollapsed ? 'block' : 'none';
+                btn.classList.toggle('collapsed', !isCollapsed);
+                const arrow = btn.querySelector('.arrow');
+                if (arrow) {
+                    arrow.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
+                }
+                const countSpan = btn.querySelector('.reply-count');
+                if (countSpan) {
+                    const text = countSpan.textContent;
+                    if (isCollapsed) {
+                        // Showing replies: change "View X replies" to "Hide replies"
+                        countSpan.textContent = 'Hide replies';
+                    } else {
+                        // Hiding replies: extract count and show "View X replies"
+                        const replyCount = container.querySelectorAll('.thread-reply').length;
+                        countSpan.textContent = `View ${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}`;
+                    }
+                }
+            }
+        }
+
         function renderIntroPage(pageData, container) {
             let html = `
                 <div style="background: transparent; border: 2px solid var(--teal); border-radius: 16px; padding: 1.75rem; position: relative;">
-                    <h3 style="position: absolute; top: -0.7rem; left: 1.5rem; background: white; padding: 0 0.75rem; font-size: 1rem; color: var(--teal); margin: 0;">${pageData.title}</h3>
+                    <h3 style="position: absolute; top: -0.7rem; left: 1.5rem; background: #f8f9fa; padding: 0 0.75rem; font-size: 1rem; color: var(--teal); margin: 0;">${pageData.title}</h3>
             `;
 
             // Show intro text
@@ -564,19 +639,26 @@
                 videos.forEach(video => {
                     const durationText = video.duration ? ` (${video.duration})` : '';
                     const embedUrl = getVideoEmbedUrl(video.url);
+                    const cardLabel = embedUrl ? 'Video' : 'Resource';
 
                     html += `
-                        <div class="playlist-item" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                            <strong>${video.title}${durationText}</strong>
-                            ${embedUrl ? `
-                                <div style="margin-top: 1rem; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
-                                    <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                                </div>
-                            ` : `
-                                <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
-                                    <a href="${video.url}" target="_blank" class="btn-f teal" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">View Resource</a>
-                                </div>
-                            `}
+                        <div style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; margin-bottom: 1rem;">
+                            <div style="background: #d5dde0; padding: 0.75rem 1.25rem;">
+                                <span style="font-family: 'Adobe Garamond Pro', Georgia, serif; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--teal); font-weight: 400;">${cardLabel}</span>
+                            </div>
+                            <div style="padding: 1.25rem;">
+                                ${embedUrl ? `
+                                    <strong style="display: block; margin-bottom: 1rem;">${video.title}${durationText}</strong>
+                                    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+                                        <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                    </div>
+                                ` : `
+                                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                                        <strong>${video.title}${durationText}</strong>
+                                        <a href="${video.url}" target="_blank" class="btn-f teal" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none; white-space: nowrap;">View Resource</a>
+                                    </div>
+                                `}
+                            </div>
                         </div>
                     `;
                 });
@@ -602,12 +684,17 @@
                     resources.forEach(resource => {
                         const hasUrl = resource.url && resource.url.trim();
                         html += `
-                            <div class="resource-item" style="position: relative; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                                <div style="padding-right: ${hasUrl ? '140px' : '0'};">
-                                    <strong>${resource.title}</strong>
-                                    ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5;">${resource.description}</p>` : ''}
+                            <div style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; margin-bottom: 1rem;">
+                                <div style="background: #d5dde0; padding: 0.75rem 1.25rem;">
+                                    <span style="font-family: 'Adobe Garamond Pro', Georgia, serif; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--teal); font-weight: 400;">Resource</span>
                                 </div>
-                                ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn-f teal" style="position: absolute; top: 0.75rem; right: 0.75rem; padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">View Resource</a>` : ''}
+                                <div style="padding: 1.25rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                                        <strong>${resource.title}</strong>
+                                        ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn-f teal" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none; white-space: nowrap;">View Resource</a>` : ''}
+                                    </div>
+                                    ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5; margin-bottom: 0;">${resource.description}</p>` : ''}
+                                </div>
                             </div>
                         `;
                     });
@@ -615,24 +702,30 @@
                 }
 
                 if (videos.length > 0) {
-                    html += '<h4 style="margin-top: 2rem;">Videos</h4>';
-                    html += '<div class="video-playlist" style="margin-top: 1rem;">';
+                    html += '<div class="video-playlist" style="margin-top: 1.5rem;">';
                     videos.forEach(video => {
                         const durationText = video.duration ? ` (${video.duration})` : '';
                         const embedUrl = getVideoEmbedUrl(video.url);
+                        const cardLabel = embedUrl ? 'Video' : 'Resource';
 
                         html += `
-                            <div class="playlist-item" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                                <strong>${video.title}${durationText}</strong>
-                                ${embedUrl ? `
-                                    <div style="margin-top: 1rem; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
-                                        <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                                    </div>
-                                ` : `
-                                    <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end;">
-                                        <a href="${video.url}" target="_blank" class="btn-f teal" style="padding: 0.5rem 1rem; font-size: 0.9rem; text-decoration: none;">View Resource</a>
-                                    </div>
-                                `}
+                            <div style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; margin-bottom: 1rem;">
+                                <div style="background: #d5dde0; padding: 0.75rem 1.25rem;">
+                                    <span style="font-family: 'Adobe Garamond Pro', Georgia, serif; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--teal); font-weight: 400;">${cardLabel}</span>
+                                </div>
+                                <div style="padding: 1.25rem;">
+                                    ${embedUrl ? `
+                                        <strong style="display: block; margin-bottom: 1rem;">${video.title}${durationText}</strong>
+                                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+                                            <iframe src="${embedUrl}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                        </div>
+                                    ` : `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                                            <strong>${video.title}${durationText}</strong>
+                                            <a href="${video.url}" target="_blank" class="btn-f teal" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none; white-space: nowrap;">View Resource</a>
+                                        </div>
+                                    `}
+                                </div>
                             </div>
                         `;
                     });
@@ -947,9 +1040,10 @@
                 }
             }
 
-            // Check for participant mode
+            // Check for participant mode and preview mode
             const urlParams = new URLSearchParams(window.location.search);
             isParticipantMode = urlParams.get('participant') === 'true';
+            isPreviewMode = urlParams.get('preview') === 'true';
 
             // Determine view based on user role
             let savedView;
@@ -1032,6 +1126,7 @@
         window.saveReplyEdit = saveReplyEdit;
         window.deletePost = deletePost;
         window.deleteReply = deleteReply;
+        window.toggleRepliesCollapse = toggleRepliesCollapse;
         window.dataService = dataService;
     </script>
 </body>

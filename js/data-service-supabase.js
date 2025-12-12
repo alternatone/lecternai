@@ -367,6 +367,213 @@ class DataServiceSupabase {
         }
     }
 
+    /**
+     * Sync content from a template to an active module
+     * Preserves: discussions, student progress
+     * Updates: module info, zoom info, week content (titles, descriptions, pages, questions, resources, videos)
+     */
+    async syncToActiveModule(templateId, activeModuleId) {
+        try {
+            const template = await this.getModule(templateId)
+            if (!template) {
+                return this.error('Template not found', 'NOT_FOUND')
+            }
+
+            if (template.status !== 'draft') {
+                return this.error('Source must be a template (draft module)', 'INVALID_STATUS')
+            }
+
+            const activeModule = await this.getModule(activeModuleId)
+            if (!activeModule) {
+                return this.error('Active module not found', 'NOT_FOUND')
+            }
+
+            if (activeModule.status !== 'launched') {
+                return this.error('Target must be a launched module', 'INVALID_STATUS')
+            }
+
+            // 1. Update module info (but preserve status, launchedAt, templateId)
+            await this.updateModule(activeModuleId, {
+                title: template.title,
+                description: template.description,
+                instructor: template.instructor,
+                duration: template.duration,
+                participation: template.participation,
+                timeExpectations: template.timeExpectations
+            })
+
+            // 2. Sync zoom info
+            const templateZoom = await this.getZoomInfo(templateId)
+            if (templateZoom && Object.keys(templateZoom).length > 0) {
+                await this.updateZoomInfo(activeModuleId, templateZoom)
+            }
+
+            // 3. Sync weeks - this is the complex part
+            // We need to preserve discussions but update content
+            const templateWeeks = await this.getWeeks(templateId)
+            const activeWeeks = await this.getWeeks(activeModuleId)
+
+            // Create a map of active weeks by week_number for easy lookup
+            const activeWeekMap = new Map(activeWeeks.map(w => [w.id, w]))
+
+            for (const templateWeek of templateWeeks) {
+                const activeWeek = activeWeekMap.get(templateWeek.id)
+
+                if (activeWeek) {
+                    // Week exists in active module - update it while preserving discussions
+                    await this.syncWeekContent(templateWeek, activeWeek, activeModuleId)
+                } else {
+                    // Week doesn't exist in active module - create it
+                    await this.createWeek(activeModuleId, {
+                        title: templateWeek.title,
+                        description: templateWeek.description,
+                        unlockDate: templateWeek.unlockDate,
+                        pages: templateWeek.pages
+                    })
+                }
+            }
+
+            return this.success(null, 'Template synced to active module successfully')
+        } catch (err) {
+            console.error('Sync error:', err)
+            return this.error('Failed to sync to active module: ' + err.message, 'SYNC_ERROR')
+        }
+    }
+
+    /**
+     * Sync week content from template to active week
+     * Preserves discussions by not touching the questions table entries that have discussion_posts
+     */
+    async syncWeekContent(templateWeek, activeWeek, activeModuleId) {
+        // Update week-level info (title, description, unlock date)
+        const { error: weekUpdateError } = await supabase
+            .from('weeks')
+            .update({
+                title: templateWeek.title,
+                description: templateWeek.description,
+                unlock_date: templateWeek.unlockDate
+            })
+            .eq('module_id', activeModuleId)
+            .eq('week_number', activeWeek.id)
+
+        if (weekUpdateError) {
+            console.error('Error updating week:', weekUpdateError)
+            throw weekUpdateError
+        }
+
+        // Get the week's actual DB ID first
+        const { data: weekRecord } = await supabase
+            .from('weeks')
+            .select('id')
+            .eq('module_id', activeModuleId)
+            .eq('week_number', activeWeek.id)
+            .single()
+
+        if (!weekRecord) {
+            console.error('Could not find week record')
+            return
+        }
+
+        const { data: activePagesData } = await supabase
+            .from('pages')
+            .select('id, page_number, type')
+            .eq('week_id', weekRecord.id)
+            .order('page_number', { ascending: true })
+
+        const activePagesList = activePagesData || []
+
+        // For each template page, update the corresponding active page
+        for (let i = 0; i < templateWeek.pages.length; i++) {
+            const templatePage = templateWeek.pages[i]
+            const activePage = activePagesList[i]
+
+            if (activePage) {
+                // Update page content (title, type, content) but not ID
+                const { error: pageUpdateError } = await supabase
+                    .from('pages')
+                    .update({
+                        title: templatePage.title,
+                        type: templatePage.type,
+                        content: templatePage.content
+                    })
+                    .eq('id', activePage.id)
+
+                if (pageUpdateError) {
+                    console.error('Error updating page:', pageUpdateError)
+                }
+
+                // Sync resources - replace all (resources don't have discussions)
+                await supabase.from('resources').delete().eq('page_id', activePage.id)
+                if (templatePage.resources && templatePage.resources.length > 0) {
+                    const resources = templatePage.resources.map((r, idx) => ({
+                        page_id: activePage.id,
+                        title: r.title,
+                        url: r.url || null,
+                        description: r.description || null,
+                        sort_order: idx
+                    }))
+                    await supabase.from('resources').insert(resources)
+                }
+
+                // Sync videos - replace all (videos don't have discussions)
+                await supabase.from('videos').delete().eq('page_id', activePage.id)
+                if (templatePage.videos && templatePage.videos.length > 0) {
+                    const videos = templatePage.videos.map((v, idx) => ({
+                        page_id: activePage.id,
+                        title: v.title,
+                        url: v.url,
+                        description: v.description || null,
+                        sort_order: idx
+                    }))
+                    await supabase.from('videos').insert(videos)
+                }
+
+                // Sync questions - PRESERVE discussions!
+                // Get existing questions with their discussion counts
+                const { data: existingQuestions } = await supabase
+                    .from('questions')
+                    .select(`
+                        id,
+                        question_number,
+                        text,
+                        discussion_posts (id)
+                    `)
+                    .eq('page_id', activePage.id)
+                    .order('question_number', { ascending: true })
+
+                const existingQList = existingQuestions || []
+
+                // For each template question
+                const templateQuestions = templatePage.questions || []
+
+                for (let qIdx = 0; qIdx < templateQuestions.length; qIdx++) {
+                    const templateQ = templateQuestions[qIdx]
+                    const existingQ = existingQList.find(q => q.question_number === qIdx + 1)
+
+                    if (existingQ) {
+                        // Question exists - update text only (preserve discussions)
+                        await supabase
+                            .from('questions')
+                            .update({ text: templateQ.text })
+                            .eq('id', existingQ.id)
+                    } else {
+                        // New question - create it
+                        await supabase
+                            .from('questions')
+                            .insert({
+                                page_id: activePage.id,
+                                question_number: qIdx + 1,
+                                text: templateQ.text
+                            })
+                    }
+                }
+
+                // Note: We don't delete questions that have discussions
+                // Questions beyond template count are left as-is to preserve discussions
+            }
+        }
+    }
+
     // ==================== Week Operations ====================
 
     async getWeeks(moduleId) {

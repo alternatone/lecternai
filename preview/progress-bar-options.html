@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Bar Options</title>
+    <style>
+        :root {
+            --teal: #106470;
+            --olive: #a2a569;
+            --gold: #FFC222;
+            --primary-color: #a21f35;
+            --primary-dark: #7F1F1F;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Benton Sans', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #231F20;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+            color: var(--teal);
+        }
+
+        .intro {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .option-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .option-label {
+            background: var(--teal);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 0.75rem;
+        }
+
+        .option-title {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.1rem;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .option-description {
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .demo-area {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .page-title {
+            font-family: 'Adobe Garamond Pro', Georgia, serif;
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        /* ========== CURRENT (for reference) ========== */
+        .current .progress-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .current .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--gold));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .current .progress-text {
+            text-align: center;
+            color: #6c757d;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* ========== OPTION 1: Minimal Line ========== */
+        .opt1 .progress-bar {
+            height: 2px;
+            background: #e0e0e0;
+        }
+        .opt1 .progress-fill {
+            height: 100%;
+            background: var(--teal);
+            transition: width 0.3s ease;
+        }
+        .opt1 .progress-text {
+            text-align: center;
+            color: #999;
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        /* ========== OPTION 2: Step Indicators ========== */
+        .opt2 .step-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .opt2 .step {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            transition: all 0.2s ease;
+        }
+        .opt2 .step.completed {
+            background: var(--teal);
+        }
+        .opt2 .step.current {
+            background: var(--teal);
+            box-shadow: 0 0 0 3px rgba(16, 100, 112, 0.2);
+        }
+        .opt2 .progress-text {
+            text-align: center;
+            color: #999;
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        /* ========== OPTION 3: Numbered Steps ========== */
+        .opt3 .step-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .opt3 .step {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+        .opt3 .step.completed {
+            background: var(--teal);
+            color: white;
+        }
+        .opt3 .step.current {
+            background: white;
+            color: var(--teal);
+            border: 2px solid var(--teal);
+        }
+        .opt3 .step-line {
+            flex: 1;
+            height: 2px;
+            background: #e0e0e0;
+            margin: 0 -4px;
+        }
+        .opt3 .step-line.completed {
+            background: var(--teal);
+        }
+
+        /* ========== OPTION 4: Text Only ========== */
+        .opt4 .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .opt4 .progress-text .current-page {
+            color: var(--teal);
+            font-weight: 600;
+        }
+        .opt4 .progress-text .separator {
+            color: #ccc;
+            margin: 0 0.25rem;
+        }
+        .opt4 .progress-text .total {
+            color: #999;
+        }
+
+        /* ========== OPTION 5: Segmented Bar ========== */
+        .opt5 .segment-container {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+        }
+        .opt5 .segment {
+            height: 4px;
+            flex: 1;
+            max-width: 60px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            transition: background 0.2s ease;
+        }
+        .opt5 .segment.completed {
+            background: var(--teal);
+        }
+        .opt5 .segment.current {
+            background: var(--teal);
+            opacity: 0.6;
+        }
+        .opt5 .progress-text {
+            text-align: center;
+            color: #999;
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        /* ========== OPTION 6: Pill Style ========== */
+        .opt6 .progress-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #f0f0f0;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin: 0 auto;
+        }
+        .opt6 .progress-wrapper {
+            text-align: center;
+        }
+        .opt6 .progress-pill .page-num {
+            color: var(--teal);
+            font-weight: 600;
+        }
+        .opt6 .progress-pill .divider {
+            color: #ccc;
+        }
+        .opt6 .progress-pill .total-num {
+            color: #888;
+        }
+        .opt6 .mini-bar {
+            width: 60px;
+            height: 3px;
+            background: #ddd;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .opt6 .mini-fill {
+            height: 100%;
+            background: var(--teal);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Progress Bar Options</h1>
+    <p class="intro">Alternatives to the current gradient progress bar. Shown at page 2 of 6.</p>
+
+    <!-- Current -->
+    <div class="option-container current">
+        <span class="option-label">Current</span>
+        <h2 class="option-title">Gradient Bar</h2>
+        <p class="option-description">The existing style with red-to-gold gradient</p>
+        <div class="demo-area">
+            <div class="page-title">Introduction to the Week</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 33%;"></div>
+            </div>
+            <p class="progress-text">Page 2 of 6</p>
+        </div>
+    </div>
+
+    <!-- Option 1: Minimal Line -->
+    <div class="option-container">
+        <span class="option-label">Option 1</span>
+        <h2 class="option-title">Minimal Line</h2>
+        <p class="option-description">Ultra-thin line, teal color, very subtle</p>
+        <div class="demo-area opt1">
+            <div class="page-title">Introduction to the Week</div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 33%;"></div>
+            </div>
+            <p class="progress-text">Page 2 of 6</p>
+        </div>
+    </div>
+
+    <!-- Option 2: Step Indicators -->
+    <div class="option-container">
+        <span class="option-label">Option 2</span>
+        <h2 class="option-title">Dot Steps</h2>
+        <p class="option-description">Simple dots showing each page, current page highlighted</p>
+        <div class="demo-area opt2">
+            <div class="page-title">Introduction to the Week</div>
+            <div class="step-container">
+                <div class="step completed"></div>
+                <div class="step current"></div>
+                <div class="step"></div>
+                <div class="step"></div>
+                <div class="step"></div>
+                <div class="step"></div>
+            </div>
+            <p class="progress-text">Page 2 of 6</p>
+        </div>
+    </div>
+
+    <!-- Option 3: Numbered Steps -->
+    <div class="option-container">
+        <span class="option-label">Option 3</span>
+        <h2 class="option-title">Numbered Steps</h2>
+        <p class="option-description">Connected numbered circles showing progress</p>
+        <div class="demo-area opt3">
+            <div class="page-title">Introduction to the Week</div>
+            <div class="step-container">
+                <div class="step completed">1</div>
+                <div class="step-line completed"></div>
+                <div class="step current">2</div>
+                <div class="step-line"></div>
+                <div class="step">3</div>
+                <div class="step-line"></div>
+                <div class="step">4</div>
+                <div class="step-line"></div>
+                <div class="step">5</div>
+                <div class="step-line"></div>
+                <div class="step">6</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Option 4: Text Only -->
+    <div class="option-container">
+        <span class="option-label">Option 4</span>
+        <h2 class="option-title">Text Only</h2>
+        <p class="option-description">No visual bar, just clean text indicator</p>
+        <div class="demo-area opt4">
+            <div class="page-title">Introduction to the Week</div>
+            <p class="progress-text">
+                <span class="current-page">2</span>
+                <span class="separator">/</span>
+                <span class="total">6</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Option 5: Segmented Bar -->
+    <div class="option-container">
+        <span class="option-label">Option 5</span>
+        <h2 class="option-title">Segmented Bar</h2>
+        <p class="option-description">Individual segments for each page</p>
+        <div class="demo-area opt5">
+            <div class="page-title">Introduction to the Week</div>
+            <div class="segment-container">
+                <div class="segment completed"></div>
+                <div class="segment current"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+            </div>
+            <p class="progress-text">Page 2 of 6</p>
+        </div>
+    </div>
+
+    <!-- Option 6: Pill Style -->
+    <div class="option-container">
+        <span class="option-label">Option 6</span>
+        <h2 class="option-title">Pill with Mini Bar</h2>
+        <p class="option-description">Compact pill containing page number and tiny progress bar</p>
+        <div class="demo-area opt6">
+            <div class="page-title">Introduction to the Week</div>
+            <div class="progress-wrapper">
+                <div class="progress-pill">
+                    <span class="page-num">2</span>
+                    <span class="divider">/</span>
+                    <span class="total-num">6</span>
+                    <div class="mini-bar">
+                        <div class="mini-fill" style="width: 33%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
