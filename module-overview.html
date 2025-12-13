@@ -880,7 +880,7 @@
                         </div>
                         ${actionsHtml}
                     </div>
-                    <p>${week.description || ''}</p>
+                    <p>${formatText(week.description || '')}</p>
                 `;
 
                 weeksList.appendChild(weekItem);
@@ -1312,7 +1312,7 @@
                 item.style.background = '#f0f2f5';
                 item.innerHTML = `
                     <strong>${resource.title}</strong>
-                    <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description || 'No description'}</p>
+                    <p style="color: #6c757d; margin-top: 0.25rem;">${formatText(resource.description || 'No description')}</p>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn-f gold" onclick="editResource(${resource.id}, 'reading')">Edit</button>
                         <button class="btn-f red" onclick="deleteResource(${resource.id}, 'reading')">Delete</button>
@@ -1340,7 +1340,7 @@
                 item.style.background = '#f0f2f5';
                 item.innerHTML = `
                     <strong>${resource.title}</strong>
-                    <p style="color: #6c757d; margin-top: 0.25rem;">${resource.description || 'No description'}</p>
+                    <p style="color: #6c757d; margin-top: 0.25rem;">${formatText(resource.description || 'No description')}</p>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: flex-end;">
                         <button class="btn-f gold" onclick="editResource(${resource.id}, 'study')">Edit</button>
                         <button class="btn-f red" onclick="deleteResource(${resource.id}, 'study')">Delete</button>
@@ -2231,18 +2231,32 @@
             };
         }
 
-        // Format text with basic markdown support (line breaks, bullet points)
+        // Format text with support for rich HTML content and plain text fallback
         function formatText(text) {
             if (!text) return '';
 
-            // Escape HTML to prevent XSS
-            const escaped = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // Check if content contains HTML tags (rich text from editor)
+            const hasHTML = /<[^>]+>/.test(text);
 
-            // Convert line breaks to <br>
+            if (hasHTML) {
+                // Clean the HTML using RichText utility if available
+                let cleaned = typeof RichText !== 'undefined' ? RichText.cleanPastedHTML(text) : text;
+
+                // Ensure links open in new tab and have proper styling
+                cleaned = cleaned.replace(/<a\s+href="([^"]*)"(?![^>]*target)/gi, '<a href="$1" target="_blank" style="color: var(--teal); text-decoration: underline;"');
+
+                // Style lists
+                cleaned = cleaned.replace(/<ul>/gi, '<ul style="margin: 0.5rem 0; padding-left: 1.5rem;">');
+                cleaned = cleaned.replace(/<ol>/gi, '<ol style="margin: 0.5rem 0; padding-left: 1.5rem;">');
+
+                return cleaned;
+            }
+
+            // Plain text fallback - escape HTML and convert line breaks
+            const escaped = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             let formatted = escaped.replace(/\n/g, '<br>');
 
             // Convert markdown-style bullets to HTML list items
-            // Match lines starting with *, -, or •
             const lines = formatted.split('<br>');
             let inList = false;
             let result = [];
@@ -2256,7 +2270,6 @@
                         result.push('<ul style="margin: 0.5rem 0; padding-left: 1.5rem;">');
                         inList = true;
                     }
-                    // Remove the bullet character and add as list item
                     const content = line.replace(/^[\*\-\•]\s/, '');
                     result.push(`<li>${content}</li>`);
                 } else {

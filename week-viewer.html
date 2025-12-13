@@ -708,7 +708,7 @@
                                         <strong>${resource.title}</strong>
                                         ${hasUrl ? `<a href="${resource.url}" target="_blank" class="btn-f teal" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none; white-space: nowrap;">View Resource</a>` : ''}
                                     </div>
-                                    ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5; margin-bottom: 0;">${resource.description}</p>` : ''}
+                                    ${resource.description ? `<p style="color: #6c757d; margin-top: 0.5rem; line-height: 1.5; margin-bottom: 0;">${formatText(resource.description)}</p>` : ''}
                                 </div>
                             </div>
                         `;
