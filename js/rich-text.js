@@ -159,7 +159,7 @@ const RichText = {
 
     /**
      * Handle keyboard shortcuts for formatting
-     * Ctrl/Cmd + B = bold, Ctrl/Cmd + I = italic
+     * Ctrl/Cmd + B = bold, Ctrl/Cmd + I = italic, Ctrl/Cmd + K = link
      * @param {KeyboardEvent} e - Keydown event
      * @param {HTMLElement} element - Target contenteditable element
      */
@@ -175,7 +175,95 @@ const RichText = {
         } else if (e.key === 'i' || e.key === 'I') {
             e.preventDefault();
             document.execCommand('italic', false, null);
+        } else if (e.key === 'k' || e.key === 'K') {
+            e.preventDefault();
+            RichText.insertLink(element);
         }
+    },
+
+    /**
+     * Insert or edit a link on selected text
+     * @param {HTMLElement} element - The contenteditable element
+     */
+    insertLink(element) {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+
+        const range = selection.getRangeAt(0);
+        const selectedText = selection.toString();
+
+        // Check if we're inside an existing link
+        let existingLink = null;
+        let node = selection.anchorNode;
+        while (node && node !== element) {
+            if (node.nodeName === 'A') {
+                existingLink = node;
+                break;
+            }
+            node = node.parentNode;
+        }
+
+        if (existingLink) {
+            // Editing existing link - prompt with current URL
+            const currentUrl = existingLink.getAttribute('href') || '';
+            const newUrl = prompt('Edit link URL (leave empty to remove link):', currentUrl);
+
+            if (newUrl === null) return; // Cancelled
+
+            if (newUrl === '') {
+                // Remove the link but keep the text
+                const textNode = document.createTextNode(existingLink.textContent);
+                existingLink.parentNode.replaceChild(textNode, existingLink);
+            } else {
+                existingLink.setAttribute('href', newUrl);
+                existingLink.setAttribute('target', '_blank');
+            }
+        } else if (selectedText) {
+            // Creating new link on selected text
+            const url = prompt('Enter URL for the selected text:');
+
+            if (!url) return; // Cancelled or empty
+
+            // Create the link
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.textContent = selectedText;
+
+            // Replace selection with link
+            range.deleteContents();
+            range.insertNode(link);
+
+            // Move cursor after the link
+            range.setStartAfter(link);
+            range.setEndAfter(link);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } else {
+            // No selection - prompt for both text and URL
+            const text = prompt('Enter link text:');
+            if (!text) return;
+
+            const url = prompt('Enter URL:');
+            if (!url) return;
+
+            // Create and insert the link
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.textContent = text;
+
+            range.insertNode(link);
+
+            // Move cursor after the link
+            range.setStartAfter(link);
+            range.setEndAfter(link);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
+        // Trigger input event for auto-save
+        element.dispatchEvent(new Event('input', { bubbles: true }));
     },
 
     /**
