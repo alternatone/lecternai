@@ -76,10 +76,11 @@ class Validator {
             errors.push('Resource title must be less than 300 characters');
         }
 
-        if (!data.url || typeof data.url !== 'string') {
-            errors.push('Resource URL is required');
-        } else if (!this.isValidUrl(data.url)) {
-            errors.push('Resource URL must be a valid HTTP/HTTPS URL');
+        // URL is optional, but if provided must be valid
+        if (data.url && typeof data.url === 'string' && data.url.trim() !== '') {
+            if (!this.isValidUrl(data.url)) {
+                errors.push('Resource URL must be a valid HTTP/HTTPS URL');
+            }
         }
 
         return {
