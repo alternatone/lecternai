@@ -322,6 +322,26 @@ class DataServiceSupabase {
         }
     }
 
+    async restoreModule(moduleId) {
+        try {
+            const module = await this.getModule(moduleId)
+            if (!module) {
+                return this.error('Module not found', 'NOT_FOUND')
+            }
+
+            if (module.status !== 'archived') {
+                return this.error('Only archived modules can be restored', 'INVALID_STATUS')
+            }
+
+            return this.updateModule(moduleId, {
+                status: 'launched',
+                archivedAt: null
+            })
+        } catch (err) {
+            return this.error('Failed to restore module: ' + err.message, 'RESTORE_ERROR')
+        }
+    }
+
     async syncFromTemplate(activeModuleId) {
         try {
             const activeModule = await this.getModule(activeModuleId)
@@ -839,14 +859,106 @@ class DataServiceSupabase {
                 }
             }
 
-            // Update pages if provided
+            // Update pages if provided - preserve discussions by updating in place
             if (updates.pages) {
-                // Delete existing pages (cascade deletes questions, resources, videos)
-                await supabase.from('pages').delete().eq('week_id', weekRecord.id)
+                // Get existing pages
+                const { data: existingPages } = await supabase
+                    .from('pages')
+                    .select('id, page_number, type')
+                    .eq('week_id', weekRecord.id)
+                    .order('page_number', { ascending: true })
 
-                // Create new pages
                 for (let i = 0; i < updates.pages.length; i++) {
-                    await this.createPage(weekRecord.id, i + 1, updates.pages[i])
+                    const pageData = updates.pages[i]
+                    const pageNumber = i + 1
+                    const existingPage = existingPages?.find(p => p.page_number === pageNumber)
+
+                    if (existingPage) {
+                        // Update existing page
+                        await supabase
+                            .from('pages')
+                            .update({
+                                title: pageData.title,
+                                type: pageData.type,
+                                content: pageData.content || null
+                            })
+                            .eq('id', existingPage.id)
+
+                        // Update questions - preserve IDs to keep discussions
+                        if (pageData.questions) {
+                            const { data: existingQuestions } = await supabase
+                                .from('questions')
+                                .select('id, question_number')
+                                .eq('page_id', existingPage.id)
+                                .order('question_number', { ascending: true })
+
+                            for (let qIdx = 0; qIdx < pageData.questions.length; qIdx++) {
+                                const questionData = pageData.questions[qIdx]
+                                const existingQ = existingQuestions?.find(q => q.question_number === qIdx + 1)
+
+                                if (existingQ) {
+                                    // Update existing question text only (preserves discussions)
+                                    await supabase
+                                        .from('questions')
+                                        .update({ text: questionData.text })
+                                        .eq('id', existingQ.id)
+                                } else {
+                                    // Create new question
+                                    await supabase
+                                        .from('questions')
+                                        .insert({
+                                            page_id: existingPage.id,
+                                            question_number: qIdx + 1,
+                                            text: questionData.text
+                                        })
+                                }
+                            }
+
+                            // Remove excess questions (ones beyond the new count)
+                            if (existingQuestions && existingQuestions.length > pageData.questions.length) {
+                                const excessQuestions = existingQuestions.filter(q => q.question_number > pageData.questions.length)
+                                for (const eq of excessQuestions) {
+                                    await supabase.from('questions').delete().eq('id', eq.id)
+                                }
+                            }
+                        }
+
+                        // Resources and videos can be replaced (no discussions attached)
+                        await supabase.from('resources').delete().eq('page_id', existingPage.id)
+                        if (pageData.resources && pageData.resources.length > 0) {
+                            const resources = pageData.resources.map((r, idx) => ({
+                                page_id: existingPage.id,
+                                title: r.title,
+                                url: r.url || null,
+                                description: r.description || null,
+                                sort_order: idx
+                            }))
+                            await supabase.from('resources').insert(resources)
+                        }
+
+                        await supabase.from('videos').delete().eq('page_id', existingPage.id)
+                        if (pageData.videos && pageData.videos.length > 0) {
+                            const videos = pageData.videos.map((v, idx) => ({
+                                page_id: existingPage.id,
+                                title: v.title,
+                                url: v.url,
+                                duration: v.duration || null,
+                                sort_order: idx
+                            }))
+                            await supabase.from('videos').insert(videos)
+                        }
+                    } else {
+                        // Create new page
+                        await this.createPage(weekRecord.id, pageNumber, pageData)
+                    }
+                }
+
+                // Remove excess pages (ones beyond the new count)
+                if (existingPages && existingPages.length > updates.pages.length) {
+                    const excessPages = existingPages.filter(p => p.page_number > updates.pages.length)
+                    for (const ep of excessPages) {
+                        await supabase.from('pages').delete().eq('id', ep.id)
+                    }
                 }
             }
 

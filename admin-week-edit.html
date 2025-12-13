@@ -1159,17 +1159,23 @@
                 pages: pages
             };
 
-            await dataService.updateWeek(currentModuleId, parseInt(weekNum), updates);
+            const result = await dataService.updateWeek(currentModuleId, parseInt(weekNum), updates);
 
             // Update auto-save indicator
             const indicator = document.getElementById('autosave-indicator');
             if (indicator) {
-                indicator.textContent = 'Saved';
-                indicator.style.color = 'var(--teal)';
-                setTimeout(() => {
-                    indicator.textContent = 'Auto-saving...';
-                    indicator.style.color = '#6c757d';
-                }, 1500);
+                if (result.success) {
+                    indicator.textContent = 'Saved';
+                    indicator.style.color = 'var(--teal)';
+                    setTimeout(() => {
+                        indicator.textContent = 'Auto-save enabled';
+                        indicator.style.color = '#6c757d';
+                    }, 1500);
+                } else {
+                    indicator.textContent = 'Save failed';
+                    indicator.style.color = 'var(--primary-color)';
+                    console.error('Auto-save failed:', result.message);
+                }
             }
         }
 

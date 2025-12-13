@@ -647,6 +647,20 @@
             }
         }
 
+        async function restoreModule(moduleId) {
+            if (!confirm('Restore this module to active status?\n\nThe module will be available for students to participate in again.')) {
+                return;
+            }
+
+            const result = await dataService.restoreModule(moduleId);
+            if (result.success) {
+                showNotification('Module restored successfully', 'success');
+                await renderModules();
+            } else {
+                showNotification(result.message || 'Failed to restore module', 'error');
+            }
+        }
+
         function viewArchivedModule(moduleId) {
             dataService.setCurrentModuleId(moduleId);
             // Navigate to archived module view (completely read-only)

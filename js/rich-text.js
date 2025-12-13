@@ -77,24 +77,53 @@ const RichText = {
 
         let text = html;
 
-        // Convert <strong> and <b> to **bold**
-        text = text.replace(/<(strong|b)>(.*?)<\/\1>/gi, '**$2**');
+        // Remove Microsoft Word/Office specific markup
+        // Remove <o:p> tags (Office paragraph tags)
+        text = text.replace(/<o:p[^>]*>.*?<\/o:p>/gi, '');
+        text = text.replace(/<o:p[^>]*\/>/gi, '');
 
-        // Convert <em> and <i> to *italic*
-        text = text.replace(/<(em|i)>(.*?)<\/\1>/gi, '*$2*');
+        // Remove Word style definitions and XML
+        text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+        text = text.replace(/<xml[^>]*>[\s\S]*?<\/xml>/gi, '');
+        text = text.replace(/<!--\[if[^>]*>[\s\S]*?<!\[endif\]-->/gi, '');
+        text = text.replace(/<!--[\s\S]*?-->/gi, '');
+
+        // Remove mso- styles and class attributes
+        text = text.replace(/\s*mso-[^;"']+[;"']/gi, '');
+        text = text.replace(/\s*class="[^"]*Mso[^"]*"/gi, '');
+        text = text.replace(/\s*class='[^']*Mso[^']*'/gi, '');
+
+        // Remove Word-specific span wrappers that just contain style info
+        text = text.replace(/<span[^>]*style="[^"]*mso-[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '$1');
+
+        // Remove empty spans
+        text = text.replace(/<span[^>]*>\s*<\/span>/gi, '');
+
+        // Convert Word-style bold (font-weight: bold or font-weight: 700) to **bold**
+        text = text.replace(/<span[^>]*style="[^"]*font-weight:\s*(bold|700)[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '**$2**');
+        text = text.replace(/<b[^>]*>([\s\S]*?)<\/b>/gi, '**$1**');
+        text = text.replace(/<strong[^>]*>([\s\S]*?)<\/strong>/gi, '**$1**');
+
+        // Convert Word-style italic (font-style: italic) to *italic*
+        text = text.replace(/<span[^>]*style="[^"]*font-style:\s*italic[^"]*"[^>]*>([\s\S]*?)<\/span>/gi, '*$2*');
+        text = text.replace(/<i[^>]*>([\s\S]*?)<\/i>/gi, '*$1*');
+        text = text.replace(/<em[^>]*>([\s\S]*?)<\/em>/gi, '*$1*');
 
         // Convert <li> to bullet points
-        text = text.replace(/<li>(.*?)<\/li>/gi, '- $1\n');
+        text = text.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '- $1\n');
 
-        // Remove <ul> and </ul> tags
-        text = text.replace(/<\/?ul[^>]*>/gi, '');
+        // Remove <ul>, <ol> and closing tags
+        text = text.replace(/<\/?[uo]l[^>]*>/gi, '');
 
         // Convert <br> and <br/> to newlines
         text = text.replace(/<br\s*\/?>/gi, '\n');
 
         // Convert <p> tags to double newlines
-        text = text.replace(/<p>/gi, '');
+        text = text.replace(/<p[^>]*>/gi, '');
         text = text.replace(/<\/p>/gi, '\n\n');
+
+        // Remove div tags but keep content
+        text = text.replace(/<\/?div[^>]*>/gi, '\n');
 
         // Remove any remaining HTML tags
         text = text.replace(/<[^>]+>/g, '');
@@ -105,9 +134,19 @@ const RichText = {
         text = text.replace(/&gt;/g, '>');
         text = text.replace(/&nbsp;/g, ' ');
         text = text.replace(/&quot;/g, '"');
+        text = text.replace(/&#\d+;/g, ''); // Remove numeric entities
+
+        // Remove "Normal" style artifacts from Word
+        text = text.replace(/\bNormal\s*\d*\b/g, '');
+
+        // Clean up multiple spaces
+        text = text.replace(/  +/g, ' ');
 
         // Clean up multiple newlines
         text = text.replace(/\n{3,}/g, '\n\n');
+
+        // Clean up lines that are just whitespace
+        text = text.replace(/\n\s+\n/g, '\n\n');
 
         return text.trim();
     },
