@@ -259,10 +259,25 @@
         function formatText(text) {
             if (!text) return '';
 
-            // Escape HTML to prevent XSS
-            const escaped = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            // Check if content contains HTML tags (rich text from editor)
+            const hasHTML = /<[^>]+>/.test(text);
 
-            // Convert line breaks to <br>
+            if (hasHTML) {
+                // Clean the HTML using RichText utility if available
+                let cleaned = typeof RichText !== 'undefined' ? RichText.cleanPastedHTML(text) : text;
+
+                // Ensure links open in new tab and have proper styling
+                cleaned = cleaned.replace(/<a\s+href="([^"]*)"(?![^>]*target)/gi, '<a href="$1" target="_blank" style="color: var(--teal); text-decoration: underline;"');
+
+                // Style lists
+                cleaned = cleaned.replace(/<ul>/gi, '<ul style="margin: 0.5rem 0; padding-left: 1.5rem;">');
+                cleaned = cleaned.replace(/<ol>/gi, '<ol style="margin: 0.5rem 0; padding-left: 1.5rem;">');
+
+                return cleaned;
+            }
+
+            // Plain text fallback - escape HTML and convert line breaks
+            const escaped = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             let formatted = escaped.replace(/\n/g, '<br>');
 
             // Convert markdown-style bullets to HTML list items

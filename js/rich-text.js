@@ -21,26 +21,38 @@ const RichText = {
             text = bodyMatch[1];
         }
 
-        // Remove Microsoft Word/Office specific markup
+        // Remove Microsoft Word/Office specific markup - be aggressive
         text = text.replace(/<o:p[^>]*>[\s\S]*?<\/o:p>/gi, '');
         text = text.replace(/<o:p[^>]*\/>/gi, '');
+        text = text.replace(/<w:[^>]*>[\s\S]*?<\/w:[^>]*>/gi, '');
+        text = text.replace(/<m:[^>]*>[\s\S]*?<\/m:[^>]*>/gi, '');
         text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
         text = text.replace(/<xml[^>]*>[\s\S]*?<\/xml>/gi, '');
         text = text.replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '');
-        text = text.replace(/<meta[^>]*>/gi, '');
-        text = text.replace(/<link[^>]*>/gi, '');
+        text = text.replace(/<meta[^>]*\/?>/gi, '');
+        text = text.replace(/<link[^>]*\/?>/gi, '');
         text = text.replace(/<!DOCTYPE[^>]*>/gi, '');
         text = text.replace(/<\/?html[^>]*>/gi, '');
         text = text.replace(/<\/?body[^>]*>/gi, '');
-        text = text.replace(/<!--\[if[^>]*>[\s\S]*?<!\[endif\]-->/gi, '');
-        text = text.replace(/<!--[\s\S]*?-->/gi, '');
         text = text.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+
+        // Remove ALL conditional comments (Word uses these extensively)
+        text = text.replace(/<!--\[if[^\]]*\]>[\s\S]*?<!\[endif\]-->/gi, '');
+        text = text.replace(/<!--\[if[^\]]*\]>/gi, '');
+        text = text.replace(/<!\[endif\]-->/gi, '');
+        text = text.replace(/<!--[\s\S]*?-->/gi, '');
+
+        // Remove mso- prefixed elements and attributes
+        text = text.replace(/<!\[if[^\]]*\]>/gi, '');
+        text = text.replace(/<!\[endif\]>/gi, '');
 
         // Remove all style attributes and class attributes
         text = text.replace(/\s*style="[^"]*"/gi, '');
         text = text.replace(/\s*style='[^']*'/gi, '');
         text = text.replace(/\s*class="[^"]*"/gi, '');
         text = text.replace(/\s*class='[^']*'/gi, '');
+        text = text.replace(/\s*lang="[^"]*"/gi, '');
+        text = text.replace(/\s*data-[^=]*="[^"]*"/gi, '');
 
         // Convert Word-style bold spans to <strong> (before removing spans)
         text = text.replace(/<b(\s[^>]*)?>([\s\S]*?)<\/b>/gi, '<strong>$2</strong>');
@@ -48,9 +60,9 @@ const RichText = {
         // Convert Word-style italic to <em>
         text = text.replace(/<i(\s[^>]*)?>([\s\S]*?)<\/i>/gi, '<em>$2</em>');
 
-        // Clean up links - preserve href only, add safe attributes
-        text = text.replace(/<a\s+[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '<a href="$1">$2</a>');
-        text = text.replace(/<a\s+[^>]*href='([^']*)'[^>]*>([\s\S]*?)<\/a>/gi, '<a href="$1">$2</a>');
+        // Clean up links - preserve href only
+        text = text.replace(/<a\s+[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '<a href="$1" target="_blank">$2</a>');
+        text = text.replace(/<a\s+[^>]*href='([^']*)'[^>]*>([\s\S]*?)<\/a>/gi, '<a href="$1" target="_blank">$2</a>');
 
         // Clean list items - remove attributes
         text = text.replace(/<li[^>]*>/gi, '<li>');
@@ -63,25 +75,54 @@ const RichText = {
         // Remove font tags (keep content)
         text = text.replace(/<\/?font[^>]*>/gi, '');
 
-        // Convert <p> to <div> for consistency
-        text = text.replace(/<p[^>]*>/gi, '<div>');
-        text = text.replace(/<\/p>/gi, '</div>');
+        // Convert <p> tags to line breaks for cleaner output
+        text = text.replace(/<p[^>]*>/gi, '');
+        text = text.replace(/<\/p>/gi, '<br><br>');
 
-        // Remove empty divs
-        text = text.replace(/<div>\s*<\/div>/gi, '');
-        text = text.replace(/<div><br\s*\/?><\/div>/gi, '<br>');
+        // Flatten nested divs - convert to line breaks
+        text = text.replace(/<div[^>]*><div[^>]*>/gi, '<div>');
+        text = text.replace(/<\/div><\/div>/gi, '</div>');
+        text = text.replace(/<div[^>]*>/gi, '');
+        text = text.replace(/<\/div>/gi, '<br>');
 
         // Remove "Normal" text artifacts from Word
         text = text.replace(/\bNormal\s*\d*\b/g, '');
 
+        // Clean up sup tags (keep them for things like 20th)
+        text = text.replace(/<sup[^>]*>/gi, '<sup>');
+
         // Clean up excessive whitespace
         text = text.replace(/\s+/g, ' ');
-        text = text.replace(/>\s+</g, '><');
 
-        // Clean up multiple <br> tags
-        text = text.replace(/(<br\s*\/?>\s*){3,}/gi, '<br><br>');
+        // Clean up multiple <br> tags (max 2 in a row)
+        text = text.replace(/(<br\s*\/?>[\s]*){3,}/gi, '<br><br>');
+        text = text.replace(/^(<br\s*\/?>[\s]*)+/gi, ''); // Remove leading breaks
+        text = text.replace(/(<br\s*\/?>[\s]*)+$/gi, ''); // Remove trailing breaks
+
+        // Clean up spaces around tags
+        text = text.replace(/\s*<br\s*\/?>\s*/gi, '<br>');
+        text = text.replace(/<br><br><br>/gi, '<br><br>');
 
         return text.trim();
+    },
+
+    /**
+     * Clean already-saved content that may have raw HTML showing
+     * This is for content that was saved before proper cleaning
+     * @param {string} html - Potentially dirty HTML content
+     * @returns {string} - Cleaned HTML
+     */
+    cleanSavedContent(html) {
+        if (!html) return '';
+
+        // If content appears to have visible HTML tags as text, it needs cleaning
+        // This handles cases where tags weren't rendered but stored as text
+        let text = html;
+
+        // Apply the same cleaning as paste
+        text = this.cleanPastedHTML(text);
+
+        return text;
     },
 
     /**
