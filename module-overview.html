@@ -703,6 +703,26 @@
 
         let currentView = 'student';
 
+        // Helper to get/set content from both textareas and contenteditable divs
+        function getFieldValue(id) {
+            const el = document.getElementById(id);
+            if (!el) return '';
+            if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+                return el.value.trim();
+            }
+            return el.innerHTML.trim();
+        }
+
+        function setFieldValue(id, value) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+                el.value = value || '';
+            } else {
+                el.innerHTML = value || '';
+            }
+        }
+
         function renderUserHeader() {
             const header = document.getElementById('user-header');
             const isAdmin = currentUser.role === 'admin';
@@ -877,11 +897,11 @@
             const currentModuleId = dataService.getCurrentModuleId();
             const currentModule = currentModuleId ? await dataService.getModule(currentModuleId) : {};
 
-            document.getElementById('description-input').value = currentModule.description || '';
+            setFieldValue('description-input', currentModule.description || '');
             document.getElementById('instructor-input').value = currentModule.instructor || '';
             document.getElementById('duration-input').value = currentModule.duration || '';
-            document.getElementById('participation-input').value = currentModule.participation || '';
-            document.getElementById('time-input').value = currentModule.timeExpectations || '';
+            setFieldValue('participation-input', currentModule.participation || '');
+            setFieldValue('time-input', currentModule.timeExpectations || '');
 
             // Load zoom info using DataService
             const zoomInfo = currentModuleId ? await dataService.getZoomInfo(currentModuleId) : {};
@@ -912,11 +932,11 @@
         }
 
         async function saveDescription() {
-            const description = document.getElementById('description-input').value;
+            const description = getFieldValue('description-input');
             const instructor = document.getElementById('instructor-input').value;
             const duration = document.getElementById('duration-input').value;
-            const participation = document.getElementById('participation-input').value;
-            const timeExp = document.getElementById('time-input').value;
+            const participation = getFieldValue('participation-input');
+            const timeExp = getFieldValue('time-input');
 
             // Get current module and update using DataService
             const currentModuleId = dataService.getCurrentModuleId();
@@ -1171,10 +1191,10 @@
 
             // Clear form fields
             document.getElementById('week-title-input').value = '';
-            document.getElementById('week-description-input').value = '';
+            setFieldValue('week-description-input', '');
             document.getElementById('week-unlock-date-input').value = '';
-            document.getElementById('page2-intro-text').value = '';
-            document.getElementById('zoom-prep-text').value = '';
+            setFieldValue('page2-intro-text', '');
+            setFieldValue('zoom-prep-text', '');
 
             renderWeeklyReadings();
             renderFurtherStudy();
@@ -1200,10 +1220,10 @@
             editingWeekId = null;
             // Clear form
             document.getElementById('week-title-input').value = '';
-            document.getElementById('week-description-input').value = '';
+            setFieldValue('week-description-input', '');
             document.getElementById('week-unlock-date-input').value = '';
-            document.getElementById('page2-intro-text').value = '';
-            document.getElementById('zoom-prep-text').value = '';
+            setFieldValue('page2-intro-text', '');
+            setFieldValue('zoom-prep-text', '');
             weeklyReadings = [];
             furtherStudy = [];
             videos = [];
@@ -1226,7 +1246,7 @@
 
             // Populate form fields
             document.getElementById('week-title-input').value = week.title || '';
-            document.getElementById('week-description-input').value = week.description || '';
+            setFieldValue('week-description-input', week.description || '');
             document.getElementById('week-unlock-date-input').value = week.unlockDate || week.unlock_date || '';
 
             // Extract page data
@@ -1238,7 +1258,7 @@
 
             // Page 2: Introduction to the Week
             const page2 = pages.find(p => p.title === 'Introduction to the Week') || pages[1];
-            document.getElementById('page2-intro-text').value = page2?.content || '';
+            setFieldValue('page2-intro-text', page2?.content || '');
             videos = page2?.videos || [];
 
             // Page 3: Weekly Reading
@@ -1247,7 +1267,7 @@
 
             // Page 4: Preparation for Zoom Session
             const page4 = pages.find(p => p.title === 'Preparation for Zoom Session') || pages[3];
-            document.getElementById('zoom-prep-text').value = page4?.content || '';
+            setFieldValue('zoom-prep-text', page4?.content || '');
 
             // Page 5: Post-Zoom Reflection
             const page5 = pages.find(p => p.title === 'Post-Zoom Reflection') || pages[4];
@@ -1356,7 +1376,7 @@
         function openAddResourceModal(targetType) {
             document.getElementById('resource-title').value = '';
             document.getElementById('resource-url').value = '';
-            document.getElementById('resource-description').value = '';
+            setFieldValue('resource-description', '');
             document.getElementById('resource-duration').value = '';
             document.getElementById('resource-duration-group').style.display = 'none';
             document.getElementById('resource-target-type').value = targetType || 'readings';
@@ -1372,7 +1392,7 @@
         function addResource() {
             const title = document.getElementById('resource-title').value.trim();
             const url = document.getElementById('resource-url').value.trim();
-            const description = document.getElementById('resource-description').value.trim();
+            const description = getFieldValue('resource-description');
             const duration = document.getElementById('resource-duration').value.trim();
             const targetType = document.getElementById('resource-target-type').value;
 
@@ -1421,7 +1441,7 @@
                 document.getElementById('edit-resource-type').value = type;
                 document.getElementById('edit-resource-title').value = resource.title;
                 document.getElementById('edit-resource-url').value = resource.url;
-                document.getElementById('edit-resource-description').value = resource.description || '';
+                setFieldValue('edit-resource-description', resource.description || '');
                 document.getElementById('edit-resource-modal').style.display = 'block';
                 document.body.classList.add('modal-open'); document.documentElement.classList.add('modal-open');
             }
@@ -1437,7 +1457,7 @@
             const type = document.getElementById('edit-resource-type').value;
             const title = document.getElementById('edit-resource-title').value.trim();
             const url = document.getElementById('edit-resource-url').value.trim();
-            const description = document.getElementById('edit-resource-description').value.trim();
+            const description = getFieldValue('edit-resource-description');
 
             if (!title) {
                 alert('Please enter a title');
@@ -1500,7 +1520,7 @@
         }
 
         function openAddPage1QuestionModal() {
-            document.getElementById('question-text').value = '';
+            setFieldValue('question-text', '');
             window.editingPage1 = true;
             window.editingPage1QuestionId = null;
             document.getElementById('question-modal-title').textContent = 'Add Question';
@@ -1512,7 +1532,7 @@
         function editPage1Question(id) {
             const question = page1Questions.find(q => q.id === id);
             if (question) {
-                document.getElementById('question-text').value = question.text;
+                setFieldValue('question-text', question.text);
                 window.editingPage1QuestionId = id;
                 window.editingPage1 = true;
                 document.getElementById('question-modal-title').textContent = 'Edit Question';
@@ -1758,7 +1778,7 @@
         }
 
         function openAddQuestionModal() {
-            document.getElementById('question-text').value = '';
+            setFieldValue('question-text', '');
             window.editingPage1 = false;
             window.editingQuestionId = null;
             document.getElementById('question-modal-title').textContent = 'Add Question';
@@ -1773,7 +1793,7 @@
         }
 
         function addQuestion() {
-            const text = document.getElementById('question-text').value.trim();
+            const text = getFieldValue('question-text');
 
             if (!text) {
                 alert('Please enter a question');
@@ -1821,7 +1841,7 @@
         function editQuestion(id) {
             const question = reflectionQuestions.find(q => q.id === id);
             if (question) {
-                document.getElementById('question-text').value = question.text;
+                setFieldValue('question-text', question.text);
                 // Store the ID being edited
                 window.editingQuestionId = id;
                 document.getElementById('question-modal-title').textContent = 'Edit Question';
@@ -1840,7 +1860,7 @@
 
         async function saveNewWeek() {
             const title = document.getElementById('week-title-input').value.trim();
-            const description = document.getElementById('week-description-input').value.trim();
+            const description = getFieldValue('week-description-input');
             const unlockDate = document.getElementById('week-unlock-date-input').value;
 
             if (!title) {
@@ -1863,9 +1883,9 @@
                 return;
             }
 
-            // Collect page data for all 6 pages
-            const page2IntroText = document.getElementById('page2-intro-text').value.trim();
-            const zoomPrepText = document.getElementById('zoom-prep-text').value.trim();
+            // Collect page data for all 6 pages (use getFieldValue for contenteditable fields)
+            const page2IntroText = getFieldValue('page2-intro-text');
+            const zoomPrepText = getFieldValue('zoom-prep-text');
 
             // Validate required fields
             if (page1Questions.length === 0) {
@@ -2032,10 +2052,10 @@
             const draft = dataService.getDraft('createWeek');
             if (draft) {
                 document.getElementById('week-title-input').value = draft.title || '';
-                document.getElementById('week-description-input').value = draft.description || '';
+                setFieldValue('week-description-input', draft.description || '');
                 document.getElementById('week-unlock-date-input').value = draft.unlockDate || '';
-                document.getElementById('page2-intro-text').value = draft.page2IntroText || '';
-                document.getElementById('zoom-prep-text').value = draft.zoomPrepText || '';
+                setFieldValue('page2-intro-text', draft.page2IntroText || '');
+                setFieldValue('zoom-prep-text', draft.zoomPrepText || '');
                 weeklyReadings = draft.weeklyReadings || [];
                 furtherStudy = draft.furtherStudy || [];
                 videos = draft.videos || [];
@@ -2115,13 +2135,16 @@
             await Promise.all([loadWeeks(), loadModuleInfo()]);
             await setView(savedView);
             await displayZoomInfo();
+
+            // Convert textareas to rich text editors BEFORE setting up auto-save
+            // so the contenteditable event listeners can be attached
+            RichText.convertAllTextareas('textarea');
+
+            // Setup auto-save after conversion so it can find contenteditable divs
             setupAutoSave();
 
             // Show content after everything is loaded
             showContent();
-
-            // Initialize rich text on all textareas
-            RichText.initAll('textarea');
         };
 
         // Show content and hide loading spinner
@@ -2179,6 +2202,19 @@
                         autoSaveCreateWeekDraft();
                     }, 1000));
                 }
+            });
+
+            // Also listen to contenteditable divs (rich text editors)
+            const editableDivs = document.querySelectorAll('[contenteditable="true"]');
+            editableDivs.forEach(div => {
+                div.addEventListener('input', debounce(function() {
+                    // Determine which auto-save to trigger based on the field's location
+                    if (['description-input', 'participation-input', 'time-input'].includes(div.id)) {
+                        autoSaveModuleInfo();
+                    } else {
+                        autoSaveCreateWeekDraft();
+                    }
+                }, 1000));
             });
         }
 
@@ -2241,11 +2277,11 @@
 
         function autoSaveModuleInfo() {
             const moduleInfo = {
-                description: document.getElementById('description-input').value,
+                description: getFieldValue('description-input'),
                 instructor: document.getElementById('instructor-input').value,
                 duration: document.getElementById('duration-input').value,
-                participation: document.getElementById('participation-input').value,
-                timeExpectations: document.getElementById('time-input').value,
+                participation: getFieldValue('participation-input'),
+                timeExpectations: getFieldValue('time-input'),
                 lastAutoSave: new Date().toISOString()
             };
             dataService.saveDraft('moduleInfo', moduleInfo);
@@ -2255,10 +2291,10 @@
         function autoSaveCreateWeekDraft() {
             const weekDraft = {
                 title: document.getElementById('week-title-input').value,
-                description: document.getElementById('week-description-input').value,
+                description: getFieldValue('week-description-input'),
                 unlockDate: document.getElementById('week-unlock-date-input').value,
-                page2IntroText: document.getElementById('page2-intro-text').value,
-                zoomPrepText: document.getElementById('zoom-prep-text').value,
+                page2IntroText: getFieldValue('page2-intro-text'),
+                zoomPrepText: getFieldValue('zoom-prep-text'),
                 weeklyReadings: [...weeklyReadings],
                 furtherStudy: [...furtherStudy],
                 videos: [...videos],
@@ -2284,10 +2320,10 @@
             if (draft) {
                 if (confirm('A draft was found. Would you like to restore it?')) {
                     document.getElementById('week-title-input').value = draft.title || '';
-                    document.getElementById('week-description-input').value = draft.description || '';
+                    setFieldValue('week-description-input', draft.description || '');
                     document.getElementById('week-unlock-date-input').value = draft.unlockDate || '';
-                    document.getElementById('page2-intro-text').value = draft.page2IntroText || '';
-                    document.getElementById('zoom-prep-text').value = draft.zoomPrepText || '';
+                    setFieldValue('page2-intro-text', draft.page2IntroText || '');
+                    setFieldValue('zoom-prep-text', draft.zoomPrepText || '');
                     weeklyReadings = draft.weeklyReadings || [];
                     furtherStudy = draft.furtherStudy || [];
                     videos = draft.videos || [];
@@ -2312,11 +2348,11 @@
         function loadModuleInfoDraft() {
             const draft = dataService.getDraft('moduleInfo');
             if (draft) {
-                document.getElementById('description-input').value = draft.description || '';
+                setFieldValue('description-input', draft.description || '');
                 document.getElementById('instructor-input').value = draft.instructor || '';
                 document.getElementById('duration-input').value = draft.duration || '';
-                document.getElementById('participation-input').value = draft.participation || '';
-                document.getElementById('time-input').value = draft.timeExpectations || '';
+                setFieldValue('participation-input', draft.participation || '');
+                setFieldValue('time-input', draft.timeExpectations || '');
             }
         }
 

@@ -321,6 +321,26 @@
         let furtherStudy = [];
         let currentUser = null;
 
+        // Helper to get/set content from both textareas and contenteditable divs
+        function getFieldValue(id) {
+            const el = document.getElementById(id);
+            if (!el) return '';
+            if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+                return el.value.trim();
+            }
+            return el.innerHTML.trim();
+        }
+
+        function setFieldValue(id, value) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+                el.value = value || '';
+            } else {
+                el.innerHTML = value || '';
+            }
+        }
+
         async function init() {
             // Admin-only page
             currentUser = await requireAdmin();
@@ -335,10 +355,13 @@
             renderVideos();
             renderReflectionQuestions();
             renderFurtherStudy();
-            setupAutoSave();
 
-            // Initialize rich text on all textareas
-            RichText.initAll('textarea');
+            // Convert textareas to rich text editors BEFORE setting up auto-save
+            // so the contenteditable event listeners can be attached
+            RichText.convertAllTextareas('#week-intro, #zoom-prep, #pre-question, #content-description, #edit-resource-description');
+
+            // Setup auto-save after conversion so it can find contenteditable divs
+            setupAutoSave();
         }
 
         function renderUserHeader() {
@@ -803,13 +826,13 @@
                 return;
             }
 
-            // Get form values
+            // Get form values (use getFieldValue for contenteditable fields)
             const title = document.getElementById('week-title').value.trim();
             const description = document.getElementById('week-description').value.trim();
             const unlockDate = document.getElementById('unlock-date').value;
-            const preQuestion = document.getElementById('pre-question').value.trim();
-            const weekIntro = document.getElementById('week-intro').value.trim();
-            const zoomPrep = document.getElementById('zoom-prep').value.trim();
+            const preQuestion = getFieldValue('pre-question');
+            const weekIntro = getFieldValue('week-intro');
+            const zoomPrep = getFieldValue('zoom-prep');
 
             // Validate required fields
             if (!title) {
@@ -1041,12 +1064,12 @@
                 if (week.pages && week.pages.length > 0) {
                     // Page 1: Opening Reflection Question
                     if (week.pages[0] && week.pages[0].questions && week.pages[0].questions.length > 0) {
-                        document.getElementById('pre-question').value = week.pages[0].questions[0].text || '';
+                        setFieldValue('pre-question', week.pages[0].questions[0].text || '');
                     }
 
                     // Page 2: Introduction to the Week
                     if (week.pages[1]) {
-                        document.getElementById('week-intro').value = week.pages[1].content || '';
+                        setFieldValue('week-intro', week.pages[1].content || '');
                         videos = week.pages[1].videos || [];
                     }
 
@@ -1060,7 +1083,7 @@
                         // New format with Zoom Prep page
                         // Page 4: Preparation for Zoom Session
                         if (week.pages[3]) {
-                            document.getElementById('zoom-prep').value = week.pages[3].content || '';
+                            setFieldValue('zoom-prep', week.pages[3].content || '');
                         }
 
                         // Page 5: Post-Zoom Reflection
@@ -1108,13 +1131,13 @@
                 return;
             }
 
-            // Get form values
+            // Get form values (use getFieldValue for contenteditable fields)
             const title = document.getElementById('week-title').value.trim();
             const description = document.getElementById('week-description').value.trim();
             const unlockDate = document.getElementById('unlock-date').value;
-            const preQuestion = document.getElementById('pre-question').value.trim();
-            const weekIntro = document.getElementById('week-intro').value.trim();
-            const zoomPrep = document.getElementById('zoom-prep').value.trim();
+            const preQuestion = getFieldValue('pre-question');
+            const weekIntro = getFieldValue('week-intro');
+            const zoomPrep = getFieldValue('zoom-prep');
 
             // Build pages structure
             const pages = [
@@ -1193,6 +1216,12 @@
             inputs.forEach(input => {
                 input.addEventListener('input', debouncedAutoSave);
                 input.addEventListener('change', debouncedAutoSave);
+            });
+
+            // Also listen to contenteditable divs (rich text editors)
+            const editableDivs = document.querySelectorAll('[contenteditable="true"]');
+            editableDivs.forEach(div => {
+                div.addEventListener('input', debouncedAutoSave);
             });
 
             // Also trigger auto-save when arrays change (resources, videos, questions)
