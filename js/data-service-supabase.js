@@ -991,17 +991,42 @@ class DataServiceSupabase {
 
     async deleteWeek(moduleId, weekId) {
         try {
+            // First, get all weeks with this week_number to check for duplicates
+            const { data: matchingWeeks, error: fetchError } = await supabase
+                .from('weeks')
+                .select('id, week_number, title')
+                .eq('module_id', moduleId)
+                .eq('week_number', weekId)
+
+            if (fetchError) {
+                return this.error('Failed to find week: ' + fetchError.message, 'DELETE_ERROR')
+            }
+
+            if (!matchingWeeks || matchingWeeks.length === 0) {
+                return this.error('Week not found', 'NOT_FOUND')
+            }
+
+            // If there are duplicates, only delete one (the first one found)
+            // This prevents accidentally deleting multiple weeks
+            const weekToDelete = matchingWeeks[0]
+
             const { error } = await supabase
                 .from('weeks')
                 .delete()
-                .eq('module_id', moduleId)
-                .eq('week_number', weekId)
+                .eq('id', weekToDelete.id)  // Use actual row ID, not week_number
 
             if (error) {
                 return this.error('Failed to delete week: ' + error.message, 'DELETE_ERROR')
             }
 
-            return this.success(null, 'Week deleted successfully')
+            // Return info about whether there were duplicates
+            const hadDuplicates = matchingWeeks.length > 1
+            return this.success(
+                { hadDuplicates, remainingDuplicates: matchingWeeks.length - 1 },
+                hadDuplicates
+                    ? `Week deleted. Note: ${matchingWeeks.length - 1} duplicate(s) still exist with the same week number.`
+                    : 'Week deleted successfully'
+            )
         } catch (err) {
             return this.error('Failed to delete week: ' + err.message, 'DELETE_ERROR')
         }
