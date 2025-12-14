@@ -694,6 +694,7 @@
         // Edit mode tracking
         let editingWeekId = null;
         let isEditMode = false;
+        let editingWeekUpdatedAt = null;  // For optimistic locking
 
         // Participant mode - admin experiencing module as student
         let isParticipantMode = false;
@@ -1243,6 +1244,9 @@
                 showNotification('Week not found', 'error');
                 return;
             }
+
+            // Store updated_at for optimistic locking (conflict detection)
+            editingWeekUpdatedAt = week.updatedAt || week.updated_at || null;
 
             // Populate form fields
             document.getElementById('week-title-input').value = week.title || '';
@@ -1961,12 +1965,26 @@
                 let result;
 
                 if (isEditMode && editingWeekId) {
+                    // Include expectedUpdatedAt for optimistic locking (conflict detection)
+                    if (editingWeekUpdatedAt) {
+                        weekData.expectedUpdatedAt = editingWeekUpdatedAt;
+                    }
+
                     // Update existing week
                     result = await dataService.updateWeek(currentModuleId, editingWeekId, weekData);
 
                     if (!result.success) {
                         saveBtn.textContent = originalText;
                         saveBtn.disabled = false;
+
+                        // Special handling for conflict errors
+                        if (result.code === 'CONFLICT') {
+                            showNotification(result.message, 'warning');
+                            closeCreateWeekModal();
+                            await renderWeeks();  // Refresh to show latest data
+                            return;
+                        }
+
                         showNotification(result.message || 'Failed to update week', 'error');
                         return;
                     }

@@ -735,20 +735,28 @@ class DataServiceSupabase {
                 ? existingWeeks[0].week_number + 1
                 : 1
 
-            // Create week
+            // Use upsert to handle race conditions - if another user just created this week_number,
+            // we'll update it instead of creating a duplicate
             const { data: week, error: weekError } = await supabase
                 .from('weeks')
-                .insert({
+                .upsert({
                     module_id: moduleId,
                     week_number: weekNumber,
                     title: weekData.title,
                     description: weekData.description || null,
                     unlock_date: weekData.unlockDate || null
+                }, {
+                    onConflict: 'module_id,week_number'
                 })
                 .select()
                 .single()
 
             if (weekError) {
+                // If upsert fails due to constraint violation, retry with next week number
+                if (weekError.code === '23505') {
+                    // Duplicate key - another user beat us, retry with incremented number
+                    return this.createWeek(moduleId, weekData)
+                }
                 return this.error('Failed to create week: ' + weekError.message, 'CREATE_ERROR')
             }
 
@@ -833,13 +841,26 @@ class DataServiceSupabase {
             // First get the actual week record
             const { data: weekRecord, error: fetchError } = await supabase
                 .from('weeks')
-                .select('id')
+                .select('id, updated_at')
                 .eq('module_id', moduleId)
                 .eq('week_number', weekId)
                 .single()
 
             if (fetchError || !weekRecord) {
                 return this.error('Week not found', 'NOT_FOUND')
+            }
+
+            // Optimistic locking: check if week was modified since user started editing
+            if (updates.expectedUpdatedAt) {
+                const expectedTime = new Date(updates.expectedUpdatedAt).getTime()
+                const actualTime = new Date(weekRecord.updated_at).getTime()
+
+                if (actualTime > expectedTime) {
+                    return this.error(
+                        'This week was modified by another user. Please reload and try again.',
+                        'CONFLICT'
+                    )
+                }
             }
 
             // Update week basic info

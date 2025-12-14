@@ -320,6 +320,7 @@
         let reflectionQuestions = [];
         let furtherStudy = [];
         let currentUser = null;
+        let weekUpdatedAt = null;  // For optimistic locking (conflict detection)
 
         // Helper to get/set content from both textareas and contenteditable divs
         function getFieldValue(id) {
@@ -894,6 +895,11 @@
                 pages: pages
             };
 
+            // Include expectedUpdatedAt for optimistic locking (conflict detection)
+            if (weekUpdatedAt) {
+                updates.expectedUpdatedAt = weekUpdatedAt;
+            }
+
             const result = await dataService.updateWeek(currentModuleId, parseInt(weekNum), updates);
 
             if (result.success) {
@@ -904,6 +910,16 @@
             } else {
                 saveBtn.textContent = originalText;
                 saveBtn.disabled = false;
+
+                // Special handling for conflict errors
+                if (result.code === 'CONFLICT') {
+                    showNotification(result.message, 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'module-overview.html';
+                    }, 2000);
+                    return;
+                }
+
                 showNotification(result.message || 'Failed to save week', 'error');
             }
         }
@@ -1055,6 +1071,9 @@
             const week = currentModuleId ? await dataService.getWeek(currentModuleId, parseInt(weekNum)) : null;
 
             if (week) {
+                // Store updated_at for optimistic locking (conflict detection)
+                weekUpdatedAt = week.updatedAt || week.updated_at || null;
+
                 // Populate form fields with existing data
                 document.getElementById('week-title').value = week.title || '';
                 document.getElementById('week-description').value = week.description || '';
