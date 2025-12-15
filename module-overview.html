@@ -391,6 +391,11 @@
                 <h3>Edit Module Information</h3>
                 <button class="modal-close" onclick="closeEditDescriptionModal()">&times;</button>
             </div>
+            <div class="form-group" id="title-input-group" style="display: none;">
+                <label for="title-input">Module Title</label>
+                <input type="text" id="title-input">
+                <small style="color: #6c757d;">Change the title for this active module section</small>
+            </div>
             <div class="form-group">
                 <label for="description-input">Module Overview</label>
                 <textarea id="description-input" style="min-height: 150px;"></textarea>
@@ -908,6 +913,15 @@
             const currentModuleId = dataService.getCurrentModuleId();
             const currentModule = currentModuleId ? await dataService.getModule(currentModuleId) : {};
 
+            // Show title field only for active (launched) modules
+            const titleInputGroup = document.getElementById('title-input-group');
+            if (currentModule.status === 'launched') {
+                titleInputGroup.style.display = 'block';
+                document.getElementById('title-input').value = currentModule.title || '';
+            } else {
+                titleInputGroup.style.display = 'none';
+            }
+
             setFieldValue('description-input', currentModule.description || '');
             document.getElementById('instructor-input').value = currentModule.instructor || '';
             document.getElementById('duration-input').value = currentModule.duration || '';
@@ -971,6 +985,12 @@
                 // Keep status unchanged - templates remain 'draft' until launched
             };
 
+            // Include title for active modules
+            const titleInputGroup = document.getElementById('title-input-group');
+            if (titleInputGroup.style.display !== 'none') {
+                updates.title = document.getElementById('title-input').value;
+            }
+
             try {
                 const result = await dataService.updateModule(currentModuleId, updates);
 
@@ -1012,6 +1032,14 @@
                 document.getElementById('module-duration').textContent = duration;
                 document.getElementById('participation-requirements').innerHTML = formatText(participation);
                 document.getElementById('time-expectations').innerHTML = formatText(timeExp);
+
+                // Update title if it was edited (active modules only)
+                if (updates.title) {
+                    document.getElementById('module-title').textContent = updates.title;
+                    // Also update breadcrumb
+                    const breadcrumb = document.querySelector('.breadcrumb-item:last-child');
+                    if (breadcrumb) breadcrumb.textContent = updates.title;
+                }
 
                 // Clear the draft since we successfully saved
                 dataService.deleteDraft('moduleInfo');
