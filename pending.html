@@ -85,7 +85,7 @@
     </style>
 </head>
 <body>
-    <div class="pending-container">
+    <div class="pending-container" style="display: none;" id="pending-content">
         <div class="pending-card">
             <div class="pending-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -109,26 +109,32 @@
     </div>
 
     <script type="module">
+        import { supabase } from './js/supabase-client.js';
         import { getCurrentUser, logout } from './js/auth.js';
 
         async function init() {
-            const user = await getCurrentUser();
+            // First check if there's an authenticated session at all
+            const { data: { user: authUser } } = await supabase.auth.getUser();
 
-            if (!user) {
+            if (!authUser) {
                 // Not logged in - redirect to login
                 window.location.href = 'login.html';
                 return;
             }
 
-            if (user.status === 'active') {
+            // Now get the full profile
+            const user = await getCurrentUser();
+
+            if (user && user.status === 'active') {
                 // Already approved - redirect to app
                 window.location.href = 'index.html';
                 return;
             }
 
-            // Show user info
-            document.getElementById('user-email').textContent = user.email;
+            // Show user info and reveal page (use auth email if profile not ready)
+            document.getElementById('user-email').textContent = user?.email || authUser.email;
             document.getElementById('user-info').style.display = 'block';
+            document.getElementById('pending-content').style.display = 'flex';
         }
 
         window.logoutUser = logout;

@@ -433,7 +433,7 @@ class DataServiceSupabase {
             const templateWeeks = await this.getWeeks(templateId)
             const activeWeeks = await this.getWeeks(activeModuleId)
 
-            // Create a map of active weeks by week_number for easy lookup
+            // Create a map of active weeks by week id (which is week_number) for easy lookup
             const activeWeekMap = new Map(activeWeeks.map(w => [w.id, w]))
 
             for (const templateWeek of templateWeeks) {
@@ -443,8 +443,8 @@ class DataServiceSupabase {
                     // Week exists in active module - update it while preserving discussions
                     await this.syncWeekContent(templateWeek, activeWeek, activeModuleId)
                 } else {
-                    // Week doesn't exist in active module - create it
-                    await this.createWeek(activeModuleId, {
+                    // Week doesn't exist in active module - create it with same week_number
+                    await this.createWeekWithNumber(activeModuleId, templateWeek.id, {
                         title: templateWeek.title,
                         description: templateWeek.description,
                         unlockDate: templateWeek.unlockDate,
@@ -502,96 +502,100 @@ class DataServiceSupabase {
 
         const activePagesList = activePagesData || []
 
-        // For each template page, update the corresponding active page
-        for (let i = 0; i < templateWeek.pages.length; i++) {
-            const templatePage = templateWeek.pages[i]
+        // Process all pages in parallel for speed
+        const pagePromises = templateWeek.pages.map(async (templatePage, i) => {
             const activePage = activePagesList[i]
+            if (!activePage) return
 
-            if (activePage) {
-                // Update page content (title, type, content) but not ID
-                const { error: pageUpdateError } = await supabase
+            // Run page update, resources sync, and videos sync in parallel
+            const [pageUpdateResult, , ] = await Promise.all([
+                // Update page content
+                supabase
                     .from('pages')
                     .update({
                         title: templatePage.title,
                         type: templatePage.type,
                         content: templatePage.content
                     })
-                    .eq('id', activePage.id)
+                    .eq('id', activePage.id),
 
-                if (pageUpdateError) {
-                    console.error('Error updating page:', pageUpdateError)
-                }
+                // Sync resources - delete then insert
+                (async () => {
+                    await supabase.from('resources').delete().eq('page_id', activePage.id)
+                    if (templatePage.resources && templatePage.resources.length > 0) {
+                        const resources = templatePage.resources.map((r, idx) => ({
+                            page_id: activePage.id,
+                            title: r.title,
+                            url: r.url || null,
+                            description: r.description || null,
+                            sort_order: idx
+                        }))
+                        await supabase.from('resources').insert(resources)
+                    }
+                })(),
 
-                // Sync resources - replace all (resources don't have discussions)
-                await supabase.from('resources').delete().eq('page_id', activePage.id)
-                if (templatePage.resources && templatePage.resources.length > 0) {
-                    const resources = templatePage.resources.map((r, idx) => ({
-                        page_id: activePage.id,
-                        title: r.title,
-                        url: r.url || null,
-                        description: r.description || null,
-                        sort_order: idx
-                    }))
-                    await supabase.from('resources').insert(resources)
-                }
+                // Sync videos - delete then insert
+                (async () => {
+                    await supabase.from('videos').delete().eq('page_id', activePage.id)
+                    if (templatePage.videos && templatePage.videos.length > 0) {
+                        const videos = templatePage.videos.map((v, idx) => ({
+                            page_id: activePage.id,
+                            title: v.title,
+                            url: v.url,
+                            description: v.description || null,
+                            sort_order: idx
+                        }))
+                        await supabase.from('videos').insert(videos)
+                    }
+                })()
+            ])
 
-                // Sync videos - replace all (videos don't have discussions)
-                await supabase.from('videos').delete().eq('page_id', activePage.id)
-                if (templatePage.videos && templatePage.videos.length > 0) {
-                    const videos = templatePage.videos.map((v, idx) => ({
-                        page_id: activePage.id,
-                        title: v.title,
-                        url: v.url,
-                        description: v.description || null,
-                        sort_order: idx
-                    }))
-                    await supabase.from('videos').insert(videos)
-                }
+            if (pageUpdateResult.error) {
+                console.error('Error updating page:', pageUpdateResult.error)
+            }
 
-                // Sync questions - PRESERVE discussions!
-                // Get existing questions with their discussion counts
-                const { data: existingQuestions } = await supabase
-                    .from('questions')
-                    .select(`
-                        id,
-                        question_number,
-                        text,
-                        discussion_posts (id)
-                    `)
-                    .eq('page_id', activePage.id)
-                    .order('question_number', { ascending: true })
+            // Sync questions - must be sequential to preserve discussions
+            const { data: existingQuestions } = await supabase
+                .from('questions')
+                .select('id, question_number, text')
+                .eq('page_id', activePage.id)
+                .order('question_number', { ascending: true })
 
-                const existingQList = existingQuestions || []
+            const existingQList = existingQuestions || []
+            const templateQuestions = templatePage.questions || []
 
-                // For each template question
-                const templateQuestions = templatePage.questions || []
+            // Batch question updates/inserts
+            const questionUpdates = []
+            const questionInserts = []
 
-                for (let qIdx = 0; qIdx < templateQuestions.length; qIdx++) {
-                    const templateQ = templateQuestions[qIdx]
-                    const existingQ = existingQList.find(q => q.question_number === qIdx + 1)
+            for (let qIdx = 0; qIdx < templateQuestions.length; qIdx++) {
+                const templateQ = templateQuestions[qIdx]
+                const existingQ = existingQList.find(q => q.question_number === qIdx + 1)
 
-                    if (existingQ) {
-                        // Question exists - update text only (preserve discussions)
-                        await supabase
+                if (existingQ) {
+                    questionUpdates.push(
+                        supabase
                             .from('questions')
                             .update({ text: templateQ.text })
                             .eq('id', existingQ.id)
-                    } else {
-                        // New question - create it
-                        await supabase
-                            .from('questions')
-                            .insert({
-                                page_id: activePage.id,
-                                question_number: qIdx + 1,
-                                text: templateQ.text
-                            })
-                    }
+                    )
+                } else {
+                    questionInserts.push({
+                        page_id: activePage.id,
+                        question_number: qIdx + 1,
+                        text: templateQ.text
+                    })
                 }
-
-                // Note: We don't delete questions that have discussions
-                // Questions beyond template count are left as-is to preserve discussions
             }
-        }
+
+            // Run question updates in parallel, then batch insert new ones
+            await Promise.all(questionUpdates)
+            if (questionInserts.length > 0) {
+                await supabase.from('questions').insert(questionInserts)
+            }
+        })
+
+        await Promise.all(pagePromises)
     }
 
     // ==================== Week Operations ====================
@@ -781,6 +785,48 @@ class DataServiceSupabase {
         }
     }
 
+    /**
+     * Create a week with a specific week_number (used for syncing from template)
+     */
+    async createWeekWithNumber(moduleId, weekNumber, weekData) {
+        try {
+            const { data: week, error: weekError } = await supabase
+                .from('weeks')
+                .insert({
+                    module_id: moduleId,
+                    week_number: weekNumber,
+                    title: weekData.title,
+                    description: weekData.description || null,
+                    unlock_date: weekData.unlockDate || null
+                })
+                .select()
+                .single()
+
+            if (weekError) {
+                return this.error('Failed to create week: ' + weekError.message, 'CREATE_ERROR')
+            }
+
+            // Create pages if provided
+            if (weekData.pages && weekData.pages.length > 0) {
+                for (let i = 0; i < weekData.pages.length; i++) {
+                    const pageData = weekData.pages[i]
+                    await this.createPage(week.id, i + 1, pageData)
+                }
+            }
+
+            return this.success({
+                id: week.week_number,
+                moduleId: week.module_id,
+                title: week.title,
+                description: week.description,
+                unlockDate: week.unlock_date,
+                createdAt: week.created_at
+            }, 'Week created successfully')
+        } catch (err) {
+            return this.error('Failed to create week: ' + err.message, 'CREATE_ERROR')
+        }
+    }
+
     async createPage(weekId, pageNumber, pageData) {
         const { data: page, error: pageError } = await supabase
             .from('pages')
@@ -889,23 +935,56 @@ class DataServiceSupabase {
                     .eq('week_id', weekRecord.id)
                     .order('page_number', { ascending: true })
 
-                for (let i = 0; i < updates.pages.length; i++) {
-                    const pageData = updates.pages[i]
+                // Process all pages in parallel
+                const pagePromises = updates.pages.map(async (pageData, i) => {
                     const pageNumber = i + 1
                     const existingPage = existingPages?.find(p => p.page_number === pageNumber)
 
                     if (existingPage) {
-                        // Update existing page
-                        await supabase
-                            .from('pages')
-                            .update({
-                                title: pageData.title,
-                                type: pageData.type,
-                                content: pageData.content || null
-                            })
-                            .eq('id', existingPage.id)
+                        // Run page update, resources, and videos in parallel
+                        await Promise.all([
+                            // Update page content
+                            supabase
+                                .from('pages')
+                                .update({
+                                    title: pageData.title,
+                                    type: pageData.type,
+                                    content: pageData.content || null
+                                })
+                                .eq('id', existingPage.id),
 
-                        // Update questions - preserve IDs to keep discussions
+                            // Sync resources
+                            (async () => {
+                                await supabase.from('resources').delete().eq('page_id', existingPage.id)
+                                if (pageData.resources && pageData.resources.length > 0) {
+                                    const resources = pageData.resources.map((r, idx) => ({
+                                        page_id: existingPage.id,
+                                        title: r.title,
+                                        url: r.url || null,
+                                        description: r.description || null,
+                                        sort_order: idx
+                                    }))
+                                    await supabase.from('resources').insert(resources)
+                                }
+                            })(),
+
+                            // Sync videos
+                            (async () => {
+                                await supabase.from('videos').delete().eq('page_id', existingPage.id)
+                                if (pageData.videos && pageData.videos.length > 0) {
+                                    const videos = pageData.videos.map((v, idx) => ({
+                                        page_id: existingPage.id,
+                                        title: v.title,
+                                        url: v.url,
+                                        duration: v.duration || null,
+                                        sort_order: idx
+                                    }))
+                                    await supabase.from('videos').insert(videos)
+                                }
+                            })()
+                        ])
+
+                        // Handle questions (need existing data first)
                         if (pageData.questions) {
                             const { data: existingQuestions } = await supabase
                                 .from('questions')
@@ -913,73 +992,57 @@ class DataServiceSupabase {
                                 .eq('page_id', existingPage.id)
                                 .order('question_number', { ascending: true })
 
+                            const questionUpdates = []
+                            const questionInserts = []
+
                             for (let qIdx = 0; qIdx < pageData.questions.length; qIdx++) {
                                 const questionData = pageData.questions[qIdx]
                                 const existingQ = existingQuestions?.find(q => q.question_number === qIdx + 1)
 
                                 if (existingQ) {
-                                    // Update existing question text only (preserves discussions)
-                                    await supabase
-                                        .from('questions')
-                                        .update({ text: questionData.text })
-                                        .eq('id', existingQ.id)
+                                    questionUpdates.push(
+                                        supabase
+                                            .from('questions')
+                                            .update({ text: questionData.text })
+                                            .eq('id', existingQ.id)
+                                    )
                                 } else {
-                                    // Create new question
-                                    await supabase
-                                        .from('questions')
-                                        .insert({
-                                            page_id: existingPage.id,
-                                            question_number: qIdx + 1,
-                                            text: questionData.text
-                                        })
+                                    questionInserts.push({
+                                        page_id: existingPage.id,
+                                        question_number: qIdx + 1,
+                                        text: questionData.text
+                                    })
                                 }
                             }
 
-                            // Remove excess questions (ones beyond the new count)
+                            // Run updates in parallel, batch insert new ones
+                            await Promise.all(questionUpdates)
+                            if (questionInserts.length > 0) {
+                                await supabase.from('questions').insert(questionInserts)
+                            }
+
+                            // Delete excess questions in parallel
                             if (existingQuestions && existingQuestions.length > pageData.questions.length) {
-                                const excessQuestions = existingQuestions.filter(q => q.question_number > pageData.questions.length)
-                                for (const eq of excessQuestions) {
-                                    await supabase.from('questions').delete().eq('id', eq.id)
-                                }
+                                const deletePromises = existingQuestions
+                                    .filter(q => q.question_number > pageData.questions.length)
+                                    .map(eq => supabase.from('questions').delete().eq('id', eq.id))
+                                await Promise.all(deletePromises)
                             }
-                        }
-
-                        // Resources and videos can be replaced (no discussions attached)
-                        await supabase.from('resources').delete().eq('page_id', existingPage.id)
-                        if (pageData.resources && pageData.resources.length > 0) {
-                            const resources = pageData.resources.map((r, idx) => ({
-                                page_id: existingPage.id,
-                                title: r.title,
-                                url: r.url || null,
-                                description: r.description || null,
-                                sort_order: idx
-                            }))
-                            await supabase.from('resources').insert(resources)
-                        }
-
-                        await supabase.from('videos').delete().eq('page_id', existingPage.id)
-                        if (pageData.videos && pageData.videos.length > 0) {
-                            const videos = pageData.videos.map((v, idx) => ({
-                                page_id: existingPage.id,
-                                title: v.title,
-                                url: v.url,
-                                duration: v.duration || null,
-                                sort_order: idx
-                            }))
-                            await supabase.from('videos').insert(videos)
                         }
                     } else {
                         // Create new page
                         await this.createPage(weekRecord.id, pageNumber, pageData)
                     }
-                }
+                })
 
-                // Remove excess pages (ones beyond the new count)
+                await Promise.all(pagePromises)
+
+                // Remove excess pages in parallel
                 if (existingPages && existingPages.length > updates.pages.length) {
-                    const excessPages = existingPages.filter(p => p.page_number > updates.pages.length)
-                    for (const ep of excessPages) {
-                        await supabase.from('pages').delete().eq('id', ep.id)
-                    }
+                    const deletePromises = existingPages
+                        .filter(p => p.page_number > updates.pages.length)
+                        .map(ep => supabase.from('pages').delete().eq('id', ep.id))
+                    await Promise.all(deletePromises)
                 }
             }
 
@@ -1516,20 +1579,24 @@ class DataServiceSupabase {
     // ==================== Draft Operations (localStorage fallback) ====================
 
     saveDraft(type, data) {
-        const key = `draft:${type}`
+        // Include moduleId in key to prevent cross-module draft collisions
+        const moduleId = this.getCurrentModuleId() || 'global'
+        const key = `draft:${moduleId}:${type}`
         const draft = { ...data, savedAt: new Date().toISOString() }
         localStorage.setItem(key, JSON.stringify(draft))
         return draft
     }
 
     getDraft(type) {
-        const key = `draft:${type}`
+        const moduleId = this.getCurrentModuleId() || 'global'
+        const key = `draft:${moduleId}:${type}`
         const data = localStorage.getItem(key)
         return data ? JSON.parse(data) : null
     }
 
     deleteDraft(type) {
-        localStorage.removeItem(`draft:${type}`)
+        const moduleId = this.getCurrentModuleId() || 'global'
+        localStorage.removeItem(`draft:${moduleId}:${type}`)
         return true
     }
 }

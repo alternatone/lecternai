@@ -803,17 +803,11 @@
                 await dataService.getBatchWeekProgress(currentModuleId) : {};
 
             for (const week of weeks) {
-                // For student view, check unlock date
-                if (currentView === 'student') {
-                    // Hide weeks with future unlock dates
-                    if (week.unlockDate && week.unlockDate > today) {
-                        continue;
-                    }
-                    // Also hide old-style locked weeks
-                    if (week.status === 'locked' && !week.unlockDate) {
-                        continue;
-                    }
-                }
+                // Check if week is locked for students
+                const isLocked = currentView === 'student' && (
+                    (week.unlockDate && week.unlockDate > today) ||
+                    (week.status === 'locked' && !week.unlockDate)
+                );
 
                 const weekItem = document.createElement('div');
                 weekItem.className = 'divided-week';
@@ -833,7 +827,13 @@
                         metaHtml = `<div class="meta" style="color: #8b6914;">Unlocks ${formatUnlockDate(week.unlockDate)}</div>`;
                     }
                 } else if (currentView === 'student') {
-                    metaHtml = '<div class="meta">Available now</div>';
+                    if (isLocked && week.unlockDate) {
+                        metaHtml = `<div class="meta" style="color: #8b6914;">Unlocks ${formatUnlockDate(week.unlockDate)}</div>`;
+                    } else if (isLocked) {
+                        metaHtml = '<div class="meta" style="color: #8b6914;">Locked</div>';
+                    } else {
+                        metaHtml = '<div class="meta">Available now</div>';
+                    }
                 }
 
                 // Use batch-fetched progress data (no additional queries)
@@ -857,19 +857,29 @@
                 } else {
                     // Student view (or participant mode): Show status and View Week button
                     let statusBadge = '';
-                    if (week.status === 'complete' || isComplete) {
-                        statusBadge = '<span class="status-badge completed">Completed</span>';
+                    if (isLocked) {
+                        statusBadge = '<span class="status-badge locked" style="background: #e9ecef; color: #6c757d;">Locked</span>';
+                        actionsHtml = `
+                            <div class="divided-week-actions">
+                                ${statusBadge}
+                                <button class="btn-f olive" type="button" disabled style="padding: 0.4rem 0.8rem; font-size: 0.9rem; opacity: 0.5; cursor: not-allowed;">View Week</button>
+                            </div>
+                        `;
                     } else {
-                        const statusText = hasProgress && !isComplete ? 'In Progress' : 'Not Started';
-                        const statusClass = hasProgress && !isComplete ? 'in-progress' : 'not-started';
-                        statusBadge = `<span class="status-badge ${statusClass}">${statusText}</span>`;
+                        if (week.status === 'complete' || isComplete) {
+                            statusBadge = '<span class="status-badge completed">Completed</span>';
+                        } else {
+                            const statusText = hasProgress && !isComplete ? 'In Progress' : 'Not Started';
+                            const statusClass = hasProgress && !isComplete ? 'in-progress' : 'not-started';
+                            statusBadge = `<span class="status-badge ${statusClass}">${statusText}</span>`;
+                        }
+                        actionsHtml = `
+                            <div class="divided-week-actions">
+                                ${statusBadge}
+                                <button class="btn-f olive" type="button" onclick="location.href='${weekViewerUrl}'" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">View Week</button>
+                            </div>
+                        `;
                     }
-                    actionsHtml = `
-                        <div class="divided-week-actions">
-                            ${statusBadge}
-                            <button class="btn-f olive" type="button" onclick="location.href='${weekViewerUrl}'" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">View Week</button>
-                        </div>
-                    `;
                 }
 
                 weekItem.innerHTML = `

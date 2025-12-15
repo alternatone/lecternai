@@ -418,7 +418,7 @@
             }
 
             // Show loading state
-            const saveBtn = document.querySelector('#create-module-modal .btn-primary');
+            const saveBtn = document.querySelector('#create-module-modal .btn-f.gold');
             const originalText = saveBtn.textContent;
             saveBtn.textContent = 'Saving...';
             saveBtn.disabled = true;
@@ -764,6 +764,7 @@
         window.deleteModule = deleteModule;
         window.archiveModule = archiveModule;
         window.viewArchivedModule = viewArchivedModule;
+        window.restoreModule = restoreModule;
         window.deleteArchivedModule = deleteArchivedModule;
         window.dataService = dataService;
     </script>

@@ -507,8 +507,7 @@
             document.getElementById('content-title').value = '';
             document.getElementById('content-url').value = '';
             document.getElementById('content-description').value = '';
-            document.getElementById('content-duration').value = '';
-            document.getElementById('content-modal-title').textContent = 'Add Content';
+                        document.getElementById('content-modal-title').textContent = 'Add Content';
             window.contentTargetList = targetList || 'reading'; // 'reading', 'study', or 'video'
             window.editingContentId = null;
             detectContentType();
@@ -783,8 +782,7 @@
             if (video) {
                 document.getElementById('content-title').value = video.title;
                 document.getElementById('content-url').value = video.url;
-                document.getElementById('content-duration').value = video.duration || '';
-                document.getElementById('content-modal-title').textContent = 'Edit Video';
+                                document.getElementById('content-modal-title').textContent = 'Edit Video';
                 window.editingContentId = id;
                 window.contentTargetList = 'video';
                 detectContentType();
