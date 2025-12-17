@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Logs - Lectern Admin</title>
+    <link rel="stylesheet" href="styles/lectern-core.css">
+    <script type="module" src="js/error-handler.js"></script>
+    <style>
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--light-bg);
+            border-bottom: 1px solid #e9ecef;
+        }
+        .user-header .user-info { flex: 1; }
+        .user-header .admin-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filters select, .filters input {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .error-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .error-table th {
+            text-align: left;
+            padding: 0.75rem;
+            background: var(--light-bg);
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .error-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+
+        .error-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .error-type {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .error-type.uncaught { background: #f8d7da; color: #721c24; }
+        .error-type.promise { background: #fff3cd; color: #856404; }
+        .error-type.data { background: #d1ecf1; color: #0c5460; }
+        .error-type.network { background: #e2e3e5; color: #383d41; }
+        .error-type.other { background: #f0f0f0; color: #666; }
+
+        .error-message {
+            max-width: 400px;
+            word-break: break-word;
+        }
+
+        .stack-toggle {
+            color: var(--teal);
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .stack-trace {
+            display: none;
+            background: #1a1a1a;
+            color: #f0f0f0;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-top: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .stack-trace.show { display: block; }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .no-errors {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--light-bg);
+            border-radius: 8px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .delete-btn {
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .delete-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="user-header" class="user-header" style="display: none;"></div>
+
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon">
+                <h1>Lectern</h1>
+            </a>
+            <nav>
+                <a href="admin-users.html" class="btn-f olive" style="margin-right: 0.5rem;">Users</a>
+                <a href="admin-enrollments.html" class="btn-f olive" style="margin-right: 0.5rem;">Enrollments</a>
+                <a href="admin-errors.html" class="btn-f teal">Error Logs</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2 class="page-title">Error Logs</h2>
+
+        <div id="stats-bar" class="stats-bar" style="display: none;">
+            <div class="stat">
+                <div class="stat-value" id="total-errors">0</div>
+                <div class="stat-label">Total Errors (24h)</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="uncaught-errors">0</div>
+                <div class="stat-label">Uncaught Errors</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="unique-users">0</div>
+                <div class="stat-label">Affected Users</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <select id="filter-type">
+                <option value="">All Error Types</option>
+                <option value="uncaught_error">Uncaught Errors</option>
+                <option value="unhandled_promise_rejection">Promise Rejections</option>
+                <option value="data_service">Data Service</option>
+                <option value="network">Network Errors</option>
+            </select>
+
+            <select id="filter-time">
+                <option value="24h">Last 24 Hours</option>
+                <option value="7d">Last 7 Days</option>
+                <option value="30d">Last 30 Days</option>
+                <option value="all">All Time</option>
+            </select>
+
+            <input type="search" id="filter-search" placeholder="Search error message...">
+
+            <button class="btn-f olive" onclick="applyFilters()">Apply Filters</button>
+            <button class="btn-f gold" onclick="clearOldErrors()">Clear Old Logs</button>
+        </div>
+
+        <div id="loading" class="loading">Loading error logs...</div>
+
+        <div id="error-container" style="display: none;">
+            <table class="error-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Type</th>
+                        <th>Message</th>
+                        <th>User</th>
+                        <th>Page</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="error-tbody">
+                </tbody>
+            </table>
+
+            <div id="no-errors" class="no-errors" style="display: none;">
+                No errors found matching your filters.
+            </div>
+
+            <div id="pagination" class="pagination"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './js/supabase-client.js';
+        import { requireActiveUser, logout } from './js/auth.js';
+
+        let currentUser = null;
+        let currentPage = 1;
+        const pageSize = 50;
+
+        function renderUserHeader() {
+            const header = document.getElementById('user-header');
+            header.innerHTML = `
+                <span class="user-info">
+                    <strong>${currentUser.name || currentUser.email}</strong>
+                    <span class="admin-badge">Admin</span>
+                </span>
+                <button onclick="logoutUser()" class="btn-f olive" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Logout</button>
+            `;
+            header.style.display = 'flex';
+        }
+
+        function getTimeFilter() {
+            const filter = document.getElementById('filter-time').value;
+            const now = new Date();
+            switch (filter) {
+                case '24h':
+                    return new Date(now - 24 * 60 * 60 * 1000).toISOString();
+                case '7d':
+                    return new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+                case '30d':
+                    return new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+                default:
+                    return null;
+            }
+        }
+
+        async function loadStats() {
+            const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+            const { data, error } = await supabase
+                .from('error_logs')
+                .select('id, error_type, user_id')
+                .gte('timestamp', since);
+
+            if (error || !data) return;
+
+            const total = data.length;
+            const uncaught = data.filter(e =>
+                e.error_type === 'uncaught_error' || e.error_type === 'unhandled_promise_rejection'
+            ).length;
+            const uniqueUsers = new Set(data.filter(e => e.user_id).map(e => e.user_id)).size;
+
+            document.getElementById('total-errors').textContent = total;
+            document.getElementById('uncaught-errors').textContent = uncaught;
+            document.getElementById('unique-users').textContent = uniqueUsers;
+            document.getElementById('stats-bar').style.display = 'flex';
+        }
+
+        async function loadErrors() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error-container').style.display = 'none';
+
+            const typeFilter = document.getElementById('filter-type').value;
+            const searchFilter = document.getElementById('filter-search').value.trim();
+            const timeFilter = getTimeFilter();
+
+            let query = supabase
+                .from('error_logs')
+                .select('*, users:user_id(name, email)', { count: 'exact' })
+                .order('timestamp', { ascending: false })
+                .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
+
+            if (typeFilter) {
+                query = query.ilike('error_type', `%${typeFilter}%`);
+            }
+
+            if (searchFilter) {
+                query = query.ilike('error_message', `%${searchFilter}%`);
+            }
+
+            if (timeFilter) {
+                query = query.gte('timestamp', timeFilter);
+            }
+
+            const { data, error, count } = await query;
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error-container').style.display = 'block';
+
+            if (error) {
+                console.error('Error loading logs:', error);
+                document.getElementById('error-tbody').innerHTML = `
+                    <tr><td colspan="6" style="text-align: center; color: #dc3545;">
+                        Failed to load error logs: ${error.message}
+                    </td></tr>
+                `;
+                return;
+            }
+
+            renderErrors(data || []);
+            renderPagination(count || 0);
+        }
+
+        function getErrorTypeClass(type) {
+            if (type.includes('uncaught')) return 'uncaught';
+            if (type.includes('promise')) return 'promise';
+            if (type.includes('data')) return 'data';
+            if (type.includes('network')) return 'network';
+            return 'other';
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function renderErrors(errors) {
+            const tbody = document.getElementById('error-tbody');
+            const noErrors = document.getElementById('no-errors');
+
+            if (errors.length === 0) {
+                tbody.innerHTML = '';
+                noErrors.style.display = 'block';
+                return;
+            }
+
+            noErrors.style.display = 'none';
+
+            tbody.innerHTML = errors.map(err => {
+                const user = err.users || {};
+                const userName = user.name || user.email || 'Anonymous';
+                const pageUrl = err.page_url ? new URL(err.page_url).pathname : '-';
+                const typeClass = getErrorTypeClass(err.error_type);
+
+                return `
+                    <tr>
+                        <td>${formatTime(err.timestamp)}</td>
+                        <td><span class="error-type ${typeClass}">${escapeHtml(err.error_type)}</span></td>
+                        <td class="error-message">
+                            ${escapeHtml(err.error_message)}
+                            ${err.stack_trace ? `
+                                <div class="stack-toggle" onclick="toggleStack(${err.id})">Show stack trace</div>
+                                <div id="stack-${err.id}" class="stack-trace">${escapeHtml(err.stack_trace)}</div>
+                            ` : ''}
+                        </td>
+                        <td>${escapeHtml(userName)}</td>
+                        <td title="${escapeHtml(err.page_url)}">${escapeHtml(pageUrl)}</td>
+                        <td>
+                            <span class="delete-btn" onclick="deleteError(${err.id})">Delete</span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderPagination(total) {
+            const totalPages = Math.ceil(total / pageSize);
+            const pagination = document.getElementById('pagination');
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+
+            if (currentPage > 1) {
+                html += `<button class="btn-f olive" onclick="goToPage(${currentPage - 1})">Previous</button>`;
+            }
+
+            html += `<span style="padding: 0.5rem;">Page ${currentPage} of ${totalPages}</span>`;
+
+            if (currentPage < totalPages) {
+                html += `<button class="btn-f olive" onclick="goToPage(${currentPage + 1})">Next</button>`;
+            }
+
+            pagination.innerHTML = html;
+        }
+
+        window.goToPage = function(page) {
+            currentPage = page;
+            loadErrors();
+        };
+
+        window.toggleStack = function(id) {
+            const stack = document.getElementById(`stack-${id}`);
+            stack.classList.toggle('show');
+            const toggle = stack.previousElementSibling;
+            toggle.textContent = stack.classList.contains('show') ? 'Hide stack trace' : 'Show stack trace';
+        };
+
+        window.applyFilters = function() {
+            currentPage = 1;
+            loadErrors();
+        };
+
+        window.deleteError = async function(id) {
+            if (!confirm('Delete this error log?')) return;
+
+            const { error } = await supabase
+                .from('error_logs')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                alert('Failed to delete: ' + error.message);
+                return;
+            }
+
+            loadErrors();
+            loadStats();
+        };
+
+        window.clearOldErrors = async function() {
+            const days = prompt('Delete errors older than how many days?', '30');
+            if (!days || isNaN(days)) return;
+
+            const cutoff = new Date(Date.now() - parseInt(days) * 24 * 60 * 60 * 1000).toISOString();
+
+            if (!confirm(`Delete all error logs before ${new Date(cutoff).toLocaleDateString()}?`)) return;
+
+            const { error } = await supabase
+                .from('error_logs')
+                .delete()
+                .lt('timestamp', cutoff);
+
+            if (error) {
+                alert('Failed to clear logs: ' + error.message);
+                return;
+            }
+
+            loadErrors();
+            loadStats();
+        };
+
+        window.logoutUser = logout;
+
+        window.onload = async function() {
+            currentUser = await requireActiveUser();
+            if (!currentUser) return;
+
+            if (currentUser.role !== 'admin') {
+                alert('Admin access required');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            renderUserHeader();
+            loadStats();
+            loadErrors();
+        };
+    </script>
+</body>
+</html>

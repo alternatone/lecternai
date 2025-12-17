@@ -8,6 +8,77 @@
 
 import { supabase, getCurrentUserId, isAdmin } from './supabase-client.js'
 
+// Retry configuration
+const RETRY_CONFIG = {
+    maxRetries: 3,
+    baseDelay: 1000,
+    retryableCodes: ['PGRST301', '500', '502', '503', '504', 'NETWORK_ERROR']
+}
+
+/**
+ * Delay helper for retry logic
+ */
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * Check if an error is retryable (transient network/server errors)
+ */
+function isRetryableError(error) {
+    if (!error) return false
+    const code = error.code || error.status || ''
+    return RETRY_CONFIG.retryableCodes.some(c =>
+        String(code).includes(c) || error.message?.includes('network') || error.message?.includes('fetch')
+    )
+}
+
+/**
+ * Execute a Supabase operation with retry logic
+ */
+async function withRetry(operation, context = 'operation') {
+    let lastError = null
+
+    for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+        try {
+            const result = await operation()
+            return result
+        } catch (error) {
+            lastError = error
+
+            if (!isRetryableError(error) || attempt === RETRY_CONFIG.maxRetries) {
+                throw error
+            }
+
+            const delayMs = RETRY_CONFIG.baseDelay * Math.pow(2, attempt)
+            console.warn(`[DataService] Retry ${attempt + 1}/${RETRY_CONFIG.maxRetries} for ${context} after ${delayMs}ms`)
+            await delay(delayMs)
+        }
+    }
+
+    throw lastError
+}
+
+/**
+ * Log error to Supabase error_logs table
+ */
+async function logError(errorType, message, context = {}) {
+    try {
+        const userId = await getCurrentUserId()
+        await supabase.from('error_logs').insert({
+            error_type: errorType,
+            error_message: message,
+            page_url: typeof window !== 'undefined' ? window.location.href : null,
+            user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+            user_id: userId || null,
+            additional_context: context
+        })
+    } catch (e) {
+        // Don't let error logging failures break the app
+        console.warn('[DataService] Failed to log error:', e.message)
+    }
+}
+
 class DataServiceSupabase {
     constructor() {
         this.currentModuleId = null
@@ -25,8 +96,10 @@ class DataServiceSupabase {
         return { success: true, data, message, error: null }
     }
 
-    error(message, code = 'UNKNOWN_ERROR') {
+    error(message, code = 'UNKNOWN_ERROR', context = {}) {
         console.error(`[DataServiceSupabase] Error: ${message}`)
+        // Log to error_logs table (async, don't await)
+        logError(`data_service_${code.toLowerCase()}`, message, context)
         return { success: false, data: null, message, error: { code, message } }
     }
 
@@ -55,32 +128,41 @@ class DataServiceSupabase {
     // ==================== Module Operations ====================
 
     async getModules() {
-        const { data, error } = await supabase
-            .from('modules')
-            .select('*')
-            .order('created_at', { ascending: false })
+        try {
+            const { data, error } = await withRetry(async () => {
+                const result = await supabase
+                    .from('modules')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                if (result.error) throw result.error
+                return result
+            }, 'getModules')
 
-        if (error) {
-            console.error('Error fetching modules:', error)
+            if (error) {
+                logError('fetch_modules', error.message, { operation: 'getModules' })
+                return []
+            }
+
+            // Map to expected format
+            return data.map(m => ({
+                id: m.id,
+                title: m.title,
+                description: m.description,
+                instructor: m.instructor,
+                duration: m.duration,
+                participation: m.participation,
+                timeExpectations: m.time_expectations,
+                status: m.status,
+                templateId: m.template_id,
+                launchedAt: m.launched_at,
+                archivedAt: m.archived_at,
+                createdAt: m.created_at,
+                updatedAt: m.updated_at
+            }))
+        } catch (err) {
+            logError('fetch_modules', err.message, { operation: 'getModules' })
             return []
         }
-
-        // Map to expected format
-        return data.map(m => ({
-            id: m.id,
-            title: m.title,
-            description: m.description,
-            instructor: m.instructor,
-            duration: m.duration,
-            participation: m.participation,
-            timeExpectations: m.time_expectations,
-            status: m.status,
-            templateId: m.template_id,
-            launchedAt: m.launched_at,
-            archivedAt: m.archived_at,
-            createdAt: m.created_at,
-            updatedAt: m.updated_at
-        }))
     }
 
     async getModulesByStatus(status) {
@@ -1266,25 +1348,40 @@ class DataServiceSupabase {
     // ==================== Zoom Operations ====================
 
     async getZoomInfo(moduleId) {
-        const { data, error } = await supabase
-            .from('module_zoom_info')
-            .select('*')
-            .eq('module_id', moduleId)
-            .single()
+        try {
+            // Use .maybeSingle() instead of .single() to avoid 406 error when no rows exist
+            const { data, error } = await supabase
+                .from('module_zoom_info')
+                .select('*')
+                .eq('module_id', moduleId)
+                .maybeSingle()
 
-        if (error || !data) {
-            return {}
-        }
-
-        return {
-            url: data.url,
-            meetingId: data.meeting_id,
-            passcode: data.passcode,
-            schedule: {
-                day: data.day,
-                time: data.time,
-                timezone: data.timezone
+            // No data is expected for modules without zoom info - not an error
+            if (error) {
+                // Only log if it's a real error, not just "no rows"
+                if (error.code !== 'PGRST116') {
+                    console.warn('Error fetching zoom info:', error.message)
+                }
+                return {}
             }
+
+            if (!data) {
+                return {}
+            }
+
+            return {
+                url: data.url,
+                meetingId: data.meeting_id,
+                passcode: data.passcode,
+                schedule: {
+                    day: data.day,
+                    time: data.time,
+                    timezone: data.timezone
+                }
+            }
+        } catch (err) {
+            // Zoom info is optional, so don't log as error
+            return {}
         }
     }
 

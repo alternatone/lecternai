@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Week Viewer - Lectern</title>
     <link rel="stylesheet" href="styles/lectern-core.css">
+    <script type="module" src="js/error-handler.js"></script>
     <script src="js/db-schema.js"></script>
     <script src="js/validation.js"></script>
     <script src="js/rich-text.js"></script>
@@ -812,21 +813,36 @@
                 return;
             }
 
-            // Use logged-in user's name
-            const author = currentUser.name || currentUser.email || 'Anonymous';
+            // Find and disable the post button to prevent double-clicks
+            const postBtn = textarea.parentElement.querySelector('button.btn-f.teal');
+            if (postBtn) {
+                postBtn.disabled = true;
+                postBtn.textContent = 'Posting...';
+            }
 
-            // Add discussion post using DataService (isolated per module)
-            const pageIndex = currentPage - 1; // Convert to 0-based index
-            await dataService.addDiscussionPost(currentModuleId, currentWeek.id, pageIndex, questionIndex, {
-                author: author,
-                content: content
-            });
+            try {
+                // Use logged-in user's name
+                const author = currentUser.name || currentUser.email || 'Anonymous';
 
-            showNotification('Response posted!', 'success');
-            textarea.value = '';
+                // Add discussion post using DataService (isolated per module)
+                const pageIndex = currentPage - 1; // Convert to 0-based index
+                await dataService.addDiscussionPost(currentModuleId, currentWeek.id, pageIndex, questionIndex, {
+                    author: author,
+                    content: content
+                });
 
-            // Reload the page to show the new post
-            await renderPage();
+                showNotification('Response posted!', 'success');
+                textarea.value = '';
+
+                // Reload the page to show the new post
+                await renderPage();
+            } catch (err) {
+                showNotification('Failed to post response. Please try again.', 'error');
+                if (postBtn) {
+                    postBtn.disabled = false;
+                    postBtn.textContent = 'Post Response';
+                }
+            }
         }
 
         // Close all open edit/reply forms to keep UI clean
@@ -889,19 +905,35 @@
                 return;
             }
 
-            // Use logged-in user's name
-            const author = currentUser.name || currentUser.email || 'Anonymous';
+            // Find and disable the post button to prevent double-clicks
+            const replyForm = document.getElementById(`reply-form-${postId}`);
+            const postBtn = replyForm?.querySelector('button.btn-text.teal');
+            if (postBtn) {
+                postBtn.disabled = true;
+                postBtn.textContent = 'Posting...';
+            }
 
-            // Add reply using DataService (isolated per module)
-            await dataService.addReply(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, {
-                author: author,
-                content: content
-            });
+            try {
+                // Use logged-in user's name
+                const author = currentUser.name || currentUser.email || 'Anonymous';
 
-            showNotification('Reply posted!', 'success');
+                // Add reply using DataService (isolated per module)
+                await dataService.addReply(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, {
+                    author: author,
+                    content: content
+                });
 
-            // Reload the page to show the new reply
-            await renderPage();
+                showNotification('Reply posted!', 'success');
+
+                // Reload the page to show the new reply
+                await renderPage();
+            } catch (err) {
+                showNotification('Failed to post reply. Please try again.', 'error');
+                if (postBtn) {
+                    postBtn.disabled = false;
+                    postBtn.textContent = 'Post Reply';
+                }
+            }
         }
 
         function editPost(postId) {
@@ -1073,14 +1105,28 @@
 
         // Explicit save and exit button handler
         async function saveProgressAndExit() {
-            if (currentModuleId && currentWeek) {
-                await dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
+            const saveBtn = document.getElementById('save-exit-btn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
             }
-            showNotification('Progress saved!', 'success');
-            // Short delay to let notification show before redirect
-            setTimeout(() => {
-                window.location.href = getModuleOverviewUrl();
-            }, 500);
+
+            try {
+                if (currentModuleId && currentWeek) {
+                    await dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
+                }
+                showNotification('Progress saved!', 'success');
+                // Short delay to let notification show before redirect
+                setTimeout(() => {
+                    window.location.href = getModuleOverviewUrl();
+                }, 500);
+            } catch (err) {
+                showNotification('Failed to save progress. Please try again.', 'error');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = 'Save Progress & Exit';
+                }
+            }
         }
 
         // Show content and hide loading spinner

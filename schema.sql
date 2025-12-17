@@ -140,6 +140,19 @@ CREATE TABLE IF NOT EXISTS discussion_posts (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Error Logs table (for production error tracking)
+CREATE TABLE IF NOT EXISTS error_logs (
+    id BIGSERIAL PRIMARY KEY,
+    timestamp TIMESTAMPTZ DEFAULT NOW(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    error_type TEXT NOT NULL,
+    error_message TEXT NOT NULL,
+    stack_trace TEXT,
+    page_url TEXT,
+    user_agent TEXT,
+    additional_context JSONB
+);
+
 -- ==================== INDEXES ====================
 
 CREATE INDEX IF NOT EXISTS idx_modules_status ON modules(status);
@@ -156,6 +169,9 @@ CREATE INDEX IF NOT EXISTS idx_progress_week_id ON progress(week_id);
 CREATE INDEX IF NOT EXISTS idx_discussion_posts_question_id ON discussion_posts(question_id);
 CREATE INDEX IF NOT EXISTS idx_discussion_posts_user_id ON discussion_posts(user_id);
 CREATE INDEX IF NOT EXISTS idx_discussion_posts_parent_id ON discussion_posts(parent_id);
+CREATE INDEX IF NOT EXISTS idx_error_logs_timestamp ON error_logs(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_error_logs_user_id ON error_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_error_logs_error_type ON error_logs(error_type);
 
 -- ==================== FUNCTIONS ====================
 
@@ -195,6 +211,7 @@ ALTER TABLE videos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE enrollments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE discussion_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE error_logs ENABLE ROW LEVEL SECURITY;
 
 -- ==================== RLS POLICIES ====================
 
@@ -423,6 +440,19 @@ CREATE POLICY "Users update own posts" ON discussion_posts
 -- Users can delete their own posts
 CREATE POLICY "Users delete own posts" ON discussion_posts
     FOR DELETE USING (user_id = auth.uid());
+
+-- ===== ERROR_LOGS POLICIES =====
+-- Anyone can insert error logs (for error tracking)
+CREATE POLICY "Anyone can insert error logs" ON error_logs
+    FOR INSERT WITH CHECK (true);
+
+-- Only admins can view error logs
+CREATE POLICY "Admins view error logs" ON error_logs
+    FOR SELECT USING (is_admin());
+
+-- Only admins can delete error logs
+CREATE POLICY "Admins delete error logs" ON error_logs
+    FOR DELETE USING (is_admin());
 
 -- ==================== AUTH TRIGGER ====================
 
