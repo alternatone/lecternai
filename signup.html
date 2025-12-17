@@ -80,9 +80,9 @@
         .auth-btn {
             width: 100%;
             padding: 0.875rem;
-            background: var(--teal);
-            color: white;
-            border: none;
+            background: none;
+            color: var(--teal);
+            border: 2px solid transparent;
             border-radius: 8px;
             font-size: 1rem;
             font-weight: 500;
@@ -92,16 +92,13 @@
         }
 
         .auth-btn:hover {
-            background: #0d545e;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(16, 100, 112, 0.3);
+            border-color: var(--teal);
         }
 
         .auth-btn:disabled {
-            background: #9ca3af;
+            color: #9ca3af;
+            border-color: transparent;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
         }
 
         .auth-footer {
