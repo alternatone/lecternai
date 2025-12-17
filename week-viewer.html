@@ -1006,24 +1006,6 @@
             }, 500);
         }
 
-        // Check for saved position and auto-resume
-        async function checkForSavedPosition() {
-            if (currentView !== 'student' || !currentModuleId || !currentWeek) return;
-
-            // Don't resume if the week is already completed
-            const isCompleted = await dataService.isWeekCompleted(currentModuleId, currentWeek.id);
-            if (isCompleted) return;
-
-            const savedPosition = await dataService.getPagePosition(currentModuleId, currentWeek.id);
-            const urlPage = getPageFromURL();
-
-            // Auto-navigate to saved position if user didn't explicitly navigate to a specific page
-            if (savedPosition && savedPosition.page > 1 && urlPage === 1 && savedPosition.page !== currentPage) {
-                currentPage = savedPosition.page;
-                window.location.href = getWeekViewerUrl(currentWeek.id, currentPage);
-            }
-        }
-
         // Show content and hide loading spinner
         function showContent() {
             const loadingState = document.getElementById('loading-state');
@@ -1122,13 +1104,6 @@
                     await renderPage();
                     // Show content after everything is loaded
                     showContent();
-                    // Check for saved position after loading
-                    try {
-                        await checkForSavedPosition();
-                    } catch (posErr) {
-                        console.error('Error checking saved position:', posErr);
-                        // Non-fatal, continue
-                    }
                 } else {
                     showError('Week not found.');
                 }

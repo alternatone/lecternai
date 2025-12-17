@@ -846,8 +846,9 @@
                 const hasProgress = weekProgress.page;
                 const isComplete = weekProgress.completed;
 
-                // Build week viewer URL (include participant param if in participant mode)
-                const weekViewerUrl = `week-viewer.html?week=${week.id}&page=1${isParticipantMode ? '&participant=true' : ''}`;
+                // Build week viewer URL - resume from saved page if available
+                const resumePage = (hasProgress && !isComplete) ? weekProgress.page : 1;
+                const weekViewerUrl = `week-viewer.html?week=${week.id}&page=${resumePage}${isParticipantMode ? '&participant=true' : ''}`;
 
                 let actionsHtml = '';
                 if (currentView === 'admin' && !isParticipantMode) {
