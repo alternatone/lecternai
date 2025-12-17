@@ -8,7 +8,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const supabaseUrl = 'https://bnuovhturagqbmunxgql.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJudW92aHR1cmFncWJtdW54Z3FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5MTQ0MDQsImV4cCI6MjA4MTQ5MDQwNH0.LBk9ZNDyza5gGLo9kCNvOLyCzfJJLj9t3w4hklYDuhk'
+const supabaseKey = 'sb_publishable_OjwtqfL9HleTzienBAHAZw_KkfXuwA6'
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
