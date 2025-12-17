@@ -71,7 +71,8 @@
             padding: 0.875rem;
             border: 1px solid #d1d5db;
             border-radius: 6px;
-            resize: vertical;
+            resize: none;
+            overflow: hidden;
             transition: border-color 0.2s ease;
             background: #fff;
         }
@@ -494,10 +495,29 @@
             html += '</div>';
             container.innerHTML = html;
 
-            // Initialize rich text on all textareas
+            // Initialize rich text and auto-expand on all textareas
             setTimeout(() => {
                 RichText.initAll('textarea[id^="response-"], textarea[id^="reply-text-"], textarea[id^="post-edit-text-"], textarea[id^="reply-edit-text-"]');
+                initAutoExpand();
             }, 0);
+        }
+
+        // Auto-expand textareas as content is entered
+        function autoExpandTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        function initAutoExpand() {
+            const textareas = document.querySelectorAll('textarea[id^="response-"], textarea[id^="reply-text-"], textarea[id^="post-edit-text-"], textarea[id^="reply-edit-text-"]');
+            textareas.forEach(textarea => {
+                // Set initial height
+                autoExpandTextarea(textarea);
+                // Add input listener
+                textarea.addEventListener('input', function() {
+                    autoExpandTextarea(this);
+                });
+            });
         }
 
         function renderDiscussionThread(posts, pageIndex, questionIndex, readOnly = false, currentUserId = null) {
@@ -849,6 +869,14 @@
             // Toggle this one (if it was open, it's now closed; if closed, open it)
             if (!isCurrentlyOpen) {
                 replyForm.style.display = 'block';
+                // Initialize auto-expand on this textarea
+                const textarea = replyForm.querySelector('textarea');
+                if (textarea) {
+                    autoExpandTextarea(textarea);
+                    textarea.addEventListener('input', function() {
+                        autoExpandTextarea(this);
+                    });
+                }
             }
         }
 
@@ -884,6 +912,15 @@
             document.getElementById(`post-edit-form-${postId}`).style.display = 'block';
             const actionsEl = document.getElementById(`post-actions-${postId}`);
             if (actionsEl) actionsEl.style.display = 'none';
+
+            // Initialize auto-expand on this textarea
+            const textarea = document.getElementById(`post-edit-text-${postId}`);
+            if (textarea) {
+                autoExpandTextarea(textarea);
+                textarea.addEventListener('input', function() {
+                    autoExpandTextarea(this);
+                });
+            }
         }
 
         function cancelPostEdit(postId) {
@@ -915,6 +952,15 @@
             document.getElementById(`reply-edit-form-${replyId}`).style.display = 'block';
             const actionsEl = document.getElementById(`reply-actions-${replyId}`);
             if (actionsEl) actionsEl.style.display = 'none';
+
+            // Initialize auto-expand on this textarea
+            const textarea = document.getElementById(`reply-edit-text-${replyId}`);
+            if (textarea) {
+                autoExpandTextarea(textarea);
+                textarea.addEventListener('input', function() {
+                    autoExpandTextarea(this);
+                });
+            }
         }
 
         function cancelReplyEdit(replyId) {
