@@ -1006,25 +1006,21 @@
             }, 500);
         }
 
-        // Check for saved position and offer to resume
+        // Check for saved position and auto-resume
         async function checkForSavedPosition() {
             if (currentView !== 'student' || !currentModuleId || !currentWeek) return;
 
-            // Don't prompt to resume if the week is already completed
+            // Don't resume if the week is already completed
             const isCompleted = await dataService.isWeekCompleted(currentModuleId, currentWeek.id);
             if (isCompleted) return;
 
             const savedPosition = await dataService.getPagePosition(currentModuleId, currentWeek.id);
             const urlPage = getPageFromURL();
 
-            // Only prompt if there's a saved position different from current page
-            // and the user didn't explicitly navigate to a specific page
+            // Auto-navigate to saved position if user didn't explicitly navigate to a specific page
             if (savedPosition && savedPosition.page > 1 && urlPage === 1 && savedPosition.page !== currentPage) {
-                const resume = confirm(`You left off on page ${savedPosition.page} of ${totalPages}. Would you like to resume from there?`);
-                if (resume) {
-                    currentPage = savedPosition.page;
-                    window.location.href = getWeekViewerUrl(currentWeek.id, currentPage);
-                }
+                currentPage = savedPosition.page;
+                window.location.href = getWeekViewerUrl(currentWeek.id, currentPage);
             }
         }
 
