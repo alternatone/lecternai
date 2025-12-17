@@ -226,8 +226,10 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ===== USERS POLICIES =====
 -- Users can read their own profile
-CREATE POLICY "Users can view own profile" ON users
-    FOR SELECT USING (id = auth.uid());
+CREATE POLICY "users_select_own" ON users
+    FOR SELECT
+    TO authenticated
+    USING (auth.uid() = id);
 
 -- Users can update their own profile (but not role/status)
 CREATE POLICY "Users can update own profile" ON users
@@ -242,9 +244,11 @@ CREATE POLICY "Admins can view all users" ON users
 CREATE POLICY "Admins can update any user" ON users
     FOR UPDATE USING (is_admin());
 
--- Allow insert for new signups (handled by trigger)
-CREATE POLICY "Allow insert for auth" ON users
-    FOR INSERT WITH CHECK (id = auth.uid());
+-- Allow authenticated users to insert their own row on signup
+CREATE POLICY "users_insert_own" ON users
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (auth.uid() = id);
 
 -- ===== MODULES POLICIES =====
 -- Admins can do everything with modules
