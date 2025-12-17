@@ -442,9 +442,11 @@ CREATE POLICY "Users delete own posts" ON discussion_posts
     FOR DELETE USING (user_id = auth.uid());
 
 -- ===== ERROR_LOGS POLICIES =====
--- Anyone can insert error logs (for error tracking)
+-- Anyone can insert error logs (for error tracking) - including anon users
 CREATE POLICY "Anyone can insert error logs" ON error_logs
-    FOR INSERT WITH CHECK (true);
+    FOR INSERT
+    TO anon, authenticated
+    WITH CHECK (true);
 
 -- Only admins can view error logs
 CREATE POLICY "Admins view error logs" ON error_logs

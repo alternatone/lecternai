@@ -135,21 +135,46 @@ class ErrorHandler {
      */
     async logToSupabase(errorData, retryCount = 0) {
         try {
-            const userId = await getCurrentUserId();
+            // Try to get user ID, but don't fail if user is not authenticated
+            let userId = null;
+            try {
+                userId = await getCurrentUserId();
+            } catch (e) {
+                // User not authenticated, that's fine
+            }
+
+            // Parse additional_context if it's a string
+            let additionalContext = null;
+            if (errorData.additional_context) {
+                try {
+                    additionalContext = typeof errorData.additional_context === 'string'
+                        ? JSON.parse(errorData.additional_context)
+                        : errorData.additional_context;
+                } catch (e) {
+                    additionalContext = { raw: errorData.additional_context };
+                }
+            }
+
+            console.log('[ErrorHandler] Logging to Supabase:', errorData.error_type);
 
             const { error } = await supabase
                 .from('error_logs')
                 .insert({
-                    ...errorData,
-                    user_id: userId || null,
-                    additional_context: errorData.additional_context
-                        ? JSON.parse(errorData.additional_context)
-                        : null
+                    error_type: errorData.error_type,
+                    error_message: errorData.error_message,
+                    stack_trace: errorData.stack_trace || null,
+                    page_url: errorData.page_url || null,
+                    user_agent: errorData.user_agent || null,
+                    user_id: userId,
+                    additional_context: additionalContext
                 });
 
             if (error) {
+                console.warn('[ErrorHandler] Supabase insert error:', error);
                 throw error;
             }
+
+            console.log('[ErrorHandler] Successfully logged error to Supabase');
         } catch (err) {
             console.warn('[ErrorHandler] Failed to log to Supabase:', err.message);
 
