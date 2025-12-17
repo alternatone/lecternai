@@ -121,13 +121,12 @@ CREATE TABLE IF NOT EXISTS enrollments (
 CREATE TABLE IF NOT EXISTS progress (
     id BIGSERIAL PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    module_id BIGINT NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
-    week_number INT NOT NULL,
-    page_number INT DEFAULT 1,
+    week_id BIGINT NOT NULL REFERENCES weeks(id) ON DELETE CASCADE,
+    current_page INT DEFAULT 1,
     completed BOOLEAN DEFAULT FALSE,
     completed_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id, module_id, week_number)
+    UNIQUE(user_id, week_id)
 );
 
 -- Discussion Posts table
@@ -153,7 +152,7 @@ CREATE INDEX IF NOT EXISTS idx_videos_page_id ON videos(page_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_user_id ON enrollments(user_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_module_id ON enrollments(module_id);
 CREATE INDEX IF NOT EXISTS idx_progress_user_id ON progress(user_id);
-CREATE INDEX IF NOT EXISTS idx_progress_module_id ON progress(module_id);
+CREATE INDEX IF NOT EXISTS idx_progress_week_id ON progress(week_id);
 CREATE INDEX IF NOT EXISTS idx_discussion_posts_question_id ON discussion_posts(question_id);
 CREATE INDEX IF NOT EXISTS idx_discussion_posts_user_id ON discussion_posts(user_id);
 CREATE INDEX IF NOT EXISTS idx_discussion_posts_parent_id ON discussion_posts(parent_id);
