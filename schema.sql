@@ -225,20 +225,16 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ===== USERS POLICIES =====
--- Users can read their own profile
-CREATE POLICY "users_select_own" ON users
+-- Allow authenticated users to see basic info of all users (needed for discussion author names)
+CREATE POLICY "users_select_basic" ON users
     FOR SELECT
     TO authenticated
-    USING (auth.uid() = id);
+    USING (true);
 
 -- Users can update their own profile (but not role/status)
 CREATE POLICY "Users can update own profile" ON users
     FOR UPDATE USING (id = auth.uid())
     WITH CHECK (id = auth.uid());
-
--- Admins can view all users
-CREATE POLICY "Admins can view all users" ON users
-    FOR SELECT USING (is_admin());
 
 -- Admins can update any user
 CREATE POLICY "Admins can update any user" ON users
