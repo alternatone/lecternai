@@ -382,14 +382,79 @@ const RichText = {
         });
     },
 
+    /**
+     * Sanitize HTML to prevent XSS attacks
+     * Allows only safe tags and attributes
+     * @param {string} html - HTML to sanitize
+     * @returns {string} - Sanitized HTML
+     */
+    sanitizeHTML(html) {
+        if (!html) return '';
+
+        // Allowed tags (whitelist approach)
+        const allowedTags = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'a', 'sup', 'sub'];
+
+        // Create a temporary div to parse HTML
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+
+        // Recursively clean nodes
+        function cleanNode(node) {
+            const childNodes = Array.from(node.childNodes);
+
+            for (const child of childNodes) {
+                if (child.nodeType === Node.ELEMENT_NODE) {
+                    const tagName = child.tagName.toLowerCase();
+
+                    // Remove disallowed tags but keep their text content
+                    if (!allowedTags.includes(tagName)) {
+                        // Move children out before removing
+                        while (child.firstChild) {
+                            node.insertBefore(child.firstChild, child);
+                        }
+                        node.removeChild(child);
+                    } else {
+                        // Clean attributes - only allow href on <a> tags
+                        const attrs = Array.from(child.attributes);
+                        for (const attr of attrs) {
+                            if (tagName === 'a' && attr.name === 'href') {
+                                // Validate href - only allow http/https
+                                const href = attr.value.toLowerCase();
+                                if (!href.startsWith('http://') && !href.startsWith('https://') && !href.startsWith('/')) {
+                                    child.removeAttribute('href');
+                                } else {
+                                    // Add safe attributes for links
+                                    child.setAttribute('target', '_blank');
+                                    child.setAttribute('rel', 'noopener noreferrer');
+                                }
+                            } else {
+                                child.removeAttribute(attr.name);
+                            }
+                        }
+
+                        // Recursively clean children
+                        cleanNode(child);
+                    }
+                } else if (child.nodeType === Node.COMMENT_NODE) {
+                    // Remove comments
+                    node.removeChild(child);
+                }
+            }
+        }
+
+        cleanNode(temp);
+        return temp.innerHTML;
+    },
+
     // Legacy support - now works with both textareas and contenteditable
+    // IMPORTANT: Always sanitizes HTML to prevent XSS
     toHTML(text) {
         if (!text) return '';
-        // If already contains HTML, return as-is
+        // If already contains HTML, sanitize it
         if (/<[^>]+>/.test(text)) {
-            return text;
+            return this.sanitizeHTML(text);
         }
-        // Convert plain text to HTML
+        // Convert plain text to HTML (already safe)
         return text
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
