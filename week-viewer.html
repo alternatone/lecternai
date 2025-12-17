@@ -757,7 +757,7 @@
             const content = textarea.value.trim();
 
             if (!content) {
-                alert('Please enter a response before posting.');
+                showNotification('Please enter a response before posting.', 'error');
                 return;
             }
 
@@ -771,7 +771,7 @@
                 content: content
             });
 
-            alert('Response posted successfully!');
+            showNotification('Response posted!', 'success');
             textarea.value = '';
 
             // Reload the page to show the new post
@@ -826,7 +826,7 @@
             const content = textarea.value.trim();
 
             if (!content) {
-                alert('Please enter a reply before posting.');
+                showNotification('Please enter a reply before posting.', 'error');
                 return;
             }
 
@@ -839,7 +839,7 @@
                 content: content
             });
 
-            alert('Reply posted successfully!');
+            showNotification('Reply posted!', 'success');
 
             // Reload the page to show the new reply
             await renderPage();
@@ -867,12 +867,12 @@
             const content = textarea.value.trim();
 
             if (!content) {
-                alert('Post content cannot be empty.');
+                showNotification('Post content cannot be empty.', 'error');
                 return;
             }
 
             await dataService.editDiscussionPost(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, content);
-            alert('Post updated successfully!');
+            showNotification('Post updated!', 'success');
             await renderPage();
         }
 
@@ -898,12 +898,12 @@
             const content = textarea.value.trim();
 
             if (!content) {
-                alert('Reply content cannot be empty.');
+                showNotification('Reply content cannot be empty.', 'error');
                 return;
             }
 
             await dataService.editReply(currentModuleId, currentWeek.id, pageIndex, questionIndex, postId, replyId, content);
-            alert('Reply updated successfully!');
+            showNotification('Reply updated!', 'success');
             await renderPage();
         }
 
@@ -914,9 +914,10 @@
 
             try {
                 await dataService.deleteDiscussionPost(postId);
+                showNotification('Post deleted.', 'success');
                 await renderPage();
             } catch (err) {
-                alert('Failed to delete post: ' + err.message);
+                showNotification('Failed to delete post: ' + err.message, 'error');
             }
         }
 
@@ -927,9 +928,10 @@
 
             try {
                 await dataService.deleteReply(replyId);
+                showNotification('Reply deleted.', 'success');
                 await renderPage();
             } catch (err) {
-                alert('Failed to delete reply: ' + err.message);
+                showNotification('Failed to delete reply: ' + err.message, 'error');
             }
         }
 
@@ -963,9 +965,12 @@
                 const currentView = dataService.getCurrentView();
                 if (currentView === 'student' && currentModuleId) {
                     await dataService.completeWeek(currentModuleId, currentWeek.id);
-                    alert('Week completed!');
+                    showNotification('Week completed!', 'success');
                 }
-                window.location.href = getModuleOverviewUrl();
+                // Short delay to let notification show before redirect
+                setTimeout(() => {
+                    window.location.href = getModuleOverviewUrl();
+                }, 500);
             }
         }
 
@@ -994,8 +999,11 @@
             if (currentModuleId && currentWeek) {
                 await dataService.savePagePosition(currentModuleId, currentWeek.id, currentPage);
             }
-            alert('Progress saved! You can resume from this page next time.');
-            window.location.href = getModuleOverviewUrl();
+            showNotification('Progress saved!', 'success');
+            // Short delay to let notification show before redirect
+            setTimeout(() => {
+                window.location.href = getModuleOverviewUrl();
+            }, 500);
         }
 
         // Check for saved position and offer to resume
@@ -1036,6 +1044,43 @@
             loadingState.innerHTML = `<p style="text-align: center; color: #dc3545; padding: 2rem;">${message}</p>`;
         }
 
+        // Notification system (toast)
+        function showNotification(message, type = 'info') {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                max-width: 400px;
+            `;
+            if (type === 'success') {
+                notification.style.backgroundColor = 'rgba(16, 100, 112, 0.9)';
+            } else if (type === 'error') {
+                notification.style.backgroundColor = 'rgba(139, 26, 26, 0.9)';
+            } else {
+                notification.style.backgroundColor = 'rgba(115, 125, 78, 0.9)';
+            }
+            notification.style.backdropFilter = 'blur(10px)';
+
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
         window.onload = async function() {
             // Auth guard
             currentUser = await requireActiveUser();
@@ -1049,8 +1094,10 @@
             if (currentModuleId && currentUser.role !== 'admin') {
                 const hasAccess = await canAccessModule(currentUser, currentModuleId);
                 if (!hasAccess) {
-                    alert('You do not have access to this module.');
-                    window.location.href = 'index.html';
+                    showNotification('You do not have access to this module.', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
                     return;
                 }
             }
