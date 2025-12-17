@@ -515,11 +515,14 @@
                 const postAuthorColor = getAuthorColor(post.author);
                 const replyCount = post.replies ? post.replies.length : 0;
 
+                const authorName = escapeHtml(post.author) || 'Anonymous';
+                const authorFirstName = authorName.split(' ')[0];
+
                 html += `
                     <div class="thread-post" style="padding: 1rem 0; border-bottom: 1px solid #f0f0f0;">
-                        <button class="collapse-toggle" onclick="togglePostCollapse(this)" style="background: none; border: none; color: #888; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; padding: 0; margin-bottom: 0.5rem;">
+                        <button class="collapse-toggle" onclick="togglePostCollapse(this)" data-author="${authorFirstName}" style="background: none; border: none; color: #888; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; padding: 0; margin-bottom: 0.5rem;">
                             <span class="arrow" style="transition: transform 0.2s; font-size: 0.7rem;">&#9660;</span>
-                            <span class="toggle-text">Hide response</span>
+                            <span class="toggle-text">Hide ${authorFirstName}'s response</span>
                         </button>
                         <div class="post-collapsible">
                             <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem;">
@@ -632,8 +635,9 @@
                     arrow.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
                 }
                 const textSpan = btn.querySelector('.toggle-text');
+                const authorName = btn.dataset.author || 'response';
                 if (textSpan) {
-                    textSpan.textContent = isCollapsed ? 'Hide response' : 'View response';
+                    textSpan.textContent = isCollapsed ? `Hide ${authorName}'s response` : `View ${authorName}'s response`;
                 }
             }
         }
