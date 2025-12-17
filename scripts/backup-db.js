@@ -21,10 +21,20 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-// Supabase configuration - using service role key for full access
-const SUPABASE_URL = 'https://bnuovhturagqbmunxgql.supabase.co'
-// Service role key (has full access, bypasses RLS)
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJudW92aHR1cmFncWJtdW54Z3FsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTkxNDQwNCwiZXhwIjoyMDgxNDkwNDA0fQ.AUAoYdqNR3l5oC3X0qTX3geH64z698eXRcAcu902Phc'
+// Supabase configuration - loaded from environment variables
+// Set these before running:
+//   export SUPABASE_URL="https://your-project.supabase.co"
+//   export SUPABASE_SERVICE_KEY="your-service-role-key"
+const SUPABASE_URL = process.env.SUPABASE_URL
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    console.error('Error: SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables are required')
+    console.error('Set them before running:')
+    console.error('  export SUPABASE_URL="https://your-project.supabase.co"')
+    console.error('  export SUPABASE_SERVICE_KEY="your-service-role-key"')
+    process.exit(1)
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
