@@ -556,14 +556,14 @@
                     `;
                 }
 
-                // Collapsible replies (hidden by default)
+                // Replies section (shown by default)
                 if (replyCount > 0) {
                     html += `
-                        <button class="collapse-toggle collapsed" onclick="toggleRepliesCollapse(this)" style="background: none; border: none; color: #888; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem 0; margin-top: 0.5rem;">
-                            <span class="arrow" style="transition: transform 0.2s; font-size: 0.7rem; transform: rotate(-90deg);">&#9660;</span>
-                            <span class="reply-count">View ${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}</span>
+                        <button class="collapse-toggle" onclick="toggleRepliesCollapse(this)" style="background: none; border: none; color: #888; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; padding: 0.5rem 0; margin-top: 0.5rem;">
+                            <span class="arrow" style="transition: transform 0.2s; font-size: 0.7rem;">&#9660;</span>
+                            <span class="reply-count">Hide replies</span>
                         </button>
-                        <div class="replies-container" style="display: none; margin-left: 1.5rem; padding-left: 1rem; border-left: 2px solid #e8e8e8;">
+                        <div class="replies-container" style="margin-left: 1.5rem; padding-left: 1rem; border-left: 2px solid #e8e8e8;">
                     `;
 
                     post.replies.forEach(reply => {
