@@ -88,16 +88,20 @@
             font-weight: 500;
             letter-spacing: 0.03em;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
 
         .auth-btn:hover {
             background: #0d545e;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(16, 100, 112, 0.3);
         }
 
         .auth-btn:disabled {
             background: #9ca3af;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .auth-footer {
