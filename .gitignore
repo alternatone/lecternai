@@ -9,6 +9,17 @@ recover-weeks.html
 view-data.html
 AUDIT-REPORT.md
 
+# Development preview files
+preview/
+button-style-guide.html
+clear-data.html
+migrate-data.html
+seed-data.html
+pages/
+
+# Dead code (kept for reference but not deployed)
+js/data-service.js
+
 # Editor
 .vscode/
 *.swp

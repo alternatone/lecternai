@@ -22,11 +22,16 @@ export async function getCurrentUserId() {
 }
 
 /**
- * Check if user is admin (temporary implementation)
- * Will be replaced with real role checking from auth
+ * Check if user is viewing as admin (for participant mode)
+ *
+ * This returns true when the admin is viewing content as admin (not as student).
+ * It is intentionally based on localStorage for the "participant mode" feature
+ * where admins can preview content as a student would see it.
+ *
+ * Note: For actual permission checks (can user access admin pages?),
+ * use requireAdmin() from auth.js which checks the database role.
  */
 export function isAdmin() {
-    // TODO: Replace with real role check from Supabase auth
     const view = localStorage.getItem('currentView')
     return view === 'admin'
 }

@@ -166,8 +166,37 @@ class DataServiceSupabase {
     }
 
     async getModulesByStatus(status) {
-        const modules = await this.getModules()
-        return modules.filter(m => m.status === status)
+        // Filter at database level for better performance
+        try {
+            const { data, error } = await supabase
+                .from('modules')
+                .select('*')
+                .eq('status', status)
+
+            if (error) {
+                logError('fetch_modules_by_status', error.message, { status })
+                return []
+            }
+
+            return data.map(m => ({
+                id: m.id,
+                title: m.title,
+                description: m.description,
+                instructor: m.instructor,
+                duration: m.duration,
+                participation: m.participation,
+                timeExpectations: m.time_expectations,
+                status: m.status,
+                templateId: m.template_id,
+                launchedAt: m.launched_at,
+                archivedAt: m.archived_at,
+                createdAt: m.created_at,
+                updatedAt: m.updated_at
+            }))
+        } catch (err) {
+            logError('fetch_modules_by_status', err.message, { status })
+            return []
+        }
     }
 
     async getTemplateModules() {
