@@ -442,7 +442,8 @@ BEGIN
         COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
         'student',
         'pending'
-    );
+    )
+    ON CONFLICT (id) DO NOTHING;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
