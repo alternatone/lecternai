@@ -543,17 +543,6 @@
                             <button class="btn-text red" onclick="deletePost(${post.id})">Delete</button>`;
                     }
                     html += `</div>`;
-
-                    // Reply form
-                    html += `
-                        <div id="reply-form-${post.id}" style="display: none; margin-top: 1rem; margin-left: 1.5rem; padding-left: 1rem; border-left: 2px solid #e8e8e8;">
-                            <textarea id="reply-text-${post.id}" placeholder="Write your reply..." style="width: 100%; min-height: 80px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.9rem;"></textarea>
-                            <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-                                <button class="btn-text teal" onclick="postReply(${pageIndex}, ${questionIndex}, ${post.id})">Post Reply</button>
-                                <button class="btn-text olive" onclick="toggleReplyForm(${post.id})">Cancel</button>
-                            </div>
-                        </div>
-                    `;
                 }
 
                 // Replies section (shown by default)
@@ -602,6 +591,19 @@
                         `;
                     });
                     html += '</div>';
+                }
+
+                // Reply form (placed after replies so it appears at bottom of thread)
+                if (!readOnly) {
+                    html += `
+                        <div id="reply-form-${post.id}" style="display: none; margin-top: 1rem; margin-left: 1.5rem; padding-left: 1rem; border-left: 2px solid #e8e8e8;">
+                            <textarea id="reply-text-${post.id}" placeholder="Write your reply..." style="width: 100%; min-height: 80px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.9rem;"></textarea>
+                            <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                <button class="btn-text teal" onclick="postReply(${pageIndex}, ${questionIndex}, ${post.id})">Post Reply</button>
+                                <button class="btn-text olive" onclick="toggleReplyForm(${post.id})">Cancel</button>
+                            </div>
+                        </div>
+                    `;
                 }
 
                 html += '</div>';
