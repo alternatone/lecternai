@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Migrate Data - Lectern</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container" style="max-width: 900px; margin: 4rem auto;">
+        <h2 style="color: var(--primary-color); margin-bottom: 2rem;">Migrate Module Data: Original → Beta</h2>
+
+        <div id="status" style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; font-family: monospace; white-space: pre-wrap; max-height: 500px; overflow-y: auto;"></div>
+
+        <button class="btn btn-primary" onclick="migrateData()" style="margin-right: 1rem;">Migrate All Modules</button>
+        <button class="btn btn-secondary" onclick="clearStatus()">Clear Log</button>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+        // Source (original)
+        const sourceUrl = 'https://kfsmfllzcumvzsbufwgt.supabase.co'
+        const sourceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtmc21mbGx6Y3VtdnpzYnVmd2d0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzMDkyMjUsImV4cCI6MjA4MDg4NTIyNX0.X_o03nwo4aXBuj9zeUxCz4k60roq_xlACwkLwKIS4qE'
+        const source = createClient(sourceUrl, sourceKey)
+
+        // Target (beta) - using service role key to bypass RLS
+        const targetUrl = 'https://bnuovhturagqbmunxgql.supabase.co'
+        const targetServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJudW92aHR1cmFncWJtdW54Z3FsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTkxNDQwNCwiZXhwIjoyMDgxNDkwNDA0fQ.AUAoYdqNR3l5oC3X0qTX3geH64z698eXRcAcu902Phc'
+        const target = createClient(targetUrl, targetServiceKey)
+
+        const statusEl = document.getElementById('status')
+
+        function log(message) {
+            statusEl.textContent += message + '\n'
+            statusEl.scrollTop = statusEl.scrollHeight
+            console.log(message)
+        }
+
+        window.clearStatus = function() {
+            statusEl.textContent = ''
+        }
+
+        window.migrateData = async function() {
+            statusEl.textContent = ''
+            log('Starting migration from original to beta...\n')
+
+            try {
+                // 1. Fetch all modules from source
+                log('1. Fetching modules from source...')
+                const { data: modules, error: modulesError } = await source
+                    .from('modules')
+                    .select('*')
+
+                if (modulesError) {
+                    log('   Error fetching modules: ' + modulesError.message)
+                    return
+                }
+                log(`   Found ${modules.length} module(s)`)
+
+                // Process each module
+                for (const srcModule of modules) {
+                    log(`\n--- Processing Module: "${srcModule.title}" (ID: ${srcModule.id}) ---`)
+
+                    // Insert module (without id to let it auto-generate)
+                    const { id, created_at, updated_at, ...moduleData } = srcModule
+                    const { data: newModule, error: insertError } = await target
+                        .from('modules')
+                        .insert(moduleData)
+                        .select()
+                        .single()
+
+                    if (insertError) {
+                        log(`   Error inserting module: ${insertError.message}`)
+                        continue
+                    }
+                    log(`   Created module with new ID: ${newModule.id}`)
+
+                    // 2. Fetch and migrate zoom info
+                    log('   Fetching zoom info...')
+                    const { data: zoomInfo } = await source
+                        .from('module_zoom_info')
+                        .select('*')
+                        .eq('module_id', srcModule.id)
+                        .single()
+
+                    if (zoomInfo) {
+                        const { id: zoomId, module_id, created_at: zc, updated_at: zu, ...zoomData } = zoomInfo
+                        await target.from('module_zoom_info').insert({
+                            ...zoomData,
+                            module_id: newModule.id
+                        })
+                        log('   Migrated zoom info')
+                    }
+
+                    // 3. Fetch and migrate weeks
+                    log('   Fetching weeks...')
+                    const { data: weeks } = await source
+                        .from('weeks')
+                        .select('*')
+                        .eq('module_id', srcModule.id)
+                        .order('week_number')
+
+                    if (weeks && weeks.length > 0) {
+                        log(`   Found ${weeks.length} week(s)`)
+
+                        for (const srcWeek of weeks) {
+                            const { id: weekId, module_id, created_at: wc, updated_at: wu, ...weekData } = srcWeek
+                            const { data: newWeek, error: weekError } = await target
+                                .from('weeks')
+                                .insert({
+                                    ...weekData,
+                                    module_id: newModule.id
+                                })
+                                .select()
+                                .single()
+
+                            if (weekError) {
+                                log(`   Error inserting week ${srcWeek.week_number}: ${weekError.message}`)
+                                continue
+                            }
+                            log(`   Created week ${newWeek.week_number}: "${newWeek.title}"`)
+
+                            // 4. Fetch and migrate pages for this week
+                            const { data: pages } = await source
+                                .from('pages')
+                                .select('*')
+                                .eq('week_id', srcWeek.id)
+                                .order('page_number')
+
+                            if (pages && pages.length > 0) {
+                                for (const srcPage of pages) {
+                                    const { id: pageId, week_id, created_at: pc, updated_at: pu, ...pageData } = srcPage
+                                    const { data: newPage, error: pageError } = await target
+                                        .from('pages')
+                                        .insert({
+                                            ...pageData,
+                                            week_id: newWeek.id
+                                        })
+                                        .select()
+                                        .single()
+
+                                    if (pageError) {
+                                        log(`      Error inserting page ${srcPage.page_number}: ${pageError.message}`)
+                                        continue
+                                    }
+
+                                    // 5. Migrate questions for this page
+                                    const { data: questions } = await source
+                                        .from('questions')
+                                        .select('*')
+                                        .eq('page_id', srcPage.id)
+
+                                    if (questions && questions.length > 0) {
+                                        for (const q of questions) {
+                                            const { id: qId, page_id, created_at: qc, updated_at: qu, ...qData } = q
+                                            await target.from('questions').insert({
+                                                ...qData,
+                                                page_id: newPage.id
+                                            })
+                                        }
+                                        log(`      Page ${newPage.page_number}: migrated ${questions.length} question(s)`)
+                                    }
+
+                                    // 6. Migrate resources for this page
+                                    const { data: resources } = await source
+                                        .from('resources')
+                                        .select('*')
+                                        .eq('page_id', srcPage.id)
+
+                                    if (resources && resources.length > 0) {
+                                        for (const r of resources) {
+                                            const { id: rId, page_id, created_at: rc, updated_at: ru, ...rData } = r
+                                            await target.from('resources').insert({
+                                                ...rData,
+                                                page_id: newPage.id
+                                            })
+                                        }
+                                        log(`      Page ${newPage.page_number}: migrated ${resources.length} resource(s)`)
+                                    }
+
+                                    // 7. Migrate videos for this page
+                                    const { data: videos } = await source
+                                        .from('videos')
+                                        .select('*')
+                                        .eq('page_id', srcPage.id)
+
+                                    if (videos && videos.length > 0) {
+                                        for (const v of videos) {
+                                            const { id: vId, page_id, created_at: vc, updated_at: vu, ...vData } = v
+                                            await target.from('videos').insert({
+                                                ...vData,
+                                                page_id: newPage.id
+                                            })
+                                        }
+                                        log(`      Page ${newPage.page_number}: migrated ${videos.length} video(s)`)
+                                    }
+                                }
+                                log(`   Migrated ${pages.length} page(s) for week ${newWeek.week_number}`)
+                            }
+                        }
+                    }
+                }
+
+                log('\n✓ Migration complete!')
+                log('\nNote: Users, enrollments, progress, and discussion posts were NOT migrated.')
+                log('These will be created fresh in beta.')
+
+            } catch (err) {
+                log('\nError: ' + err.message)
+                console.error(err)
+            }
+        }
+    </script>
+</body>
+</html>

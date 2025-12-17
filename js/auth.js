@@ -127,31 +127,21 @@ export async function logout() {
  * @returns {Object} Result with success/error
  */
 export async function signUp(email, password, name) {
-    // Create auth user
+    // Create auth user with name in metadata (trigger reads this)
     const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+            data: { name }
+        }
     });
 
     if (authError) {
         return { success: false, error: authError.message };
     }
 
-    // Create user profile with pending status
-    const { error: profileError } = await supabase
-        .from('users')
-        .insert({
-            id: authData.user.id,
-            email: email,
-            name: name,
-            role: 'student',
-            status: 'pending'
-        });
-
-    if (profileError) {
-        return { success: false, error: profileError.message };
-    }
-
+    // User profile is created automatically by database trigger (handle_new_user)
+    // Just return success - the trigger handles the users table insert
     return { success: true, user: authData.user };
 }
 
