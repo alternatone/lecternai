@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<!-- v1.0 -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load Test - Lectern</title>
+    <link rel="stylesheet" href="styles/lectern-core.css">
+    <style>
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--light-bg);
+            border-bottom: 1px solid #e9ecef;
+        }
+        .user-header .user-info { flex: 1; }
+        .user-header .admin-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-header h2 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .test-config {
+            background: var(--card-background);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .config-item label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        .config-item input, .config-item select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .config-item small {
+            display: block;
+            margin-top: 0.25rem;
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .test-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .live-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-background);
+            padding: 1.25rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        .stat-card.success .stat-value { color: #28a745; }
+        .stat-card.error .stat-value { color: #dc3545; }
+        .stat-card.warning .stat-value { color: #ffc107; }
+
+        .progress-bar {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar .progress {
+            height: 100%;
+            background: var(--teal);
+            transition: width 0.3s ease;
+        }
+
+        .log-section {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .log-section h3 {
+            margin: 0 0 1rem 0;
+            color: var(--primary-color);
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin: 0.25rem 0;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .log-entry.success { color: #4ec9b0; }
+        .log-entry.error { color: #f14c4c; }
+        .log-entry.warning { color: #cca700; }
+        .log-entry.info { color: #3794ff; }
+
+        .log-timestamp {
+            color: #808080;
+            margin-right: 0.5rem;
+        }
+
+        .results-summary {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .results-summary h3 {
+            margin: 0 0 1rem 0;
+            color: var(--primary-color);
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th, .results-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .results-table th {
+            background: var(--card-background);
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .warning-banner {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div id="user-header" class="user-header"></div>
+
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon">
+                <h1>Lectern</h1>
+            </a>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 2rem;">
+        <div class="page-header">
+            <h2>Load Testing</h2>
+            <nav style="display: flex; gap: 0.5rem;">
+                <a href="admin-users.html" class="btn-f olive" style="text-decoration: none;">Users</a>
+                <a href="admin-enrollments.html" class="btn-f olive" style="text-decoration: none;">Enrollments</a>
+                <a href="admin-errors.html" class="btn-f olive" style="text-decoration: none;">Error Logs</a>
+                <a href="admin-backup.html" class="btn-f olive" style="text-decoration: none;">Backup</a>
+            </nav>
+        </div>
+
+        <div class="warning-banner">
+            <strong>Warning:</strong> Load testing will generate real API requests to Supabase. This may temporarily slow down the application and consume API quota. Run during low-traffic periods.
+        </div>
+
+        <div class="test-config">
+            <h3 style="margin: 0 0 1.5rem 0; color: var(--primary-color);">Test Configuration</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label for="concurrent-users">Concurrent Users</label>
+                    <input type="number" id="concurrent-users" value="15" min="1" max="50">
+                    <small>Simulated parallel sessions</small>
+                </div>
+                <div class="config-item">
+                    <label for="test-duration">Duration (seconds)</label>
+                    <input type="number" id="test-duration" value="300" min="10" max="600">
+                    <small>How long to run the test</small>
+                </div>
+                <div class="config-item">
+                    <label for="request-interval">Request Interval (ms)</label>
+                    <input type="number" id="request-interval" value="2000" min="500" max="10000">
+                    <small>Delay between requests per user</small>
+                </div>
+                <div class="config-item">
+                    <label for="test-scenario">Test Scenario</label>
+                    <select id="test-scenario">
+                        <option value="mixed">Mixed (Read + Write)</option>
+                        <option value="read-heavy">Read Heavy (90% reads)</option>
+                        <option value="browse">Browse Only (GET requests)</option>
+                    </select>
+                    <small>Type of operations to test</small>
+                </div>
+            </div>
+            <div class="test-actions">
+                <button id="start-test" class="btn-f teal" onclick="startLoadTest()">Start Load Test</button>
+                <button id="stop-test" class="btn-f red" onclick="stopLoadTest()" style="display: none;">Stop Test</button>
+                <button id="export-results" class="btn-f olive" onclick="exportResults()" style="display: none;">Export Results</button>
+            </div>
+        </div>
+
+        <div id="results-section" class="results-section">
+            <div class="progress-bar">
+                <div id="test-progress" class="progress" style="width: 0%"></div>
+            </div>
+
+            <div class="live-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-requests">0</div>
+                    <div class="stat-label">Total Requests</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-value" id="stat-success">0</div>
+                    <div class="stat-label">Successful</div>
+                </div>
+                <div class="stat-card error">
+                    <div class="stat-value" id="stat-errors">0</div>
+                    <div class="stat-label">Errors</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-avg-time">0</div>
+                    <div class="stat-label">Avg Response (ms)</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-value" id="stat-p95">0</div>
+                    <div class="stat-label">P95 Latency (ms)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-rps">0</div>
+                    <div class="stat-label">Requests/sec</div>
+                </div>
+            </div>
+
+            <div id="summary-section" class="results-summary" style="display: none;">
+                <h3>Test Results Summary</h3>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Operation</th>
+                            <th>Count</th>
+                            <th>Success</th>
+                            <th>Failed</th>
+                            <th>Avg (ms)</th>
+                            <th>P95 (ms)</th>
+                            <th>Max (ms)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body"></tbody>
+                </table>
+            </div>
+
+            <div class="log-section">
+                <h3>Live Log</h3>
+                <div id="log-container" class="log-container"></div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { requireAdmin, renderUserHeader, logout } from './js/auth.js';
+        import { supabase } from './js/supabase-client.js';
+
+        let currentUser = null;
+        let testRunning = false;
+        let testAborted = false;
+        let testStartTime = null;
+        let results = {
+            total: 0,
+            success: 0,
+            errors: 0,
+            responseTimes: [],
+            operations: {}
+        };
+
+        // Operation definitions for load testing
+        const OPERATIONS = {
+            // Read operations
+            getModules: async () => {
+                return await supabase.from('modules').select('*').limit(10);
+            },
+            getWeeks: async () => {
+                const { data: modules } = await supabase.from('modules').select('id').limit(1);
+                if (modules && modules.length > 0) {
+                    return await supabase.from('weeks').select('*').eq('module_id', modules[0].id);
+                }
+                return { data: [], error: null };
+            },
+            getPages: async () => {
+                const { data: weeks } = await supabase.from('weeks').select('id').limit(1);
+                if (weeks && weeks.length > 0) {
+                    return await supabase.from('pages').select('*').eq('week_id', weeks[0].id);
+                }
+                return { data: [], error: null };
+            },
+            getQuestions: async () => {
+                const { data: pages } = await supabase.from('pages').select('id').limit(1);
+                if (pages && pages.length > 0) {
+                    return await supabase.from('questions').select('*').eq('page_id', pages[0].id);
+                }
+                return { data: [], error: null };
+            },
+            getDiscussionPosts: async () => {
+                const { data: questions } = await supabase.from('questions').select('id').limit(1);
+                if (questions && questions.length > 0) {
+                    return await supabase.from('discussion_posts').select('*').eq('question_id', questions[0].id);
+                }
+                return { data: [], error: null };
+            },
+            getEnrollments: async () => {
+                return await supabase.from('enrollments').select('*').limit(20);
+            },
+            getUsers: async () => {
+                return await supabase.from('users').select('id, name, email, role, status').limit(20);
+            },
+            // Write operations (harmless - inserts to error_logs which is designed for high volume)
+            logError: async () => {
+                return await supabase.from('error_logs').insert({
+                    error_type: 'LOAD_TEST',
+                    error_message: 'Load test probe - safe to ignore',
+                    page_url: window.location.href,
+                    additional_context: { test: true, timestamp: Date.now() }
+                });
+            }
+        };
+
+        // Scenario weights
+        const SCENARIOS = {
+            mixed: {
+                getModules: 15,
+                getWeeks: 15,
+                getPages: 15,
+                getQuestions: 10,
+                getDiscussionPosts: 10,
+                getEnrollments: 10,
+                getUsers: 10,
+                logError: 15
+            },
+            'read-heavy': {
+                getModules: 20,
+                getWeeks: 20,
+                getPages: 20,
+                getQuestions: 15,
+                getDiscussionPosts: 10,
+                getEnrollments: 5,
+                getUsers: 5,
+                logError: 5
+            },
+            browse: {
+                getModules: 25,
+                getWeeks: 25,
+                getPages: 25,
+                getQuestions: 15,
+                getDiscussionPosts: 10,
+                getEnrollments: 0,
+                getUsers: 0,
+                logError: 0
+            }
+        };
+
+        function getRandomOperation(scenario) {
+            const weights = SCENARIOS[scenario];
+            const total = Object.values(weights).reduce((a, b) => a + b, 0);
+            let random = Math.random() * total;
+
+            for (const [op, weight] of Object.entries(weights)) {
+                random -= weight;
+                if (random <= 0) return op;
+            }
+            return 'getModules';
+        }
+
+        function log(message, type = 'info') {
+            const container = document.getElementById('log-container');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+
+            const timestamp = new Date().toLocaleTimeString();
+            entry.innerHTML = `<span class="log-timestamp">[${timestamp}]</span>${message}`;
+
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+
+            // Keep only last 500 log entries
+            while (container.children.length > 500) {
+                container.removeChild(container.firstChild);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('stat-requests').textContent = results.total;
+            document.getElementById('stat-success').textContent = results.success;
+            document.getElementById('stat-errors').textContent = results.errors;
+
+            if (results.responseTimes.length > 0) {
+                const avg = Math.round(results.responseTimes.reduce((a, b) => a + b, 0) / results.responseTimes.length);
+                document.getElementById('stat-avg-time').textContent = avg;
+
+                // P95 calculation
+                const sorted = [...results.responseTimes].sort((a, b) => a - b);
+                const p95Index = Math.floor(sorted.length * 0.95);
+                document.getElementById('stat-p95').textContent = sorted[p95Index] || 0;
+            }
+
+            // Requests per second
+            if (testStartTime) {
+                const elapsed = (Date.now() - testStartTime) / 1000;
+                const rps = elapsed > 0 ? (results.total / elapsed).toFixed(1) : 0;
+                document.getElementById('stat-rps').textContent = rps;
+            }
+        }
+
+        function updateProgress(elapsed, total) {
+            const percent = Math.min(100, (elapsed / total) * 100);
+            document.getElementById('test-progress').style.width = `${percent}%`;
+        }
+
+        async function runUser(userId, scenario, interval, endTime) {
+            while (Date.now() < endTime && !testAborted) {
+                const operation = getRandomOperation(scenario);
+                const opFunc = OPERATIONS[operation];
+
+                if (!opFunc) continue;
+
+                const startTime = performance.now();
+                try {
+                    const result = await opFunc();
+                    const elapsed = Math.round(performance.now() - startTime);
+
+                    results.total++;
+                    if (result.error) {
+                        results.errors++;
+                        log(`User ${userId}: ${operation} failed (${elapsed}ms) - ${result.error.message}`, 'error');
+                    } else {
+                        results.success++;
+                        results.responseTimes.push(elapsed);
+                        log(`User ${userId}: ${operation} OK (${elapsed}ms)`, 'success');
+                    }
+
+                    // Track per-operation stats
+                    if (!results.operations[operation]) {
+                        results.operations[operation] = { count: 0, success: 0, failed: 0, times: [] };
+                    }
+                    results.operations[operation].count++;
+                    if (result.error) {
+                        results.operations[operation].failed++;
+                    } else {
+                        results.operations[operation].success++;
+                        results.operations[operation].times.push(elapsed);
+                    }
+
+                    updateStats();
+                } catch (err) {
+                    results.total++;
+                    results.errors++;
+                    log(`User ${userId}: ${operation} exception - ${err.message}`, 'error');
+
+                    if (!results.operations[operation]) {
+                        results.operations[operation] = { count: 0, success: 0, failed: 0, times: [] };
+                    }
+                    results.operations[operation].count++;
+                    results.operations[operation].failed++;
+
+                    updateStats();
+                }
+
+                // Wait before next request
+                await new Promise(resolve => setTimeout(resolve, interval));
+            }
+        }
+
+        window.startLoadTest = async function() {
+            const concurrentUsers = parseInt(document.getElementById('concurrent-users').value);
+            const duration = parseInt(document.getElementById('test-duration').value);
+            const interval = parseInt(document.getElementById('request-interval').value);
+            const scenario = document.getElementById('test-scenario').value;
+
+            // Reset state
+            testRunning = true;
+            testAborted = false;
+            testStartTime = Date.now();
+            results = { total: 0, success: 0, errors: 0, responseTimes: [], operations: {} };
+
+            // Update UI
+            document.getElementById('start-test').style.display = 'none';
+            document.getElementById('stop-test').style.display = 'inline-block';
+            document.getElementById('export-results').style.display = 'none';
+            document.getElementById('results-section').classList.add('show');
+            document.getElementById('summary-section').style.display = 'none';
+            document.getElementById('log-container').innerHTML = '';
+            document.getElementById('test-progress').style.width = '0%';
+
+            log(`Starting load test: ${concurrentUsers} users, ${duration}s duration, ${interval}ms interval, ${scenario} scenario`, 'info');
+
+            const endTime = Date.now() + (duration * 1000);
+
+            // Progress updater
+            const progressInterval = setInterval(() => {
+                const elapsed = Date.now() - testStartTime;
+                updateProgress(elapsed, duration * 1000);
+
+                if (elapsed >= duration * 1000 || testAborted) {
+                    clearInterval(progressInterval);
+                }
+            }, 100);
+
+            // Launch concurrent users
+            const userPromises = [];
+            for (let i = 1; i <= concurrentUsers; i++) {
+                userPromises.push(runUser(i, scenario, interval, endTime));
+            }
+
+            // Wait for all users to complete
+            await Promise.all(userPromises);
+
+            // Test complete
+            testRunning = false;
+            document.getElementById('start-test').style.display = 'inline-block';
+            document.getElementById('stop-test').style.display = 'none';
+            document.getElementById('export-results').style.display = 'inline-block';
+            document.getElementById('test-progress').style.width = '100%';
+
+            log(`Load test ${testAborted ? 'stopped' : 'completed'}. Total: ${results.total}, Success: ${results.success}, Errors: ${results.errors}`, testAborted ? 'warning' : 'success');
+
+            // Show summary
+            showSummary();
+        };
+
+        window.stopLoadTest = function() {
+            testAborted = true;
+            log('Stopping load test...', 'warning');
+        };
+
+        function showSummary() {
+            const tbody = document.getElementById('results-table-body');
+            tbody.innerHTML = '';
+
+            for (const [op, stats] of Object.entries(results.operations)) {
+                if (stats.count === 0) continue;
+
+                const avg = stats.times.length > 0
+                    ? Math.round(stats.times.reduce((a, b) => a + b, 0) / stats.times.length)
+                    : '-';
+
+                const sorted = [...stats.times].sort((a, b) => a - b);
+                const p95 = sorted.length > 0 ? sorted[Math.floor(sorted.length * 0.95)] : '-';
+                const max = sorted.length > 0 ? sorted[sorted.length - 1] : '-';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${op}</strong></td>
+                    <td>${stats.count}</td>
+                    <td style="color: #28a745;">${stats.success}</td>
+                    <td style="color: ${stats.failed > 0 ? '#dc3545' : '#6c757d'};">${stats.failed}</td>
+                    <td>${avg}</td>
+                    <td>${p95}</td>
+                    <td>${max}</td>
+                `;
+                tbody.appendChild(row);
+            }
+
+            document.getElementById('summary-section').style.display = 'block';
+        }
+
+        window.exportResults = function() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                config: {
+                    concurrentUsers: parseInt(document.getElementById('concurrent-users').value),
+                    duration: parseInt(document.getElementById('test-duration').value),
+                    interval: parseInt(document.getElementById('request-interval').value),
+                    scenario: document.getElementById('test-scenario').value
+                },
+                summary: {
+                    totalRequests: results.total,
+                    successful: results.success,
+                    failed: results.errors,
+                    errorRate: results.total > 0 ? ((results.errors / results.total) * 100).toFixed(2) + '%' : '0%',
+                    avgResponseTime: results.responseTimes.length > 0
+                        ? Math.round(results.responseTimes.reduce((a, b) => a + b, 0) / results.responseTimes.length)
+                        : 0,
+                    p95ResponseTime: results.responseTimes.length > 0
+                        ? [...results.responseTimes].sort((a, b) => a - b)[Math.floor(results.responseTimes.length * 0.95)]
+                        : 0
+                },
+                operations: results.operations
+            };
+
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `load-test-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        async function init() {
+            currentUser = await requireAdmin();
+            if (!currentUser) return;
+
+            renderUserHeader(currentUser, document.getElementById('user-header'));
+        }
+
+        window.logoutUser = logout;
+
+        init();
+    </script>
+</body>
+</html>

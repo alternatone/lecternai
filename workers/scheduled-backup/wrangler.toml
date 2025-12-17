@@ -1,0 +1,34 @@
+# Lectern Scheduled Backup Worker Configuration
+# See https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "lectern-scheduled-backup"
+main = "scheduled-backup.js"
+compatibility_date = "2024-01-01"
+
+# Cron trigger - runs daily at 2:00 AM UTC
+[triggers]
+crons = ["0 2 * * *"]
+
+# R2 bucket binding for backup storage
+# You must create this bucket first: npx wrangler r2 bucket create lectern-backups
+[[r2_buckets]]
+binding = "BACKUP_BUCKET"
+bucket_name = "lectern-backups"
+
+# Environment variables - set these via wrangler secret or Cloudflare dashboard
+# DO NOT put actual values here - use secrets for sensitive data
+#
+# Required secrets (set via: npx wrangler secret put SECRET_NAME):
+#   - SUPABASE_URL: Your Supabase project URL (e.g., https://xxx.supabase.co)
+#   - SUPABASE_SERVICE_KEY: Service role key from Supabase dashboard
+#   - ADMIN_API_KEY: A strong random string for authenticating manual backup triggers
+#
+# To set secrets:
+#   cd workers/scheduled-backup
+#   npx wrangler secret put SUPABASE_URL
+#   npx wrangler secret put SUPABASE_SERVICE_KEY
+#   npx wrangler secret put ADMIN_API_KEY
+
+[vars]
+# Non-sensitive config can go here
+# EXAMPLE_VAR = "value"

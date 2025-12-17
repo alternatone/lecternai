@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<!-- v1.0 -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup & Health - Lectern Admin</title>
+    <link rel="stylesheet" href="styles/lectern-core.css">
+    <script type="module" src="js/error-handler.js"></script>
+    <style>
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--light-bg);
+            border-bottom: 1px solid #e9ecef;
+        }
+        .user-header .user-info { flex: 1; }
+        .user-header .admin-badge {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-left: 0.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-header h2 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .section {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .section h3 {
+            color: var(--primary-color);
+            margin: 0 0 1rem 0;
+            font-size: 1.1rem;
+        }
+
+        .health-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .health-item {
+            background: var(--light-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .health-item .value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .health-item .label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        .health-item.status-ok .value { color: #28a745; }
+        .health-item.status-warn .value { color: #ffc107; }
+        .health-item.status-error .value { color: #dc3545; }
+
+        .backup-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .backup-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .backup-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--light-bg);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .backup-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .backup-item .name {
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .backup-item .meta {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+
+        .restore-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .restore-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .restore-warning strong {
+            color: #856404;
+        }
+
+        .file-input-wrapper {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .log-output {
+            background: #1a1a1a;
+            color: #f0f0f0;
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            display: none;
+        }
+
+        .log-output.show {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--teal);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div id="user-header" class="user-header" style="display: none;"></div>
+
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo" style="text-decoration: none; color: inherit;">
+                <img src="brand-assets/aquinas-logo.svg" alt="Aquinas Institute" class="logo-icon">
+                <h1>Lectern</h1>
+            </a>
+        </div>
+    </header>
+
+    <main class="container" style="padding: 2rem;">
+        <div class="page-header">
+            <h2>Backup & System Health</h2>
+            <nav style="display: flex; gap: 0.5rem;">
+                <a href="admin-users.html" class="btn-f olive" style="text-decoration: none;">Users</a>
+                <a href="admin-enrollments.html" class="btn-f olive" style="text-decoration: none;">Enrollments</a>
+                <a href="admin-errors.html" class="btn-f olive" style="text-decoration: none;">Error Logs</a>
+                <a href="admin-backup.html" class="btn-f teal" style="text-decoration: none;">Backup</a>
+            </nav>
+        </div>
+
+        <!-- System Health -->
+        <div class="section">
+            <h3>System Health</h3>
+            <div id="health-loading" class="loading">
+                <span class="spinner"></span> Checking system health...
+            </div>
+            <div id="health-grid" class="health-grid" style="display: none;"></div>
+        </div>
+
+        <!-- Create Backup -->
+        <div class="section">
+            <h3>Create Backup</h3>
+            <p style="color: #6c757d; margin-bottom: 1rem;">
+                Create a JSON export of all database tables. The backup will be saved locally in your browser.
+            </p>
+            <div class="backup-actions">
+                <button id="create-backup-btn" class="btn-f teal" onclick="createBackup()">
+                    Create Backup Now
+                </button>
+            </div>
+            <div id="backup-log" class="log-output"></div>
+        </div>
+
+        <!-- Recent Backups Info -->
+        <div class="section">
+            <h3>Backup Information</h3>
+            <p style="color: #6c757d; margin-bottom: 1rem;">
+                For automated daily backups, a Cloudflare Worker is configured to run at 2am and save to R2 storage.
+                Local backups can be created manually using the button above or via command line:
+            </p>
+            <pre style="background: var(--light-bg); padding: 1rem; border-radius: 6px; font-size: 0.85rem; overflow-x: auto;">
+cd scripts
+npm install
+node backup-db.js          # Local backup
+node backup-db.js --upload # Upload to R2 (if configured)</pre>
+        </div>
+
+        <!-- Restore -->
+        <div class="section">
+            <h3>Restore from Backup</h3>
+            <div class="restore-warning">
+                <strong>Warning:</strong> Restoring from a backup will <strong>delete all existing data</strong> and replace it with the backup contents. This action cannot be undone.
+            </div>
+            <div class="file-input-wrapper">
+                <input type="file" id="restore-file" accept=".json">
+                <button id="restore-btn" class="btn-f gold" onclick="previewRestore()" disabled>
+                    Preview Restore
+                </button>
+            </div>
+            <div id="restore-preview" style="display: none; margin-top: 1rem;"></div>
+            <div id="restore-log" class="log-output"></div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { supabase } from './js/supabase-client.js';
+        import { requireActiveUser, logout } from './js/auth.js';
+
+        let currentUser = null;
+
+        // Tables for backup/health check
+        const TABLES = [
+            'users', 'modules', 'module_zoom_info', 'weeks', 'pages',
+            'questions', 'resources', 'videos', 'enrollments', 'progress',
+            'discussion_posts', 'error_logs'
+        ];
+
+        function renderUserHeader() {
+            const header = document.getElementById('user-header');
+            header.innerHTML = `
+                <span class="user-info">
+                    <strong>${currentUser.name || currentUser.email}</strong>
+                    <span class="admin-badge">Admin</span>
+                </span>
+                <button onclick="logoutUser()" class="btn-f olive" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Logout</button>
+            `;
+            header.style.display = 'flex';
+        }
+
+        async function checkHealth() {
+            const healthGrid = document.getElementById('health-grid');
+            const healthLoading = document.getElementById('health-loading');
+
+            const results = [];
+
+            // Check database connection
+            const startTime = Date.now();
+            const { error: connError } = await supabase.from('users').select('count').limit(1);
+            const connTime = Date.now() - startTime;
+
+            results.push({
+                label: 'Database',
+                value: connError ? 'Error' : 'OK',
+                status: connError ? 'error' : 'ok'
+            });
+
+            results.push({
+                label: 'Response Time',
+                value: `${connTime}ms`,
+                status: connTime < 500 ? 'ok' : connTime < 1500 ? 'warn' : 'error'
+            });
+
+            // Count rows in each major table
+            let totalRows = 0;
+            for (const table of ['users', 'modules', 'weeks', 'pages', 'discussion_posts']) {
+                const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true });
+                if (!error) totalRows += count || 0;
+            }
+
+            results.push({
+                label: 'Total Records',
+                value: totalRows.toLocaleString(),
+                status: 'ok'
+            });
+
+            // Check recent errors (last 24h)
+            const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            const { count: errorCount } = await supabase
+                .from('error_logs')
+                .select('*', { count: 'exact', head: true })
+                .gte('timestamp', since);
+
+            results.push({
+                label: 'Errors (24h)',
+                value: errorCount || 0,
+                status: errorCount === 0 ? 'ok' : errorCount < 5 ? 'warn' : 'error'
+            });
+
+            // Render health items
+            healthGrid.innerHTML = results.map(r => `
+                <div class="health-item status-${r.status}">
+                    <div class="value">${r.value}</div>
+                    <div class="label">${r.label}</div>
+                </div>
+            `).join('');
+
+            healthLoading.style.display = 'none';
+            healthGrid.style.display = 'grid';
+        }
+
+        window.createBackup = async function() {
+            const btn = document.getElementById('create-backup-btn');
+            const log = document.getElementById('backup-log');
+
+            btn.disabled = true;
+            btn.textContent = 'Creating backup...';
+            log.textContent = '';
+            log.classList.add('show');
+
+            const backup = {
+                metadata: {
+                    created_at: new Date().toISOString(),
+                    version: '1.0',
+                    tables: TABLES
+                },
+                data: {}
+            };
+
+            let totalRows = 0;
+
+            try {
+                for (const table of TABLES) {
+                    log.textContent += `Exporting ${table}...\n`;
+
+                    const { data, error } = await supabase
+                        .from(table)
+                        .select('*')
+                        .order('id', { ascending: true });
+
+                    if (error) {
+                        log.textContent += `  Error: ${error.message}\n`;
+                        backup.data[table] = [];
+                    } else {
+                        log.textContent += `  ${data.length} rows\n`;
+                        backup.data[table] = data;
+                        totalRows += data.length;
+                    }
+                }
+
+                backup.metadata.total_rows = totalRows;
+                log.textContent += `\nTotal: ${totalRows} rows\n`;
+
+                // Generate filename and download
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                const filename = `backup-${timestamp}.json`;
+                const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+
+                URL.revokeObjectURL(url);
+                log.textContent += `\nBackup saved: ${filename}`;
+
+            } catch (err) {
+                log.textContent += `\nError: ${err.message}`;
+            }
+
+            btn.disabled = false;
+            btn.textContent = 'Create Backup Now';
+        };
+
+        // Enable restore button when file is selected
+        document.getElementById('restore-file').addEventListener('change', function() {
+            document.getElementById('restore-btn').disabled = !this.files.length;
+            document.getElementById('restore-preview').style.display = 'none';
+        });
+
+        window.previewRestore = async function() {
+            const fileInput = document.getElementById('restore-file');
+            const preview = document.getElementById('restore-preview');
+
+            if (!fileInput.files.length) return;
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+
+                    if (!backup.metadata || !backup.data) {
+                        preview.innerHTML = '<p style="color: #dc3545;">Invalid backup file format</p>';
+                        preview.style.display = 'block';
+                        return;
+                    }
+
+                    // Show preview
+                    let html = `
+                        <div style="background: var(--light-bg); padding: 1rem; border-radius: 6px;">
+                            <p><strong>Backup created:</strong> ${new Date(backup.metadata.created_at).toLocaleString()}</p>
+                            <p><strong>Total rows:</strong> ${backup.metadata.total_rows}</p>
+                            <p><strong>Tables:</strong></p>
+                            <ul style="margin: 0.5rem 0 1rem 1.5rem;">
+                    `;
+
+                    for (const table of Object.keys(backup.data)) {
+                        html += `<li>${table}: ${backup.data[table]?.length || 0} rows</li>`;
+                    }
+
+                    html += `
+                            </ul>
+                            <button class="btn-f red" onclick="executeRestore()">
+                                Confirm Restore (DESTRUCTIVE)
+                            </button>
+                        </div>
+                    `;
+
+                    preview.innerHTML = html;
+                    preview.style.display = 'block';
+
+                    // Store backup data for restore
+                    window._pendingRestore = backup;
+
+                } catch (err) {
+                    preview.innerHTML = `<p style="color: #dc3545;">Error parsing file: ${err.message}</p>`;
+                    preview.style.display = 'block';
+                }
+            };
+
+            reader.readAsText(file);
+        };
+
+        window.executeRestore = async function() {
+            if (!window._pendingRestore) return;
+
+            if (!confirm('This will DELETE ALL EXISTING DATA. Are you absolutely sure?')) {
+                return;
+            }
+
+            const log = document.getElementById('restore-log');
+            log.textContent = '';
+            log.classList.add('show');
+
+            const backup = window._pendingRestore;
+
+            // Restore order (child tables first for deletion, parent tables first for insertion)
+            const clearOrder = [...TABLES].reverse().filter(t => t !== 'error_logs');
+            const insertOrder = TABLES.filter(t => t !== 'error_logs');
+
+            try {
+                // Phase 1: Clear data
+                log.textContent += '--- Clearing existing data ---\n';
+                for (const table of clearOrder) {
+                    log.textContent += `Clearing ${table}...\n`;
+                    const { error } = await supabase.from(table).delete().gte('id', 0);
+                    if (error) log.textContent += `  Error: ${error.message}\n`;
+                }
+
+                // Phase 2: Insert data
+                log.textContent += '\n--- Restoring data ---\n';
+                for (const table of insertOrder) {
+                    const data = backup.data[table];
+                    if (!data || data.length === 0) {
+                        log.textContent += `${table}: 0 rows (skipping)\n`;
+                        continue;
+                    }
+
+                    log.textContent += `Restoring ${table}: ${data.length} rows...\n`;
+
+                    // Insert in batches
+                    const BATCH_SIZE = 50;
+                    for (let i = 0; i < data.length; i += BATCH_SIZE) {
+                        const batch = data.slice(i, i + BATCH_SIZE);
+                        const { error } = await supabase.from(table).insert(batch);
+                        if (error) {
+                            log.textContent += `  Batch error: ${error.message}\n`;
+                        }
+                    }
+                }
+
+                log.textContent += '\n=== RESTORE COMPLETE ===\n';
+                log.textContent += 'Please refresh the page to verify data.';
+
+            } catch (err) {
+                log.textContent += `\nRestore failed: ${err.message}`;
+            }
+
+            window._pendingRestore = null;
+        };
+
+        window.logoutUser = logout;
+
+        window.onload = async function() {
+            currentUser = await requireActiveUser();
+            if (!currentUser) return;
+
+            if (currentUser.role !== 'admin') {
+                alert('Admin access required');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            renderUserHeader();
+            checkHealth();
+        };
+    </script>
+</body>
+</html>

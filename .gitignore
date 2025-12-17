@@ -16,3 +16,11 @@ AUDIT-REPORT.md
 
 # Logs
 *.log
+
+# Node modules
+node_modules/
+scripts/node_modules/
+workers/*/node_modules/
+
+# Local backups (not committed to repo)
+backups/
