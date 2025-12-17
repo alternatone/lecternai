@@ -517,20 +517,25 @@
 
                 html += `
                     <div class="thread-post" style="padding: 1rem 0; border-bottom: 1px solid #f0f0f0;">
-                        <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem;">
-                            <span style="font-weight: 500; letter-spacing: 0.02em; color: ${postAuthorColor};">${escapeHtml(post.author) || 'Anonymous'}${editedText}</span>
-                            <span style="color: #9ca3af; font-size: 0.8rem; letter-spacing: 0.02em;">${postDate} at ${postTime}</span>
-                        </div>
-                        <div id="post-content-${post.id}">
-                            <div style="margin: 0.5rem 0; color: #333; line-height: 1.7;">${RichText.toHTML(post.content)}</div>
-                        </div>
-                        <div id="post-edit-form-${post.id}" style="display: none; margin-top: 0.5rem;">
-                            <textarea id="post-edit-text-${post.id}" style="width: 100%; min-height: 100px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.95rem;">${escapeHtml(post.content)}</textarea>
-                            <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-                                <button class="btn-text teal" onclick="savePostEdit(${pageIndex}, ${questionIndex}, ${post.id})">Save</button>
-                                <button class="btn-text olive" onclick="cancelPostEdit(${post.id})">Cancel</button>
+                        <button class="collapse-toggle" onclick="togglePostCollapse(this)" style="background: none; border: none; color: #888; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; padding: 0; margin-bottom: 0.5rem;">
+                            <span class="arrow" style="transition: transform 0.2s; font-size: 0.7rem;">&#9660;</span>
+                            <span class="toggle-text">Hide response</span>
+                        </button>
+                        <div class="post-collapsible">
+                            <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                <span style="font-weight: 500; letter-spacing: 0.02em; color: ${postAuthorColor};">${escapeHtml(post.author) || 'Anonymous'}${editedText}</span>
+                                <span style="color: #9ca3af; font-size: 0.8rem; letter-spacing: 0.02em;">${postDate} at ${postTime}</span>
                             </div>
-                        </div>
+                            <div id="post-content-${post.id}">
+                                <div style="margin: 0.5rem 0; color: #333; line-height: 1.7;">${RichText.toHTML(post.content)}</div>
+                            </div>
+                            <div id="post-edit-form-${post.id}" style="display: none; margin-top: 0.5rem;">
+                                <textarea id="post-edit-text-${post.id}" style="width: 100%; min-height: 100px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.95rem;">${escapeHtml(post.content)}</textarea>
+                                <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                    <button class="btn-text teal" onclick="savePostEdit(${pageIndex}, ${questionIndex}, ${post.id})">Save</button>
+                                    <button class="btn-text olive" onclick="cancelPostEdit(${post.id})">Cancel</button>
+                                </div>
+                            </div>
                 `;
 
                 // Action buttons
@@ -593,7 +598,10 @@
                     html += '</div>';
                 }
 
-                // Reply form (placed after replies so it appears at bottom of thread)
+                // Close the post-collapsible div
+                html += '</div>';
+
+                // Reply form (placed after collapsible so it's always visible when toggled)
                 if (!readOnly) {
                     html += `
                         <div id="reply-form-${post.id}" style="display: none; margin-top: 1rem; margin-left: 1.5rem; padding-left: 1rem; border-left: 2px solid #e8e8e8;">
@@ -611,6 +619,23 @@
             html += '</div>';
 
             return html;
+        }
+
+        function togglePostCollapse(btn) {
+            const container = btn.nextElementSibling;
+            if (container && container.classList.contains('post-collapsible')) {
+                const isCollapsed = container.style.display === 'none';
+                container.style.display = isCollapsed ? 'block' : 'none';
+                btn.classList.toggle('collapsed', !isCollapsed);
+                const arrow = btn.querySelector('.arrow');
+                if (arrow) {
+                    arrow.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
+                }
+                const textSpan = btn.querySelector('.toggle-text');
+                if (textSpan) {
+                    textSpan.textContent = isCollapsed ? 'Hide response' : 'View response';
+                }
+            }
         }
 
         function toggleRepliesCollapse(btn) {
@@ -1162,6 +1187,7 @@
         window.deletePost = deletePost;
         window.deleteReply = deleteReply;
         window.toggleRepliesCollapse = toggleRepliesCollapse;
+        window.togglePostCollapse = togglePostCollapse;
         window.dataService = dataService;
     </script>
 </body>
