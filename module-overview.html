@@ -2144,7 +2144,6 @@
 
             // Check if module exists
             const currentModuleId = dataService.getCurrentModuleId();
-            console.log('DEBUG: currentModuleId =', currentModuleId, 'type:', typeof currentModuleId);
 
             if (!currentModuleId) {
                 alert('No module selected.');
@@ -2153,7 +2152,6 @@
             }
 
             const currentModule = await dataService.getModule(currentModuleId);
-            console.log('DEBUG: currentModule =', currentModule);
 
             if (!currentModule) {
                 alert('Module not found (ID: ' + currentModuleId + '). It may have been deleted.');
@@ -2356,7 +2354,6 @@
                 lastAutoSave: new Date().toISOString()
             };
             dataService.saveDraft('moduleInfo', moduleInfo);
-            console.log('Module info auto-saved');
         }
 
         function autoSaveCreateWeekDraft() {
@@ -2375,7 +2372,6 @@
                 lastAutoSave: new Date().toISOString()
             };
             dataService.saveDraft('createWeek', weekDraft);
-            console.log('Create week draft auto-saved');
         }
 
         function saveWeekAsDraft() {
