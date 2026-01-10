@@ -67,8 +67,8 @@
         }
         .user-header .user-info {
             flex: 1;
-            font-family: 'Adobe Garamond Pro', Georgia, serif;
-            font-size: 1.1rem;
+            font-family: 'Benton Sans', Arial, sans-serif;
+            font-size: 0.95rem;
             color: #106470;
         }
         .user-header .admin-badge {
@@ -809,8 +809,8 @@
                 await dataService.getBatchWeekProgress(currentModuleId) : {};
 
             for (const week of weeks) {
-                // Check if week is locked for students
-                const isLocked = currentView === 'student' && (
+                // Check if week is locked for students (admins in participant mode can still access)
+                const isLocked = currentView === 'student' && !isParticipantMode && (
                     (week.unlockDate && week.unlockDate > today) ||
                     (week.status === 'locked' && !week.unlockDate)
                 );
@@ -2218,7 +2218,7 @@
             banner.id = 'participant-mode-banner';
             banner.style.cssText = 'background: rgba(16, 100, 112, 0.15); color: #106470; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(16, 100, 112, 0.3);';
             banner.innerHTML = `
-                <span style="font-family: 'Adobe Garamond Pro', Georgia, serif; font-size: 1.05rem;"><strong>Participant Mode</strong> - You are viewing this module as a participant</span>
+                <span style="font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.95rem;"><strong>Participant Mode</strong> - You are viewing this module as a participant</span>
                 <button class="btn-f teal" onclick="exitParticipantMode()">Exit to Admin View</button>
             `;
             const header = document.querySelector('header');
@@ -2333,7 +2333,12 @@
                         result.push('</ul>');
                         inList = false;
                     }
-                    result.push(line + '<br>');
+                    // Preserve empty lines as visible spacing
+                    if (line === '') {
+                        result.push('<div style="height: 0.75rem;"></div>');
+                    } else {
+                        result.push(line + '<br>');
+                    }
                 }
             }
 
@@ -2341,7 +2346,10 @@
                 result.push('</ul>');
             }
 
-            return result.join('');
+            // Clean up trailing <br> tags
+            let output = result.join('');
+            output = output.replace(/(<br>)+$/, '');
+            return output;
         }
 
         function autoSaveModuleInfo() {
@@ -2598,6 +2606,11 @@
                 showNotification(`Failed to update modules. Please try again.`, 'error');
             } else {
                 showNotification(`Updated ${successCount} module${successCount > 1 ? 's' : ''}, ${failCount} failed.`, 'warning');
+            }
+
+            // Reload weeks to show updated unlock dates
+            if (successCount > 0) {
+                await renderWeeks();
             }
         }
 
