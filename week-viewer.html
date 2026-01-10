@@ -532,12 +532,13 @@
                 const postDate = new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 const postTime = new Date(post.createdAt).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
                 const isOwnPost = currentUserId && post.userId === currentUserId;
-                const editedText = post.editedAt ? ' <span style="font-size: 0.75rem; color: #9ca3af;">(edited)</span>' : '';
-                const postAuthorColor = getAuthorColor(post.author);
+                const editedText = post.editedAt && !post.isDeleted ? ' <span style="font-size: 0.75rem; color: #9ca3af;">(edited)</span>' : '';
+                const postAuthorColor = post.isDeleted ? '#9ca3af' : getAuthorColor(post.author);
                 const replyCount = post.replies ? post.replies.length : 0;
 
-                const authorName = escapeHtml(post.author) || 'Anonymous';
-                const authorFirstName = authorName.split(' ')[0];
+                const authorName = post.isDeleted ? '[deleted]' : (escapeHtml(post.author) || 'Anonymous');
+                const authorFirstName = post.isDeleted ? 'deleted' : authorName.split(' ')[0];
+                const postContent = post.isDeleted ? '<em style="color: #9ca3af;">[This response has been deleted]</em>' : RichText.toHTML(post.content);
 
                 html += `
                     <div class="thread-post" style="padding: 1rem 0; border-bottom: 1px solid #f0f0f0;">
@@ -547,12 +548,17 @@
                         </button>
                         <div class="post-collapsible">
                             <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem;">
-                                <span style="font-weight: 500; letter-spacing: 0.02em; color: ${postAuthorColor};">${escapeHtml(post.author) || 'Anonymous'}${editedText}</span>
+                                <span style="font-weight: 500; letter-spacing: 0.02em; color: ${postAuthorColor};">${authorName}${editedText}</span>
                                 <span style="color: #9ca3af; font-size: 0.8rem; letter-spacing: 0.02em;">${postDate} at ${postTime}</span>
                             </div>
                             <div id="post-content-${post.id}">
-                                <div style="margin: 0.5rem 0; color: #333; line-height: 1.7;">${RichText.toHTML(post.content)}</div>
+                                <div style="margin: 0.5rem 0; color: #333; line-height: 1.7;">${postContent}</div>
                             </div>
+                `;
+
+                // Edit form and action buttons only for non-deleted posts
+                if (!post.isDeleted) {
+                    html += `
                             <div id="post-edit-form-${post.id}" style="display: none; margin-top: 0.5rem;">
                                 <textarea id="post-edit-text-${post.id}" style="width: 100%; min-height: 100px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.95rem;">${escapeHtml(post.content)}</textarea>
                                 <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
@@ -560,18 +566,19 @@
                                     <button class="btn-text olive" onclick="cancelPostEdit(${post.id})">Cancel</button>
                                 </div>
                             </div>
-                `;
+                    `;
 
-                // Action buttons
-                if (!readOnly) {
-                    html += `<div id="post-actions-${post.id}" style="display: flex; gap: 0.25rem; margin-top: 0.5rem;">
-                            <button class="btn-text teal" onclick="toggleReplyForm(${post.id})">Reply</button>`;
-                    if (isOwnPost) {
-                        html += `
-                            <button class="btn-text gold" onclick="editPost(${post.id})">Edit</button>
-                            <button class="btn-text red" onclick="deletePost(${post.id})">Delete</button>`;
+                    // Action buttons
+                    if (!readOnly) {
+                        html += `<div id="post-actions-${post.id}" style="display: flex; gap: 0.25rem; margin-top: 0.5rem;">
+                                <button class="btn-text teal" onclick="toggleReplyForm(${post.id})">Reply</button>`;
+                        if (isOwnPost) {
+                            html += `
+                                <button class="btn-text gold" onclick="editPost(${post.id})">Edit</button>
+                                <button class="btn-text red" onclick="deletePost(${post.id})">Delete</button>`;
+                        }
+                        html += `</div>`;
                     }
-                    html += `</div>`;
                 }
 
                 // Replies section (shown by default)
@@ -587,19 +594,27 @@
                     post.replies.forEach(reply => {
                         const replyDate = new Date(reply.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                         const replyTime = new Date(reply.createdAt).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
-                        const replyEditedText = reply.editedAt ? ' <span style="font-size: 0.7rem; color: #9ca3af;">(edited)</span>' : '';
-                        const replyAuthorColor = getAuthorColor(reply.author);
+                        const replyEditedText = reply.editedAt && !reply.isDeleted ? ' <span style="font-size: 0.7rem; color: #9ca3af;">(edited)</span>' : '';
+                        const replyAuthorColor = reply.isDeleted ? '#9ca3af' : getAuthorColor(reply.author);
                         const isOwnReply = currentUserId && reply.userId === currentUserId;
+                        const nestedReplyCount = reply.replies ? reply.replies.length : 0;
+                        const replyAuthorName = reply.isDeleted ? '[deleted]' : (escapeHtml(reply.author) || 'Anonymous');
+                        const replyContent = reply.isDeleted ? '<em style="color: #9ca3af;">[This reply has been deleted]</em>' : RichText.toHTML(reply.content);
 
                         html += `
                             <div class="thread-reply" style="padding: 0.75rem 0;">
                                 <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem;">
-                                    <span style="font-weight: 500; letter-spacing: 0.02em; color: ${replyAuthorColor}; font-size: 0.9rem;">${escapeHtml(reply.author) || 'Anonymous'}${replyEditedText}</span>
+                                    <span style="font-weight: 500; letter-spacing: 0.02em; color: ${replyAuthorColor}; font-size: 0.9rem;">${replyAuthorName}${replyEditedText}</span>
                                     <span style="color: #9ca3af; font-size: 0.8rem; letter-spacing: 0.02em;">${replyDate} at ${replyTime}</span>
                                 </div>
                                 <div id="reply-content-${reply.id}">
-                                    <div style="margin: 0; font-size: 0.9rem; color: #444; line-height: 1.7;">${RichText.toHTML(reply.content)}</div>
+                                    <div style="margin: 0; font-size: 0.9rem; color: #444; line-height: 1.7;">${replyContent}</div>
                                 </div>
+                        `;
+
+                        // Edit form and action buttons only for non-deleted replies
+                        if (!reply.isDeleted) {
+                            html += `
                                 <div id="reply-edit-form-${reply.id}" style="display: none; margin-top: 0.5rem;">
                                     <textarea id="reply-edit-text-${reply.id}" style="width: 100%; min-height: 70px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.9rem;">${escapeHtml(reply.content)}</textarea>
                                     <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
@@ -609,15 +624,77 @@
                                 </div>
                                 ${!readOnly ? `
                                     <div id="reply-actions-${reply.id}" style="display: flex; gap: 0.25rem; margin-top: 0.25rem;">
-                                        <button class="btn-text teal" onclick="toggleReplyForm(${post.id})">Reply</button>
+                                        <button class="btn-text teal" onclick="toggleReplyForm(${reply.id})">Reply</button>
                                         ${isOwnReply ? `
                                             <button class="btn-text gold" onclick="editReply(${reply.id})">Edit</button>
                                             <button class="btn-text red" onclick="deleteReply(${reply.id})">Delete</button>
                                         ` : ''}
                                     </div>
                                 ` : ''}
-                            </div>
-                        `;
+                            `;
+                        }
+
+                        // Nested replies (replies to this reply) - 3rd level
+                        if (nestedReplyCount > 0) {
+                            html += `<div class="nested-replies-container" style="margin-left: 1.5rem; padding-left: 1rem; border-left: 2px solid #f0f0f0; margin-top: 0.5rem;">`;
+                            reply.replies.forEach(nestedReply => {
+                                const nestedDate = new Date(nestedReply.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                const nestedTime = new Date(nestedReply.createdAt).toLocaleTimeString([], {hour: 'numeric', minute:'2-digit'});
+                                const nestedEditedText = nestedReply.editedAt && !nestedReply.isDeleted ? ' <span style="font-size: 0.7rem; color: #9ca3af;">(edited)</span>' : '';
+                                const nestedAuthorColor = nestedReply.isDeleted ? '#9ca3af' : getAuthorColor(nestedReply.author);
+                                const isOwnNested = currentUserId && nestedReply.userId === currentUserId;
+                                const nestedAuthorName = nestedReply.isDeleted ? '[deleted]' : (escapeHtml(nestedReply.author) || 'Anonymous');
+                                const nestedContent = nestedReply.isDeleted ? '<em style="color: #9ca3af;">[This reply has been deleted]</em>' : RichText.toHTML(nestedReply.content);
+
+                                html += `
+                                    <div class="thread-nested-reply" style="padding: 0.5rem 0;">
+                                        <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                            <span style="font-weight: 500; letter-spacing: 0.02em; color: ${nestedAuthorColor}; font-size: 0.85rem;">${nestedAuthorName}${nestedEditedText}</span>
+                                            <span style="color: #9ca3af; font-size: 0.75rem; letter-spacing: 0.02em;">${nestedDate} at ${nestedTime}</span>
+                                        </div>
+                                        <div id="reply-content-${nestedReply.id}">
+                                            <div style="margin: 0; font-size: 0.85rem; color: #555; line-height: 1.6;">${nestedContent}</div>
+                                        </div>
+                                `;
+
+                                // Edit form and actions only for non-deleted nested replies
+                                if (!nestedReply.isDeleted) {
+                                    html += `
+                                        <div id="reply-edit-form-${nestedReply.id}" style="display: none; margin-top: 0.5rem;">
+                                            <textarea id="reply-edit-text-${nestedReply.id}" style="width: 100%; min-height: 60px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.85rem;">${escapeHtml(nestedReply.content)}</textarea>
+                                            <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                                <button class="btn-text teal" onclick="saveReplyEdit(${pageIndex}, ${questionIndex}, ${reply.id}, ${nestedReply.id})">Save</button>
+                                                <button class="btn-text olive" onclick="cancelReplyEdit(${nestedReply.id})">Cancel</button>
+                                            </div>
+                                        </div>
+                                        ${!readOnly && isOwnNested ? `
+                                            <div id="reply-actions-${nestedReply.id}" style="display: flex; gap: 0.25rem; margin-top: 0.25rem;">
+                                                <button class="btn-text gold" onclick="editReply(${nestedReply.id})">Edit</button>
+                                                <button class="btn-text red" onclick="deleteReply(${nestedReply.id})">Delete</button>
+                                            </div>
+                                        ` : ''}
+                                    `;
+                                }
+
+                                html += `</div>`;
+                            });
+                            html += `</div>`;
+                        }
+
+                        // Reply form for this reply (to create nested replies) - only if reply not deleted
+                        if (!readOnly && !reply.isDeleted) {
+                            html += `
+                                <div id="reply-form-${reply.id}" style="display: none; margin-top: 0.5rem; margin-left: 1.5rem; padding-left: 1rem; border-left: 2px solid #f0f0f0;">
+                                    <textarea id="reply-text-${reply.id}" placeholder="Write your reply..." style="width: 100%; min-height: 60px; margin-bottom: 0.5rem; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.85rem;"></textarea>
+                                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                                        <button class="btn-text teal" onclick="postReply(${pageIndex}, ${questionIndex}, ${reply.id})">Post Reply</button>
+                                        <button class="btn-text olive" onclick="toggleReplyForm(${reply.id})">Cancel</button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        html += `</div>`;
                     });
                     html += '</div>';
                 }
@@ -625,7 +702,7 @@
                 // Close the post-collapsible div
                 html += '</div>';
 
-                // Reply form (placed after collapsible so it's always visible when toggled)
+                // Reply form for the main post
                 if (!readOnly) {
                     html += `
                         <div id="reply-form-${post.id}" style="display: none; margin-top: 1rem; margin-left: 1.5rem; padding-left: 1rem; border-left: 2px solid #e8e8e8;">
@@ -1241,7 +1318,7 @@
             banner.id = 'participant-mode-banner';
             banner.style.cssText = 'background: rgba(16, 100, 112, 0.15); color: #106470; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(16, 100, 112, 0.3);';
             banner.innerHTML = `
-                <span style="font-family: \'Adobe Garamond Pro\', Georgia, serif; font-size: 1.05rem;"><strong>Participant Mode</strong> - You are viewing this module as a participant</span>
+                <span style="font-family: 'Benton Sans', Arial, sans-serif; font-size: 0.95rem;"><strong>Participant Mode</strong> - You are viewing this module as a participant</span>
                 <button class="btn-f teal" onclick="exitParticipantMode()">Exit to Admin View</button>
             `;
             const header = document.querySelector('header');

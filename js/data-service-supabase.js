@@ -1492,34 +1492,38 @@ class DataServiceSupabase {
             }
         }
 
-        // Build final structure with replies attached
+        // Helper to format a post/reply object
+        const formatPost = (p) => {
+            const user = p.users || {}
+            return {
+                id: p.id,
+                userId: p.user_id,
+                author: user.name || user.email || 'Anonymous',
+                content: p.content,
+                isAdmin: user.role === 'admin',
+                isDeleted: p.is_deleted || false,
+                createdAt: p.created_at,
+                editedAt: p.edited_at,
+                replies: []
+            }
+        }
+
+        // Build final structure with 3 levels: post -> reply -> nested reply
         return parentPosts
             .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) // newest first for parents
             .map(post => {
-                const postUser = post.users || {}
+                const formattedPost = formatPost(post)
                 const replies = repliesMap[post.id] || []
 
-                return {
-                    id: post.id,
-                    userId: post.user_id,
-                    author: postUser.name || postUser.email || 'Anonymous',
-                    content: post.content,
-                    isAdmin: postUser.role === 'admin',
-                    createdAt: post.created_at,
-                    editedAt: post.edited_at,
-                    replies: replies.map(r => {
-                        const replyUser = r.users || {}
-                        return {
-                            id: r.id,
-                            userId: r.user_id,
-                            author: replyUser.name || replyUser.email || 'Anonymous',
-                            content: r.content,
-                            isAdmin: replyUser.role === 'admin',
-                            createdAt: r.created_at,
-                            editedAt: r.edited_at
-                        }
-                    })
-                }
+                formattedPost.replies = replies.map(reply => {
+                    const formattedReply = formatPost(reply)
+                    // Get nested replies (replies to this reply)
+                    const nestedReplies = repliesMap[reply.id] || []
+                    formattedReply.replies = nestedReplies.map(formatPost)
+                    return formattedReply
+                })
+
+                return formattedPost
             })
     }
 
@@ -1656,33 +1660,66 @@ class DataServiceSupabase {
     }
 
     async deleteDiscussionPost(postId) {
-        // First delete any replies to this post
-        await supabase
+        // Check if this post has any replies
+        const { data: replies } = await supabase
             .from('discussion_posts')
-            .delete()
+            .select('id')
             .eq('parent_id', postId)
+            .limit(1)
 
-        // Then delete the post itself
-        const { error } = await supabase
-            .from('discussion_posts')
-            .delete()
-            .eq('id', postId)
+        if (replies && replies.length > 0) {
+            // Soft delete - post has replies, just mark as deleted
+            const { error } = await supabase
+                .from('discussion_posts')
+                .update({ is_deleted: true, content: '' })
+                .eq('id', postId)
 
-        if (error) {
-            throw new Error('Failed to delete post: ' + error.message)
+            if (error) {
+                throw new Error('Failed to delete post: ' + error.message)
+            }
+        } else {
+            // Hard delete - no replies, safe to remove
+            const { error } = await supabase
+                .from('discussion_posts')
+                .delete()
+                .eq('id', postId)
+
+            if (error) {
+                throw new Error('Failed to delete post: ' + error.message)
+            }
         }
 
         return true
     }
 
     async deleteReply(replyId) {
-        const { error } = await supabase
+        // Check if this reply has any nested replies
+        const { data: nestedReplies } = await supabase
             .from('discussion_posts')
-            .delete()
-            .eq('id', replyId)
+            .select('id')
+            .eq('parent_id', replyId)
+            .limit(1)
 
-        if (error) {
-            throw new Error('Failed to delete reply: ' + error.message)
+        if (nestedReplies && nestedReplies.length > 0) {
+            // Soft delete - reply has nested replies
+            const { error } = await supabase
+                .from('discussion_posts')
+                .update({ is_deleted: true, content: '' })
+                .eq('id', replyId)
+
+            if (error) {
+                throw new Error('Failed to delete reply: ' + error.message)
+            }
+        } else {
+            // Hard delete - no nested replies
+            const { error } = await supabase
+                .from('discussion_posts')
+                .delete()
+                .eq('id', replyId)
+
+            if (error) {
+                throw new Error('Failed to delete reply: ' + error.message)
+            }
         }
 
         return true

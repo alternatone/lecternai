@@ -357,8 +357,8 @@
                         </td>
                         <td>${formatDate(user.created_at)}</td>
                         <td class="action-btns">
+                            ${user.id !== currentUser.id ? `<button class="btn-f red" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="rejectUserClick('${user.id}')">Delete</button>` : '<span style="color: #6c757d; font-size: 0.85rem; display: inline-block; padding: 0.4rem 0.8rem;">(You)</span>'}
                             ${user.role === 'student' ? `<a href="admin-enrollments.html?user=${user.id}" class="btn-f olive" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; text-decoration: none;">Enrollments</a>` : ''}
-                            ${user.id !== currentUser.id ? `<button class="btn-f red" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="rejectUserClick('${user.id}')">Delete</button>` : '<span style="color: #6c757d; font-size: 0.85rem;">(You)</span>'}
                         </td>
                     </tr>
                 `).join('');

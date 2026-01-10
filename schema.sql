@@ -136,6 +136,7 @@ CREATE TABLE IF NOT EXISTS discussion_posts (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     parent_id BIGINT REFERENCES discussion_posts(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
+    is_deleted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
