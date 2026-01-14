@@ -616,7 +616,11 @@ class DataServiceSupabase {
         // Process all pages in parallel for speed
         const pagePromises = templateWeek.pages.map(async (templatePage, i) => {
             const activePage = activePagesList[i]
-            if (!activePage) return
+            if (!activePage) {
+                // Page doesn't exist in active module - create it from template
+                await this.createPage(weekRecord.id, i + 1, templatePage)
+                return
+            }
 
             // Run page update, resources sync, and videos sync in parallel
             const [pageUpdateResult, , ] = await Promise.all([
