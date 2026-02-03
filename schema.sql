@@ -138,7 +138,8 @@ CREATE TABLE IF NOT EXISTS discussion_posts (
     content TEXT NOT NULL,
     is_deleted BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    edited_at TIMESTAMPTZ
 );
 
 -- Error Logs table (for production error tracking)
