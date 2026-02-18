@@ -2121,6 +2121,16 @@
                 page1Questions = draft.page1Questions || [];
                 reflectionQuestions = draft.reflectionQuestions || [];
 
+                // Restore edit mode state so edits don't create a new week
+                if (draft.isEditMode && draft.editingWeekId) {
+                    isEditMode = true;
+                    editingWeekId = draft.editingWeekId;
+                    editingWeekUpdatedAt = draft.editingWeekUpdatedAt || null;
+                    document.querySelector('#create-week-modal h3').textContent = 'Edit Week';
+                    const saveBtn = document.querySelector('#create-week-modal .btn-f.teal');
+                    saveBtn.textContent = 'Save Changes';
+                }
+
                 // Re-render all lists
                 renderWeeklyReadings();
                 renderFurtherStudy();
@@ -2377,6 +2387,9 @@
                 page5Videos: [...page5Videos],
                 page1Questions: [...page1Questions],
                 reflectionQuestions: [...reflectionQuestions],
+                isEditMode: isEditMode,
+                editingWeekId: editingWeekId,
+                editingWeekUpdatedAt: editingWeekUpdatedAt,
                 lastAutoSave: new Date().toISOString()
             };
             dataService.saveDraft('createWeek', weekDraft);
@@ -2405,6 +2418,16 @@
                     page5Videos = draft.page5Videos || [];
                     page1Questions = draft.page1Questions || [];
                     reflectionQuestions = draft.reflectionQuestions || [];
+
+                    // Restore edit mode state so edits don't create a new week
+                    if (draft.isEditMode && draft.editingWeekId) {
+                        isEditMode = true;
+                        editingWeekId = draft.editingWeekId;
+                        editingWeekUpdatedAt = draft.editingWeekUpdatedAt || null;
+                        document.querySelector('#create-week-modal h3').textContent = 'Edit Week';
+                        const saveBtn = document.querySelector('#create-week-modal .btn-f.teal');
+                        saveBtn.textContent = 'Save Changes';
+                    }
 
                     // Re-render all lists
                     renderWeeklyReadings();
