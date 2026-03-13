@@ -701,6 +701,7 @@
         let editingWeekId = null;
         let isEditMode = false;
         let editingWeekUpdatedAt = null;  // For optimistic locking
+        let suppressAutoSave = false;  // Prevents draft overwrites during modal open
 
         // Participant mode - admin experiencing module as student
         let isParticipantMode = false;
@@ -1221,6 +1222,7 @@
             // Reset edit mode
             isEditMode = false;
             editingWeekId = null;
+            editingWeekUpdatedAt = null;
 
             // Reset arrays
             weeklyReadings = [];
@@ -1237,12 +1239,15 @@
             setFieldValue('page2-intro-text', '');
             setFieldValue('zoom-prep-text', '');
 
+            // Suppress auto-save during render so existing edit drafts aren't overwritten
+            suppressAutoSave = true;
             renderWeeklyReadings();
             renderFurtherStudy();
             renderVideos();
             renderPage5Videos();
             renderPage1Questions();
             renderReflectionQuestions();
+            suppressAutoSave = false;
 
             // Update modal title and button text for create mode
             document.querySelector('#create-week-modal h3').textContent = 'Create New Week';
@@ -1322,13 +1327,15 @@
             furtherStudy = page6?.resources || [];
             page5Videos = page6?.videos || [];
 
-            // Render all lists
+            // Render all lists - suppress auto-save during initial population
+            suppressAutoSave = true;
             renderWeeklyReadings();
             renderFurtherStudy();
             renderVideos();
             renderPage5Videos();
             renderPage1Questions();
             renderReflectionQuestions();
+            suppressAutoSave = false;
 
             // Update modal title and button text for edit mode
             document.querySelector('#create-week-modal h3').textContent = 'Edit Week';
@@ -2375,6 +2382,7 @@
         }
 
         function autoSaveCreateWeekDraft() {
+            if (suppressAutoSave) return;
             const weekDraft = {
                 title: document.getElementById('week-title-input').value,
                 description: getFieldValue('week-description-input'),
