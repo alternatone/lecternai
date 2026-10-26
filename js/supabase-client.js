@@ -12,13 +12,15 @@ const supabaseKey = 'sb_publishable_OjwtqfL9HleTzienBAHAZw_KkfXuwA6'
 
 /**
  * Demo mode runs against sample data in localStorage instead of Supabase.
- * Always on for GitHub Pages; toggle locally with ?demo=1 / ?demo=0.
+ * Always on for the lectern-demo Cloudflare Pages project (incl. preview URLs);
+ * toggle locally with ?demo=1 / ?demo=0.
  */
 function isDemoMode() {
     const param = new URLSearchParams(location.search).get('demo')
     if (param === '1') localStorage.setItem('lectern-demo', '1')
     if (param === '0') localStorage.removeItem('lectern-demo')
-    return location.hostname.endsWith('github.io') || localStorage.getItem('lectern-demo') === '1'
+    return /(^|\.)lectern-demo(-[a-z0-9]+)?\.pages\.dev$/.test(location.hostname) ||
+        localStorage.getItem('lectern-demo') === '1'
 }
 
 // supabase-js is only fetched outside demo mode, so the demo has no backend or CDN dependency

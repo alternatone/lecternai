@@ -82,7 +82,8 @@ python3 -m http.server 8080
 
 ## Demo Mode
 Runs the app on sample data in localStorage — no Supabase, no network. Swapped in at `js/supabase-client.js`.
-- Always on for `*.github.io` (public demo, deployed by `.github/workflows/pages.yml` on push to main)
+- Always on for the `lectern-demo` Cloudflare Pages project (`lectern-demo.pages.dev` and its preview URLs)
+- Deploy: `scripts/build-site.sh && npx wrangler pages deploy _site --project-name=lectern-demo`
 - Locally: `?demo=1` to turn on, `?demo=0` to turn off
 - `js/demo-client.js` fakes the supabase-js subset the app uses; `js/demo-data.js` holds the sample course
 - Demo logins: `admin@demo.lectern` / `student@demo.lectern`, any password
