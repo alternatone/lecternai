@@ -85,8 +85,6 @@ function seedDb() {
 export function resetDemoData() {
     localStorage.removeItem(DB_KEY)
     seedDb()
-    // Start fresh as the demo admin
-    localStorage.setItem(SESSION_KEY, DEMO_ACCOUNTS.admin.id)
 }
 
 const now = () => new Date().toISOString()
@@ -412,17 +410,14 @@ const auth = {
     }
 }
 
-// ==================== Banner ====================
+// ==================== Banner / login ====================
 
 function renderBanner() {
     if (document.getElementById('demo-banner')) return
-    const onLogin = /(login|signup)\.html$/.test(location.pathname)
     const banner = document.createElement('div')
     banner.id = 'demo-banner'
     banner.style.cssText = 'position:sticky;top:0;z-index:10000;display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center;justify-content:center;padding:.5rem 1rem;background:#2f4f4f;color:#fff;font:14px/1.4 system-ui,sans-serif;text-align:center'
-    banner.innerHTML = onLogin
-        ? `<span><strong>Demo mode</strong> — sign in as <code>${DEMO_ACCOUNTS.admin.email}</code> or <code>${DEMO_ACCOUNTS.student.email}</code> (any password)</span>`
-        : `<span><strong>Demo mode</strong> — sample data, stored only in your browser</span>`
+    banner.innerHTML = '<span><strong>Demo mode</strong> — sample data, stored only in your browser</span>'
     const reset = document.createElement('button')
     reset.textContent = 'Reset Demo Data'
     reset.style.cssText = 'padding:.25rem .75rem;border:1px solid #fff;border-radius:4px;background:transparent;color:#fff;cursor:pointer;font:inherit'
@@ -435,17 +430,43 @@ function renderBanner() {
     document.body.prepend(banner)
 }
 
+// Replaces the login form with one-click demo logins
+function renderDemoLogin() {
+    const form = document.getElementById('login-form')
+    if (!form) return
+    const buttons = document.createElement('div')
+    buttons.style.cssText = 'display:flex;flex-direction:column;gap:.75rem'
+    for (const [label, account] of [['Log in as Student', DEMO_ACCOUNTS.student], ['Log in as Admin', DEMO_ACCOUNTS.admin]]) {
+        const btn = document.createElement('button')
+        btn.type = 'button'
+        btn.className = 'auth-btn'
+        btn.textContent = label
+        btn.onclick = async () => {
+            await auth.signInWithPassword({ email: account.email })
+            location.href = 'index.html'
+        }
+        buttons.appendChild(btn)
+    }
+    // Hide rather than remove: login.html's own script still binds to the form
+    form.hidden = true
+    form.before(buttons)
+    document.querySelector('a[href="forgot-password.html"]')?.parentElement.remove()
+    document.querySelector('.auth-footer')?.remove()
+}
+
+function onReady(fn) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn)
+    else fn()
+}
+
 // ==================== Client ====================
 
 export function createDemoClient() {
-    // First visit: seed data and sign in as the demo admin so visitors land in the app
+    // First visit: seed sample data (visitors then pick a role on the login page)
     if (!localStorage.getItem(DB_KEY)) resetDemoData()
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', renderBanner)
-    } else {
-        renderBanner()
-    }
+    onReady(renderBanner)
+    onReady(renderDemoLogin)
 
     return {
         from: table => new DemoQuery(table),
