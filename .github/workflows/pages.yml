@@ -1,0 +1,44 @@
+# Deploys the public demo (sample data in localStorage, no Supabase) to GitHub Pages.
+# Demo mode switches on automatically for *.github.io — see js/supabase-client.js.
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Publish only the app; skip dev tools that talk to Supabase directly, docs, and SQL
+      - name: Assemble site
+        run: |
+          mkdir _site
+          cp -r js styles fonts brand-assets styles.css _site/
+          rm -f _site/js/data-service.js
+          for f in *.html; do
+            case "$f" in
+              seed-data.html|migrate-data.html|load-test.html|clear-data.html|button-style-guide.html) ;;
+              *) cp "$f" _site/ ;;
+            esac
+          done
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+      - id: deployment
+        uses: actions/deploy-pages@v4

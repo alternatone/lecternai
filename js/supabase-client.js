@@ -5,12 +5,26 @@
  * Import this in any file that needs to interact with Supabase.
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createDemoClient } from './demo-client.js'
 
 const supabaseUrl = 'https://bnuovhturagqbmunxgql.supabase.co'
 const supabaseKey = 'sb_publishable_OjwtqfL9HleTzienBAHAZw_KkfXuwA6'
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+/**
+ * Demo mode runs against sample data in localStorage instead of Supabase.
+ * Always on for GitHub Pages; toggle locally with ?demo=1 / ?demo=0.
+ */
+function isDemoMode() {
+    const param = new URLSearchParams(location.search).get('demo')
+    if (param === '1') localStorage.setItem('lectern-demo', '1')
+    if (param === '0') localStorage.removeItem('lectern-demo')
+    return location.hostname.endsWith('github.io') || localStorage.getItem('lectern-demo') === '1'
+}
+
+// supabase-js is only fetched outside demo mode, so the demo has no backend or CDN dependency
+export const supabase = isDemoMode()
+    ? createDemoClient()
+    : (await import('https://esm.sh/@supabase/supabase-js@2')).createClient(supabaseUrl, supabaseKey)
 
 /**
  * Get the current authenticated user's ID
