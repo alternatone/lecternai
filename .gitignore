@@ -35,3 +35,4 @@ workers/*/node_modules/
 
 # Local backups (not committed to repo)
 backups/
+_site/
